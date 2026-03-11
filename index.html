@@ -55,7 +55,6 @@
         .target { color: inherit; display: inline-block; transition: 0.2s; }
         .found { color: var(--primary) !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(108, 92, 231, 0.6); }
 
-        /* ✨ 確保手機直立時，內容太多可以上下滑動 */
         #start-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--primary); color: white;
@@ -68,7 +67,6 @@
             justify-content: center; align-items: center; z-index: 20000; overflow-y: auto; padding: 20px; text-align: center;
         }
 
-        /* ✨ 首頁迷你排行榜 (Hall of Fame) */
         .front-leaderboard {
             background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px;
             width: 320px; max-width: 95%; margin-bottom: 25px;
@@ -114,7 +112,6 @@
         .shake { animation: shake 0.3s linear; }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
 
-        /* RWD：手機螢幕優化 */
         @media (max-width: 768px) {
             #start-overlay { padding-top: 20px; }
             #start-overlay h1 { font-size: 45px !important; margin-bottom: 5px; }
@@ -146,21 +143,21 @@
 
     <div id="start-overlay">
         <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Speedrun Hunt! ⚡</h1>
-        <p style="font-size: 18px; margin-bottom: 20px;">Clear fast for Score Multipliers!</p>
+        <p style="font-size: 18px; margin-bottom: 20px;">挑戰你的極限速度！</p>
         
         <div class="front-leaderboard">
-            <h3>🏆 Global Top 5</h3>
+            <h3>🏆 賽季排行榜 Top 5</h3>
             <div id="front-leaderboard-list">
-                <div style="text-align:center; font-size:14px; color:#636e72;">Loading Rankings... 📡</div>
+                <div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取排行榜中...</div>
             </div>
         </div>
         
-        <input type="text" id="player-name" class="name-input" placeholder="Enter Your Name..." autocomplete="off" maxlength="12">
+        <input type="text" id="player-name" class="name-input" placeholder="輸入玩家姓名..." autocomplete="off" maxlength="12">
         
         <select id="theme-select" style="font-size: 20px; padding: 10px 20px; margin-bottom: 20px; border-radius: 15px; border:none; outline:none; font-family: 'Quicksand'; font-weight: 700;">
-            <option value="body">🦴 Body Parts</option>
-            <option value="home">🏠 Home Space</option>
-            <option value="numbers">🔢 Home & Numbers</option>
+            <option value="body">🦴 五年級 - Body Parts</option>
+            <option value="home">🏠 四年級 - Home Space</option>
+            <option value="numbers">🔢 四年級進階 - Home & Numbers</option>
         </select>
         <button class="start-btn" onclick="startGame()">START</button>
     </div>
@@ -169,28 +166,28 @@
         <div class="stat-pill">👤 <span id="display-name">Player</span></div>
         <div class="stat-pill">🏆 <span id="score-val" style="color:var(--primary); font-size:26px;">0</span></div>
         <div class="stat-pill">⏱️ <span id="timer-val">00m 00s</span></div>
-        <button onclick="location.reload()" style="font-weight:900; border:none; background:none; cursor:pointer; color:#636e72;">Exit</button>
+        <button onclick="location.reload()" style="font-weight:900; border:none; background:none; cursor:pointer; color:#636e72;">離開</button>
     </div>
 
     <div id="word-bank"></div>
     <div id="game-area"></div>
 
     <div id="end-msg">
-        <h1 id="end-title" style="font-size: 50px; color: var(--primary); margin: 0; margin-top: 10px;">LEVEL CLEARED! 🎉</h1>
+        <h1 id="end-title" style="font-size: 50px; color: var(--primary); margin: 0; margin-top: 10px;">闖關成功！🎉</h1>
         
         <div class="result-panel">
             <div class="score-breakdown">
-                <div>🎯 Base Score: <span id="base-score-display"></span> pts</div>
-                <div>⏱️ Time Taken: <span id="time-taken-display"></span></div>
-                <div>⚡ Time Bonus: <span id="multiplier-display" style="color:var(--success)"></span></div>
-                <div class="final-score-display">Total: <span id="final-total-display"></span></div>
+                <div>🎯 基礎得分： <span id="base-score-display"></span> pts</div>
+                <div>⏱️ 使用時間： <span id="time-taken-display"></span></div>
+                <div>⚡ 時間加成： <span id="multiplier-display" style="color:var(--success)"></span></div>
+                <div class="final-score-display">最終總分： <span id="final-total-display"></span></div>
             </div>
             
-            <h2 class="leaderboard-title">🌍 Global Top 5</h2>
+            <h2 class="leaderboard-title">🌍 世界排行榜 Top 5</h2>
             <div id="leaderboard-list"></div>
         </div>
 
-        <button onclick="location.reload()" style="padding:15px 50px; font-size:24px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 30px;">Play Again</button>
+        <button onclick="location.reload()" style="padding:15px 50px; font-size:24px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 30px;">再玩一次</button>
     </div>
 
     <script>
@@ -213,14 +210,12 @@
         // ⚠️ 請換成您的 Google Apps Script 網址 ⚠️
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        // ✨ 網頁載入時，立刻去抓取排行榜秀在首頁
         window.onload = function() {
             fetchFrontLeaderboard();
         };
 
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list');
-            // 加上 action=get，告訴後端我們只要看資料，不要存分數
             const url = `${GOOGLE_API_URL}?action=get`;
 
             fetch(url)
@@ -228,7 +223,7 @@
             .then(board => {
                 listDiv.innerHTML = "";
                 if (!board || board.length === 0) {
-                    listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>No records yet. Be the first!</div>";
+                    listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>目前還沒有紀錄，搶下第一名吧！</div>";
                     return;
                 }
 
@@ -245,7 +240,7 @@
                 });
             })
             .catch(error => {
-                listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-size:14px;'>Rankings offline</div>";
+                listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-size:14px;'>排行榜連線失敗 😢</div>";
             });
         }
 
@@ -280,7 +275,7 @@
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") {
-                alert("Please enter your name! 請輸入玩家姓名！");
+                alert("請輸入玩家姓名喔！");
                 document.getElementById('player-name').focus();
                 return;
             }
@@ -288,7 +283,7 @@
             const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
             const hasBadWord = badWords.some(bad => cleanName.includes(bad));
             if(hasBadWord) {
-                alert("Please use a polite name! 請使用有禮貌的名字喔！😇");
+                alert("請使用有禮貌的名字喔！😇");
                 document.getElementById('player-name').value = "";
                 document.getElementById('player-name').focus();
                 return;
@@ -324,6 +319,7 @@
             generatePerfectScatteredWall();
         }
 
+        // ✨ 修復吃單字 Bug：安全演算法與精確裁剪
         function generatePerfectScatteredWall() {
             const area = document.getElementById('game-area');
             area.innerHTML = "";
@@ -338,7 +334,9 @@
 
             const charsPerLine = Math.floor(area.clientWidth / charWidth);
             const lines = Math.floor(area.clientHeight / lineHeight);
-            const totalCapacity = Math.floor(charsPerLine * lines * 0.90); 
+            
+            // 安全係數調降至 0.65，確保所有單字都落在安全區內，不會被擠出去
+            const totalCapacity = Math.floor(charsPerLine * lines * 0.65); 
 
             const words = [...currentVocab].sort(() => Math.random() - 0.5);
             const totalWordChars = words.reduce((sum, w) => sum + w.length, 0);
@@ -353,17 +351,30 @@
                 if (currentGarbage < 0) currentGarbage = 0;
                 
                 area.appendChild(document.createTextNode(getGarbage(currentGarbage)));
+                
                 const s = document.createElement('span');
                 s.className = 'target'; s.textContent = w; s.setAttribute('data-word', w);
                 area.appendChild(s);
             });
 
+            // 慢慢填補剩下的空間
             let safety = 0;
             while (area.scrollHeight <= area.clientHeight && safety < 800) {
                 area.appendChild(document.createTextNode(getGarbage(10)));
                 safety++;
             }
-            if (area.scrollHeight > area.clientHeight) area.removeChild(area.lastChild);
+            
+            // ✨ 關鍵修復：如果溢出，我們像修剪樹葉一樣，只把「最後一個亂碼節點」的字元削掉，絕不刪除單字！
+            if (area.scrollHeight > area.clientHeight) {
+                let lastNode = area.lastChild;
+                if (lastNode && lastNode.nodeType === 3) { // 確保是文字(亂碼)才做裁切
+                    let text = lastNode.textContent;
+                    while (area.scrollHeight > area.clientHeight && text.length > 0) {
+                        text = text.slice(0, -1);
+                        lastNode.textContent = text;
+                    }
+                }
+            }
         }
 
         function getGarbage(len) {
@@ -421,12 +432,12 @@
             bgm.pause();
             
             let multiplier = 1.0;
-            let tierName = "🐢 Standard";
+            let tierName = "🐢 標準 (x1.0)";
             
-            if (seconds <= 60) { multiplier = 3.0; tierName = "⚡ SSS Rank (x3.0)"; }
-            else if (seconds <= 120) { multiplier = 2.0; tierName = "🚀 SS Rank (x2.0)"; }
-            else if (seconds <= 180) { multiplier = 1.5; tierName = "🏃 S Rank (x1.5)"; }
-            else if (seconds <= 240) { multiplier = 1.2; tierName = "🚶 A Rank (x1.2)"; }
+            if (seconds <= 60) { multiplier = 3.0; tierName = "⚡ SSS 級 (x3.0)"; }
+            else if (seconds <= 120) { multiplier = 2.0; tierName = "🚀 SS 級 (x2.0)"; }
+            else if (seconds <= 180) { multiplier = 1.5; tierName = "🏃 S 級 (x1.5)"; }
+            else if (seconds <= 240) { multiplier = 1.2; tierName = "🚶 A 級 (x1.2)"; }
             
             const finalScore = Math.floor(score * multiplier);
             const m = Math.floor(seconds/60).toString().padStart(2,'0');
@@ -455,7 +466,7 @@
                 listDiv.innerHTML = "";
                 
                 if (!board || board.length === 0) {
-                    listDiv.innerHTML = "<div style='text-align:center;'>目前還沒有人上榜，你就是第一名！</div>";
+                    listDiv.innerHTML = "<div style='text-align:center;'>目前還沒有紀錄，你就是第一名！</div>";
                     return;
                 }
 
@@ -473,7 +484,7 @@
                 });
             })
             .catch(error => {
-                listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-weight:700;'>排行榜連線失敗，請檢查網路 😢</div>";
+                listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-weight:700;'>排行榜連線失敗 😢</div>";
                 console.error("Fetch Error:", error);
             });
         }
