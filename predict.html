@@ -128,7 +128,13 @@
 </head>
 <body>
 
-    <audio id="bgm" src="music.mp3" loop></audio>
+    <!-- ✨ 豪華版音效陣列 -->
+    <audio id="bgm-guess" src="guess.mp3" loop></audio>
+    <audio id="sfx-drumroll" src="drumroll.mp3"></audio>
+    <audio id="sfx-bingo" src="bingo.mp3"></audio>
+    <audio id="sfx-fail" src="fail.mp3"></audio>
+    <audio id="sfx-victory" src="victory.mp3"></audio>
+    <audio id="sfx-fighting" src="fighting.mp3"></audio>
     <audio id="secret-bgm" src="67.mp3"></audio>
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
@@ -182,7 +188,7 @@
         </div>
 
         <div class="controls">
-            <button class="btn-action" id="submit-btn" disabled onclick="revealAnswers()">🔒 鎖定開獎</button>
+            <button class="btn-action" id="submit-btn" disabled>🔒 鎖定開獎</button>
         </div>
 
         <div id="keyboard"></div>
@@ -224,15 +230,21 @@
         let currentRound = 1, maxRounds = 4;
         let playerName = "Player", currentTheme = "";
         
-        let roundWords = []; // 畫面上指定的 4 個單字
-        let secretOrder = []; // 系統背後的秘密順序
-        let userInputs = ["", "", "", ""]; // 玩家在 4 個格子的輸入
-        let currentSlot = 0; // 目前選擇輸入的格子 (0~3)
+        let roundWords = []; 
+        let secretOrder = []; 
+        let userInputs = ["", "", "", ""]; 
+        let currentSlot = 0; 
         let isMuted = false;
-        let isRevealing = false; // 動畫播放中鎖定鍵盤
+        let isRevealing = false; 
         let eggBuffer = "";
 
-        const bgm = document.getElementById('bgm');
+        // 音效元件綁定
+        const bgmGuess = document.getElementById('bgm-guess');
+        const sfxDrumroll = document.getElementById('sfx-drumroll');
+        const sfxBingo = document.getElementById('sfx-bingo');
+        const sfxFail = document.getElementById('sfx-fail');
+        const sfxVictory = document.getElementById('sfx-victory');
+        const sfxFighting = document.getElementById('sfx-fighting');
         const secretBgm = document.getElementById('secret-bgm');
         
         // ⚠️ 請換成您的 Google Apps Script 網址 ⚠️
@@ -250,9 +262,27 @@
         };
 
         function toggleSound(e) {
-            if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn');
-            if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; bgm.muted = true; secretBgm.muted = true; } 
-            else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; bgm.muted = false; secretBgm.muted = false; }
+            if (e) e.stopPropagation(); isMuted = !isMuted; 
+            const btn = document.getElementById('sound-btn');
+            const audios = [bgmGuess, sfxDrumroll, sfxBingo, sfxFail, sfxVictory, sfxFighting, secretBgm];
+            
+            if (isMuted) { 
+                btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; 
+                audios.forEach(a => a.muted = true);
+            } else { 
+                btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; 
+                audios.forEach(a => a.muted = false);
+            }
+        }
+
+        function stopAllAudio() {
+            bgmGuess.pause();
+            sfxDrumroll.pause(); sfxDrumroll.currentTime = 0;
+            sfxBingo.pause(); sfxBingo.currentTime = 0;
+            sfxFail.pause(); sfxFail.currentTime = 0;
+            sfxVictory.pause(); sfxVictory.currentTime = 0;
+            sfxFighting.pause(); sfxFighting.currentTime = 0;
+            secretBgm.pause();
         }
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -261,8 +291,6 @@
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
             
             if (type === 'type') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); } 
-            else if (type === 'hit') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); }
-            else if (type === 'miss') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); }
             else if (type === 'double') {
                 [523, 659, 783, 1046].forEach((f, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(f, audioCtx.currentTime + i*0.1); g.gain.setValueAtTime(0.1, audioCtx.currentTime + i*0.1); o.start(audioCtx.currentTime + i*0.1); o.stop(audioCtx.currentTime + i*0.1 + 0.4); });
             }
@@ -279,7 +307,6 @@
                 });
                 kb.appendChild(rowDiv);
             });
-            // Bottom row (Space, Del)
             const bottomRow = document.createElement('div'); bottomRow.className = 'key-row';
             const spaceBtn = document.createElement('button'); spaceBtn.className = 'key key-wide'; spaceBtn.innerText = 'SPACE'; spaceBtn.onpointerdown = (e) => { e.preventDefault(); handleKey('SPACE'); };
             const delBtn = document.createElement('button'); delBtn.className = 'key key-wide'; delBtn.innerText = '⌫ DEL'; delBtn.onpointerdown = (e) => { e.preventDefault(); handleKey('DEL'); };
@@ -294,14 +321,16 @@
             playerName = inputName; document.getElementById('display-name').innerText = playerName;
             currentTheme = document.getElementById('theme-select').value;
 
-            bgm.volume = 0.4; bgm.play().catch(e => console.log(e)); secretBgm.onended = function() { bgm.play(); };
-
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('header').style.visibility = 'visible';
             document.getElementById('game-area').style.visibility = 'visible';
             
             totalScore = 0; currentRound = 1; document.getElementById('score-val').textContent = totalScore;
             
+            bgmGuess.volume = 0.4;
+            stopAllAudio();
+            bgmGuess.play().catch(e => console.log(e));
+
             initRound();
         }
 
@@ -309,9 +338,7 @@
             document.getElementById('round-indicator').innerText = `Round ${currentRound} / ${maxRounds}`;
             
             let bank = [...wordBanks[currentTheme]];
-            // 隨機挑出 4 個單字作為本輪考題
             roundWords = bank.sort(() => Math.random() - 0.5).slice(0, 4);
-            // 系統暗中決定的順序 (洗牌)
             secretOrder = [...roundWords].sort(() => Math.random() - 0.5);
             
             document.getElementById('word-list').innerText = roundWords.join(', ');
@@ -336,16 +363,13 @@
         function focusSlot(idx) {
             if(isRevealing) return;
             currentSlot = idx;
-            for(let i=0; i<4; i++) {
-                document.getElementById(`slot-${i}`).classList.remove('active');
-            }
+            for(let i=0; i<4; i++) { document.getElementById(`slot-${i}`).classList.remove('active'); }
             document.getElementById(`slot-${idx}`).classList.add('active');
         }
 
         function handleKey(key) {
             if(isRevealing) return;
 
-            // 彩蛋偵測
             if(key.length === 1) {
                 eggBuffer += key;
                 if (eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4);
@@ -355,20 +379,15 @@
             playSfx('type');
             let currentText = userInputs[currentSlot];
 
-            if (key === 'DEL') {
-                userInputs[currentSlot] = currentText.slice(0, -1);
-            } else if (key === 'SPACE') {
-                if(currentText.length < 15) userInputs[currentSlot] += " ";
-            } else {
-                if(currentText.length < 15) userInputs[currentSlot] += key.toLowerCase();
-            }
+            if (key === 'DEL') { userInputs[currentSlot] = currentText.slice(0, -1); } 
+            else if (key === 'SPACE') { if(currentText.length < 15) userInputs[currentSlot] += " "; } 
+            else { if(currentText.length < 15) userInputs[currentSlot] += key.toLowerCase(); }
 
             document.getElementById(`txt-${currentSlot}`).innerText = userInputs[currentSlot];
             validateInputs();
         }
 
         function validateInputs() {
-            // 檢查 4 個格子輸入的內容，是否剛好等同於本輪指定的 4 個單字 (不管順序)
             let inputsClean = userInputs.map(s => s.trim().toLowerCase());
             let targetsClean = roundWords.map(s => s.toLowerCase());
             
@@ -376,60 +395,91 @@
             let sortedTa = [...targetsClean].sort().join('|');
 
             const btn = document.getElementById('submit-btn');
-            if (sortedIn === sortedTa && inputsClean.every(s => s !== "")) {
-                btn.disabled = false;
-            } else {
-                btn.disabled = true;
-            }
+            if (sortedIn === sortedTa && inputsClean.every(s => s !== "")) { btn.disabled = false; } 
+            else { btn.disabled = true; }
         }
 
-        function revealAnswers() {
+        // ✨ 電影級時間軸開獎系統 (Async/Await)
+        async function revealAnswers() {
             if(document.getElementById('submit-btn').disabled) return;
             isRevealing = true;
             document.getElementById('submit-btn').disabled = true;
             for(let i=0; i<4; i++) document.getElementById(`slot-${i}`).classList.remove('active');
 
+            // 暫停猜測音樂，準備開獎
+            bgmGuess.pause();
             let hits = 0;
-            
-            // 使用 setTimeout 製作一張一張翻開的動畫感
+
+            // 稍微停頓半秒，讓玩家準備好
+            await new Promise(r => setTimeout(r, 500));
+
             for(let i=0; i<4; i++) {
-                setTimeout(() => {
-                    let slot = document.getElementById(`slot-${i}`);
-                    let rev = document.getElementById(`rev-${i}`);
-                    let userInput = userInputs[i].trim().toLowerCase();
-                    let secret = secretOrder[i].toLowerCase();
+                // 1. 播放打鼓聲，製造懸疑
+                if (!isMuted) {
+                    sfxDrumroll.currentTime = 0;
+                    sfxDrumroll.play().catch(e => console.log(e));
+                }
 
-                    rev.innerText = "Answer: " + secret;
-                    rev.style.visibility = 'visible';
-                    rev.style.animation = 'flipIn 0.4s ease-out';
+                // 2. 懸疑時間：拉長到 2 秒鐘！
+                await new Promise(r => setTimeout(r, 2000));
 
-                    if (userInput === secret) {
-                        slot.classList.add('success');
-                        playSfx('hit');
-                        hits++;
-                        showBurst(slot.getBoundingClientRect().left + 20, slot.getBoundingClientRect().top, "+10", "#2ecc71");
-                    } else {
-                        slot.classList.add('fail');
-                        playSfx('miss');
+                // 3. 停掉打鼓聲
+                sfxDrumroll.pause();
+
+                // 4. 翻開卡片
+                let slot = document.getElementById(`slot-${i}`);
+                let rev = document.getElementById(`rev-${i}`);
+                let userInput = userInputs[i].trim().toLowerCase();
+                let secret = secretOrder[i].toLowerCase();
+
+                rev.innerText = "Answer: " + secret;
+                rev.style.visibility = 'visible';
+                rev.style.animation = 'flipIn 0.4s ease-out';
+
+                // 5. 判斷對錯並播放對應音效
+                if (userInput === secret) {
+                    slot.classList.add('success');
+                    hits++;
+                    if (!isMuted) {
+                        sfxBingo.currentTime = 0;
+                        sfxBingo.play().catch(e => console.log(e));
                     }
-
-                    // 如果是最後一個開完，結算這回合
-                    if (i === 3) {
-                        setTimeout(() => finalizeRound(hits), 800);
+                    showBurst(slot.getBoundingClientRect().left + 20, slot.getBoundingClientRect().top, "+10", "#2ecc71");
+                } else {
+                    slot.classList.add('fail');
+                    if (!isMuted) {
+                        sfxFail.currentTime = 0;
+                        sfxFail.play().catch(e => console.log(e));
                     }
-                }, (i + 1) * 800); // 每一格間隔 0.8 秒開獎
+                }
+
+                // 6. 讓 Bingo 或是 Fail 播完，停留 1.5 秒讓大家看清楚結果，再進入下一次打鼓
+                await new Promise(r => setTimeout(r, 1500));
             }
+
+            // 7. 四張牌都翻完，進入結算
+            finalizeRound(hits);
         }
 
         function finalizeRound(hits) {
             let roundScore = hits * 10;
-            let isPerfect = false;
 
             if (hits === 4) {
-                roundScore = roundScore * 2; // 完美預測，分數 Double (80分)
-                isPerfect = true;
+                roundScore = roundScore * 2; 
                 playSfx('double');
                 showBurst(window.innerWidth/2 - 50, window.innerHeight/2, "DOUBLE! x2", "#f1c40f");
+                
+                // 完美預測，播放 Victory!
+                if (!isMuted) {
+                    sfxVictory.currentTime = 0;
+                    sfxVictory.play().catch(e => console.log(e));
+                }
+            } else {
+                // 沒有全中，播放 Fighting!
+                if (!isMuted) {
+                    sfxFighting.currentTime = 0;
+                    sfxFighting.play().catch(e => console.log(e));
+                }
             }
 
             totalScore += roundScore;
@@ -439,7 +489,12 @@
             if (currentRound < maxRounds) {
                 btn.innerText = "👉 進入下一輪";
                 btn.disabled = false;
-                btn.onclick = () => { currentRound++; initRound(); };
+                btn.onclick = () => { 
+                    currentRound++; 
+                    stopAllAudio();
+                    bgmGuess.play().catch(e => console.log(e));
+                    initRound(); 
+                };
             } else {
                 btn.innerText = "🏁 觀看結算";
                 btn.disabled = false;
@@ -450,9 +505,16 @@
         function triggerEasterEgg() {
             eggBuffer = ""; totalScore += 100; document.getElementById('score-val').textContent = totalScore;
             showBurst(window.innerWidth/2 - 50, window.innerHeight/2, "+100 🌟", "#f1c40f");
-            bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err));
+            
+            stopAllAudio();
+            secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err));
+            
             const modal = document.getElementById('secret-modal'); modal.style.display = 'block';
-            setTimeout(() => { modal.style.display = 'none'; userInputs[currentSlot] = ""; document.getElementById(`txt-${currentSlot}`).innerText = ""; }, 3000);
+            setTimeout(() => { 
+                modal.style.display = 'none'; userInputs[currentSlot] = ""; document.getElementById(`txt-${currentSlot}`).innerText = ""; 
+                stopAllAudio();
+                if (!isRevealing) bgmGuess.play().catch(e => console.log(e));
+            }, 3000);
         }
 
         function showBurst(x, y, txt, color) {
@@ -460,7 +522,7 @@
         }
 
         function endGame() {
-            bgm.pause(); secretBgm.pause();
+            stopAllAudio();
             document.getElementById('final-total-display').textContent = totalScore;
             document.getElementById('end-msg').style.display = "flex";
 
@@ -484,4 +546,5 @@
     </script>
 </body>
 </html>
+
 
