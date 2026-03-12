@@ -54,15 +54,13 @@
         }
         .target { color: inherit; display: inline-block; transition: 0.2s; padding: 8px 3px; margin: -8px -3px; position: relative; z-index: 10; }
         .found { color: var(--primary) !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(108, 92, 231, 0.6); }
-
-        /* ✨ 彩蛋專屬樣式：ROCK 老師被找到時變金色 */
         .found-egg { color: #f1c40f !important; font-weight: 900 !important; text-shadow: 0 0 20px rgba(241, 196, 15, 0.8); }
 
         #start-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--primary); color: white;
             display: flex; flex-direction: column; justify-content: flex-start; align-items: center; 
-            z-index: 20000; overflow-y: auto; padding: 40px 10px;
+            z-index: 20000; overflow-y: auto; padding: 30px 10px;
         }
         #end-msg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -70,21 +68,31 @@
             justify-content: center; align-items: center; z-index: 20000; overflow-y: auto; padding: 20px; text-align: center;
         }
 
-        /* ✨ 隱藏彩蛋提示視窗 */
         #secret-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.9); color: white; padding: 30px 40px; border-radius: 20px;
-            z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f;
-            width: 80%; max-width: 400px;
+            z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f; width: 80%; max-width: 400px;
         }
 
+        /* ✨ 入口排行榜：加入滾動軸設定 */
         .front-leaderboard {
             background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px;
-            width: 320px; max-width: 95%; margin-bottom: 25px;
+            width: 320px; max-width: 95%; margin-bottom: 20px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #2d3436; text-align: left;
         }
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
-        .front-board-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; }
+        
+        #front-leaderboard-list {
+            max-height: 180px; /* ✨ 固定高度 */
+            overflow-y: auto;  /* ✨ 超出高度時出現滾動軸 */
+            padding-right: 5px;
+        }
+        /* ✨ 裝飾滾動軸，讓它看起來可愛一點 */
+        #front-leaderboard-list::-webkit-scrollbar { width: 6px; }
+        #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; }
+        #front-leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
+
+        .front-board-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; }
         .front-board-row:last-child { border-bottom: none; }
 
         .name-input {
@@ -99,6 +107,7 @@
             cursor: pointer; box-shadow: 0 8px 0 #219150; transition: 0.1s; margin-bottom: 30px;
         }
 
+        /* 結算面板：也加入滾動軸 */
         .result-panel {
             background: white; border: 4px solid var(--primary); border-radius: 20px;
             padding: 20px; width: 450px; max-width: 100%; margin: 10px 0 20px 0;
@@ -107,6 +116,16 @@
         .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; color: #2d3436; font-weight: 700; }
         .final-score-display { font-size: 36px; color: var(--error); text-align: center; font-weight: 900; margin-top: 10px; }
         .leaderboard-title { font-size: 24px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center; border-top: 2px dashed #ddd; padding-top: 15px; }
+        
+        #leaderboard-list {
+            max-height: 200px; /* ✨ 固定高度 */
+            overflow-y: auto;  /* ✨ 滾動軸 */
+            padding-right: 5px;
+        }
+        #leaderboard-list::-webkit-scrollbar { width: 6px; }
+        #leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; }
+        #leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
+
         .board-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #dfe6e9; font-size: 18px; font-weight: 700; color: #2d3436; }
         .board-row:last-child { border-bottom: none; }
         .rank-1 { color: #f1c40f; font-size: 22px; } .rank-2 { color: #bdc3c7; } .rank-3 { color: #cd6133; }
@@ -121,20 +140,20 @@
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
 
         @media (max-width: 768px) {
-            #start-overlay { padding-top: 20px; }
-            #start-overlay h1 { font-size: 45px !important; margin-bottom: 5px; }
-            #start-overlay p { font-size: 16px !important; margin-bottom: 15px !important; }
-            .front-leaderboard { width: 95%; padding: 10px; margin-bottom: 15px; }
-            .name-input { width: 85%; font-size: 20px; padding: 10px; margin-bottom: 15px; }
-            #theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 15px !important; }
-            .start-btn { font-size: 28px; padding: 12px 40px; margin-bottom: 20px; }
+            #start-overlay { padding-top: 10px; }
+            #start-overlay h1 { font-size: 40px !important; margin-bottom: 5px; }
+            #start-overlay p { font-size: 16px !important; margin-bottom: 10px !important; }
+            .front-leaderboard { width: 95%; padding: 10px; margin-bottom: 10px; }
+            .name-input { width: 85%; font-size: 20px; padding: 10px; margin-bottom: 10px; }
+            #theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 10px !important; }
+            .start-btn { font-size: 28px; padding: 10px 40px; margin-bottom: 10px; }
             
             #header { padding: 0 5px; height: 50px; }
             .stat-pill { font-size: 14px !important; padding: 4px 8px; }
             .bank-item { font-size: 14px; padding: 5px 8px; }
             #game-area { font-size: 22px !important; letter-spacing: 2px !important; padding: 10px !important; line-height: 1.15 !important; }
             .float-num { font-size: 70px !important; }
-            #end-title { font-size: 40px !important; }
+            #end-title { font-size: 36px !important; }
             .result-panel { width: 95%; padding: 15px; }
             .score-breakdown { font-size: 16px; padding: 10px; }
             .final-score-display { font-size: 28px; }
@@ -148,11 +167,11 @@
     <audio id="secret-bgm" src="67.mp3"></audio>
 
     <div id="start-overlay">
-        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Word Hunt! ⚡</h1>
-        <p style="font-size: 18px; margin-bottom: 20px;">挑戰你的極限速度！</p>
+        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Speedrun Hunt! ⚡</h1>
+        <p style="font-size: 18px; margin-bottom: 15px;">挑戰你的極限速度！</p>
         
         <div class="front-leaderboard">
-            <h3 id="front-board-title">🏆 賽季排行榜 Top 5</h3>
+            <h3 id="front-board-title">🏆 賽季英雄榜</h3>
             <div id="front-leaderboard-list">
                 <div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取排行榜中...</div>
             </div>
@@ -160,7 +179,7 @@
         
         <input type="text" id="player-name" class="name-input" placeholder="輸入玩家姓名..." autocomplete="off" maxlength="12">
         
-        <select id="theme-select" onchange="fetchFrontLeaderboard()" style="font-size: 20px; padding: 10px 20px; margin-bottom: 20px; border-radius: 15px; border:none; outline:none; font-family: 'Quicksand'; font-weight: 700;">
+        <select id="theme-select" onchange="fetchFrontLeaderboard()" style="font-size: 20px; padding: 10px 20px; margin-bottom: 15px; border-radius: 15px; border:none; outline:none; font-family: 'Quicksand'; font-weight: 700;">
             <option value="body">🦴 五年級 - Body Parts</option>
             <option value="home">🏠 四年級 - Home Space</option>
             <option value="numbers">🔢 四年級進階 - Home & Numbers</option>
@@ -192,7 +211,7 @@
                 <div>⚡ 時間加成： <span id="multiplier-display" style="color:var(--success)"></span></div>
                 <div class="final-score-display">最終總分： <span id="final-total-display"></span></div>
             </div>
-            <h2 class="leaderboard-title" id="end-board-title">🌍 世界排行榜 Top 5</h2>
+            <h2 class="leaderboard-title" id="end-board-title">🌍 世界英雄榜</h2>
             <div id="leaderboard-list"></div>
         </div>
         <button onclick="location.reload()" style="padding:15px 50px; font-size:24px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 30px;">再玩一次</button>
@@ -228,7 +247,7 @@
             const currentTheme = themeSelect.value;
             const themeName = themeSelect.options[themeSelect.selectedIndex].text;
             
-            document.getElementById('front-board-title').innerText = `🏆 ${themeName} Top 5`;
+            document.getElementById('front-board-title').innerText = `🏆 ${themeName} 英雄榜`;
             listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取排行榜中...</div>";
 
             const url = `${GOOGLE_API_URL}?action=get&theme=${currentTheme}`;
@@ -238,7 +257,7 @@
             .then(board => {
                 listDiv.innerHTML = "";
                 if (!board || board.length === 0) {
-                    listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>此關卡還沒有紀錄，搶下第一名吧！</div>";
+                    listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72; padding:10px;'>此關卡還沒有紀錄，搶下第一名吧！</div>";
                     return;
                 }
                 board.forEach((player, index) => {
@@ -302,7 +321,6 @@
             bgm.volume = 0.4;
             bgm.play().catch(e => console.log("BGM Error"));
 
-            // ✨ 設定當 67.mp3 播完時，自動把原本音樂播回來
             secretBgm.onended = function() {
                 bgm.play().catch(e => console.log("BGM Resume Error"));
             };
@@ -347,7 +365,6 @@
             const lines = Math.floor(area.clientHeight / lineHeight);
             const totalCapacity = Math.floor(charsPerLine * lines * 0.65); 
 
-            // ✨ 關鍵：在這裡偷偷把 "ROCK" 加進去渲染名單，但絕對不放進 currentVocab 裡！
             const renderWords = [...currentVocab, "ROCK"].sort(() => Math.random() - 0.5);
             const totalWordChars = renderWords.reduce((sum, w) => sum + w.length, 0);
             
@@ -412,28 +429,23 @@
             if (isTarget && !isFound) {
                 const w = e.target.getAttribute('data-word');
                 
-                // ✨ 處理隱藏彩蛋邏輯
                 if (w === "ROCK") {
                     e.target.classList.add('found-egg');
                     score += 100;
                     document.getElementById('score-val').textContent = score;
                     showBurst(e.clientX, e.clientY, "+100 🌟", "#f1c40f");
                     
-                    // 音效切換
                     bgm.pause();
                     secretBgm.currentTime = 0;
                     secretBgm.volume = 0.6;
                     secretBgm.play().catch(err => console.log(err));
 
-                    // 顯示保密提示窗
                     const modal = document.getElementById('secret-modal');
                     modal.style.display = 'block';
                     setTimeout(() => { modal.style.display = 'none'; }, 3000);
-                    
-                    return; // 找到彩蛋不列入通關條件，直接中斷
+                    return; 
                 }
 
-                // 正常通關邏輯
                 e.target.classList.add('found');
                 score += 10; 
                 foundCount++;
@@ -467,7 +479,7 @@
         function calculateAndEndGame() {
             clearInterval(interval);
             bgm.pause();
-            secretBgm.pause(); // 確保遊戲結束時停止所有音樂
+            secretBgm.pause(); 
             
             let multiplier = 1.0;
             let tierName = "🐢 標準 (x1.0)";
@@ -498,7 +510,7 @@
             const currentTheme = themeSelect.value;
             const themeName = themeSelect.options[themeSelect.selectedIndex].text;
             
-            document.getElementById('end-board-title').innerText = `🌍 ${themeName} Top 5`;
+            document.getElementById('end-board-title').innerText = `🌍 ${themeName} 英雄榜`;
             listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 正在上傳成績到世界排行榜...</div>";
             
             const url = `${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${finalScore}&time=${encodeURIComponent(timeStr)}&theme=${currentTheme}`;
@@ -508,7 +520,7 @@
             .then(board => {
                 listDiv.innerHTML = "";
                 if (!board || board.length === 0) {
-                    listDiv.innerHTML = "<div style='text-align:center;'>目前還沒有紀錄，你就是第一名！</div>";
+                    listDiv.innerHTML = "<div style='text-align:center; padding:10px;'>目前還沒有紀錄，你就是第一名！</div>";
                     return;
                 }
                 board.forEach((player, index) => {
