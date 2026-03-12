@@ -19,6 +19,17 @@
             overflow: hidden; display: flex; flex-direction: column; user-select: none;
         }
 
+        /* ✨ 漂浮的音樂控制按鈕 */
+        .sound-toggle {
+            position: fixed; top: 15px; right: 15px;
+            background: white; border: 3px solid var(--success); border-radius: 50px;
+            padding: 8px 15px; font-size: 16px; font-weight: 900;
+            cursor: pointer; font-family: 'Quicksand', sans-serif; color: #2d3436;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 50000; transition: 0.2s;
+        }
+        .sound-toggle:hover { transform: scale(1.05); }
+        .sound-toggle:active { transform: scale(0.95); }
+
         #header {
             height: 60px; background: white; border-bottom: 2px solid #dfe6e9;
             display: flex; justify-content: space-around; align-items: center;
@@ -74,7 +85,6 @@
             z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f; width: 80%; max-width: 400px;
         }
 
-        /* ✨ 入口排行榜：加入滾動軸設定 */
         .front-leaderboard {
             background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px;
             width: 320px; max-width: 95%; margin-bottom: 20px;
@@ -82,12 +92,7 @@
         }
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
         
-        #front-leaderboard-list {
-            max-height: 180px; /* ✨ 固定高度 */
-            overflow-y: auto;  /* ✨ 超出高度時出現滾動軸 */
-            padding-right: 5px;
-        }
-        /* ✨ 裝飾滾動軸，讓它看起來可愛一點 */
+        #front-leaderboard-list { max-height: 180px; overflow-y: auto; padding-right: 5px; }
         #front-leaderboard-list::-webkit-scrollbar { width: 6px; }
         #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; }
         #front-leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
@@ -107,7 +112,6 @@
             cursor: pointer; box-shadow: 0 8px 0 #219150; transition: 0.1s; margin-bottom: 30px;
         }
 
-        /* 結算面板：也加入滾動軸 */
         .result-panel {
             background: white; border: 4px solid var(--primary); border-radius: 20px;
             padding: 20px; width: 450px; max-width: 100%; margin: 10px 0 20px 0;
@@ -117,11 +121,7 @@
         .final-score-display { font-size: 36px; color: var(--error); text-align: center; font-weight: 900; margin-top: 10px; }
         .leaderboard-title { font-size: 24px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center; border-top: 2px dashed #ddd; padding-top: 15px; }
         
-        #leaderboard-list {
-            max-height: 200px; /* ✨ 固定高度 */
-            overflow-y: auto;  /* ✨ 滾動軸 */
-            padding-right: 5px;
-        }
+        #leaderboard-list { max-height: 200px; overflow-y: auto; padding-right: 5px; }
         #leaderboard-list::-webkit-scrollbar { width: 6px; }
         #leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; }
         #leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
@@ -140,6 +140,7 @@
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
 
         @media (max-width: 768px) {
+            .sound-toggle { top: 10px; right: 10px; font-size: 14px; padding: 6px 12px; }
             #start-overlay { padding-top: 10px; }
             #start-overlay h1 { font-size: 40px !important; margin-bottom: 5px; }
             #start-overlay p { font-size: 16px !important; margin-bottom: 10px !important; }
@@ -166,8 +167,10 @@
     <audio id="bgm" src="music.mp3" loop></audio>
     <audio id="secret-bgm" src="67.mp3"></audio>
 
+    <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
+
     <div id="start-overlay">
-        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Word Hunt! ⚡</h1>
+        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Speedrun Hunt! ⚡</h1>
         <p style="font-size: 18px; margin-bottom: 15px;">挑戰你的極限速度！</p>
         
         <div class="front-leaderboard">
@@ -191,7 +194,7 @@
         <div class="stat-pill">👤 <span id="display-name">Player</span></div>
         <div class="stat-pill">🏆 <span id="score-val" style="color:var(--primary); font-size:26px;">0</span></div>
         <div class="stat-pill">⏱️ <span id="timer-val">00m 00s</span></div>
-        <button onclick="location.reload()" style="font-weight:900; border:none; background:none; cursor:pointer; color:#636e72;">離開</button>
+        <button onclick="location.href='index.html'" style="font-weight:900; border:none; background:none; cursor:pointer; color:#636e72;">回大廳</button>
     </div>
 
     <div id="word-bank"></div>
@@ -232,6 +235,7 @@
 
         let currentVocab = [], score = 0, foundCount = 0, seconds = 0, interval;
         let playerName = "Player"; 
+        let isMuted = false; // ✨ 記錄目前的靜音狀態
         
         const bgm = document.getElementById('bgm');
         const secretBgm = document.getElementById('secret-bgm');
@@ -240,6 +244,25 @@
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         window.onload = function() { fetchFrontLeaderboard(); };
+
+        // ✨ 靜音切換功能
+        function toggleSound(e) {
+            if (e) e.stopPropagation(); // 防止點擊按鈕時觸發背景點擊扣分
+            isMuted = !isMuted;
+            const btn = document.getElementById('sound-btn');
+            
+            if (isMuted) {
+                btn.innerHTML = "🔇 音效：關";
+                btn.style.borderColor = "var(--error)";
+                bgm.muted = true;
+                secretBgm.muted = true;
+            } else {
+                btn.innerHTML = "🔊 音效：開";
+                btn.style.borderColor = "var(--success)";
+                bgm.muted = false;
+                secretBgm.muted = false;
+            }
+        }
 
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list');
@@ -278,7 +301,9 @@
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSfx(type) {
+            if (isMuted) return; // ✨ 如果靜音開啟，直接不播放特效音
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             
@@ -422,6 +447,9 @@
         }
 
         function handleTap(e) {
+            // ✨ 確保點擊靜音按鈕時，不會觸發遊戲的扣分機制
+            if (e.target.closest('.sound-toggle')) return;
+
             if (foundCount >= currentVocab.length) return;
             const isTarget = e.target.classList.contains('target');
             const isFound = e.target.classList.contains('found') || e.target.classList.contains('found-egg');
@@ -541,4 +569,3 @@
     </script>
 </body>
 </html>
-
