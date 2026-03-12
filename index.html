@@ -56,7 +56,7 @@
             text-align: center; text-decoration: none; color: inherit;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid transparent;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; flex-direction: column; align-items: center;
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
         }
 
         .game-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
@@ -99,6 +99,18 @@
             font-weight: 900; box-shadow: 0 5px 0 rgba(0,0,0,0.2); width: 100%; transition: 0.1s;
         }
         .game-card:active .play-btn { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
+
+        /* ✨ 週末限定鎖定視窗設計 */
+        #weekend-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 99999; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 40px 30px; border-radius: 25px; text-align: center;
+            max-width: 90%; width: 400px; border: 5px solid #f39c12;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         @media (max-width: 768px) {
             .sound-toggle { top: 10px; right: 10px; font-size: 14px; padding: 8px 15px; }
@@ -163,17 +175,29 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
-        <!-- 遊戲 6：Doge Clicker (WTDD) -->
-        <a href="doge.html" class="game-card card-6">
-            <!-- ✨ 把原本的狗狗 Emoji 換成 wtdd.png 的圖片，並加上圓形遮罩與排版 ✨ -->
+        <!-- ✨ 遊戲 6：Doge Clicker (WTDD) - 加上週末限定偵測 ✨ -->
+        <a href="javascript:void(0)" onclick="checkWeekendAccess(event)" class="game-card card-6">
             <div class="game-icon" style="display: flex; justify-content: center; align-items: center; overflow: hidden; background: white; border: 4px solid #f39c12; padding: 0;">
                 <img src="wtdd.png" alt="WTDD" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <h2 class="game-title">WTDD?</h2>
-            <p class="game-desc">課後舒壓小品！<br>What the dog doin? 挑戰全班最快手速極限！</p>
+            <p class="game-desc">週末限定舒壓小品！<br>What the dog doin? 挑戰全班最快手速極限！</p>
             <div class="play-btn">PLAY NOW</div>
         </a>
 
+    </div>
+
+    <!-- ✨ 狗狗休假中 鎖定彈窗 ✨ -->
+    <div id="weekend-modal">
+        <div class="modal-content">
+            <h2 style="color:#e67e22; font-size:32px; margin-top:0; margin-bottom:10px;">🐶 狗狗休假中...</h2>
+            <p style="font-size:18px; font-weight:700; color:#2c3e50; line-height:1.6;">
+                這是一個超級隱藏的舒壓關卡！<br>
+                只有在 <strong style="color:#e74c3c; font-size: 22px;">星期五、六、日</strong> <br>
+                才會開放挑戰喔！
+            </p>
+            <button onclick="document.getElementById('weekend-modal').style.display='none'" style="background:#e67e22; color:white; border:none; padding:12px 30px; border-radius:50px; font-size:20px; font-weight:900; cursor:pointer; margin-top:20px; box-shadow: 0 5px 0 #d35400;">好哦，週末再來！</button>
+        </div>
     </div>
 
     <script>
@@ -213,8 +237,25 @@
             }
         }
 
+        // ✨ 檢查是否為週末的函式
+        function checkWeekendAccess(e) {
+            e.preventDefault(); // 阻止原本的 a 標籤預設行為
+            
+            // 取得今天是星期幾 (0是週日，1是週一，...，5是週五，6是週六)
+            const today = new Date().getDay(); 
+            
+            if (today === 0 || today === 5 || today === 6) {
+                // 如果是 週五(5)、週六(6)、週日(0)，直接跳轉進入遊戲
+                window.location.href = 'doge.html';
+            } else {
+                // 如果是平日，彈出鎖定視窗
+                document.getElementById('weekend-modal').style.display = 'flex';
+            }
+        }
+
         document.body.addEventListener('click', function(e) {
-            if (e.target.closest('.game-card') || e.target.closest('#sound-btn')) return;
+            // 如果點擊的是卡片、按鈕或彈窗裡面，就不要切換音樂
+            if (e.target.closest('.game-card') || e.target.closest('#sound-btn') || e.target.closest('.modal-content')) return;
             if (!isPlaying) { toggleSound(); }
         });
     </script>
