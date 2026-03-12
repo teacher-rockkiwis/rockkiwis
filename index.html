@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Word Hunt - Multi-Theme Leaderboard</title>
+    <title>Word Hunt - Global Leaderboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -52,14 +52,11 @@
             word-break: break-all; color: var(--wall-text); text-align: justify;
             cursor: pointer; overflow: hidden; font-weight: 900;
         }
-        
-        /* ✨ 修復胖手指 TV 誤按 Bug：加入透明內距增加觸控面積 */
-        .target { 
-            color: inherit; display: inline-block; transition: 0.2s; 
-            padding: 8px 3px; margin: -8px -3px; /* 隱形觸控擴張 */
-            position: relative; z-index: 10;
-        }
+        .target { color: inherit; display: inline-block; transition: 0.2s; padding: 8px 3px; margin: -8px -3px; position: relative; z-index: 10; }
         .found { color: var(--primary) !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(108, 92, 231, 0.6); }
+
+        /* ✨ 彩蛋專屬樣式：ROCK 老師被找到時變金色 */
+        .found-egg { color: #f1c40f !important; font-weight: 900 !important; text-shadow: 0 0 20px rgba(241, 196, 15, 0.8); }
 
         #start-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -73,17 +70,21 @@
             justify-content: center; align-items: center; z-index: 20000; overflow-y: auto; padding: 20px; text-align: center;
         }
 
+        /* ✨ 隱藏彩蛋提示視窗 */
+        #secret-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9); color: white; padding: 30px 40px; border-radius: 20px;
+            z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f;
+            width: 80%; max-width: 400px;
+        }
+
         .front-leaderboard {
             background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px;
             width: 320px; max-width: 95%; margin-bottom: 25px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #2d3436; text-align: left;
         }
-        /* 排行榜標題也加入動態辨識 */
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
-        .front-board-row {
-            display: flex; justify-content: space-between; padding: 5px 0;
-            border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700;
-        }
+        .front-board-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; }
         .front-board-row:last-child { border-bottom: none; }
 
         .name-input {
@@ -124,8 +125,6 @@
             #start-overlay h1 { font-size: 45px !important; margin-bottom: 5px; }
             #start-overlay p { font-size: 16px !important; margin-bottom: 15px !important; }
             .front-leaderboard { width: 95%; padding: 10px; margin-bottom: 15px; }
-            .front-leaderboard h3 { font-size: 16px; }
-            .front-board-row { font-size: 14px; }
             .name-input { width: 85%; font-size: 20px; padding: 10px; margin-bottom: 15px; }
             #theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 15px !important; }
             .start-btn { font-size: 28px; padding: 12px 40px; margin-bottom: 20px; }
@@ -140,16 +139,16 @@
             .score-breakdown { font-size: 16px; padding: 10px; }
             .final-score-display { font-size: 28px; }
             .board-row { font-size: 14px; padding: 6px; }
-            .rank-1 { font-size: 18px; }
         }
     </style>
 </head>
 <body onclick="handleTap(event)">
 
     <audio id="bgm" src="music.mp3" loop></audio>
+    <audio id="secret-bgm" src="67.mp3"></audio>
 
     <div id="start-overlay">
-        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Word Hunt! ⚡</h1>
+        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Speedrun Hunt! ⚡</h1>
         <p style="font-size: 18px; margin-bottom: 20px;">挑戰你的極限速度！</p>
         
         <div class="front-leaderboard">
@@ -179,9 +178,13 @@
     <div id="word-bank"></div>
     <div id="game-area"></div>
 
+    <div id="secret-modal">
+        <h2 style="margin:0 0 10px 0; color:#f1c40f; font-size:36px;">🤫 隱藏彩蛋！</h2>
+        <p style="font-size:20px; margin:0; line-height: 1.5;">你找到了 ROCK 老師！<br>狂加 <strong style="font-size: 26px;">100</strong> 分！<br>請對其他同學保密喔！</p>
+    </div>
+
     <div id="end-msg">
         <h1 id="end-title" style="font-size: 50px; color: var(--primary); margin: 0; margin-top: 10px;">闖關成功！🎉</h1>
-        
         <div class="result-panel">
             <div class="score-breakdown">
                 <div>🎯 基礎得分： <span id="base-score-display"></span> pts</div>
@@ -189,11 +192,9 @@
                 <div>⚡ 時間加成： <span id="multiplier-display" style="color:var(--success)"></span></div>
                 <div class="final-score-display">最終總分： <span id="final-total-display"></span></div>
             </div>
-            
             <h2 class="leaderboard-title" id="end-board-title">🌍 世界排行榜 Top 5</h2>
             <div id="leaderboard-list"></div>
         </div>
-
         <button onclick="location.reload()" style="padding:15px 50px; font-size:24px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 30px;">再玩一次</button>
     </div>
 
@@ -212,16 +213,15 @@
 
         let currentVocab = [], score = 0, foundCount = 0, seconds = 0, interval;
         let playerName = "Player"; 
+        
         const bgm = document.getElementById('bgm');
+        const secretBgm = document.getElementById('secret-bgm');
 
         // ⚠️ 請換成您的 Google Apps Script 網址 ⚠️
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        window.onload = function() {
-            fetchFrontLeaderboard();
-        };
+        window.onload = function() { fetchFrontLeaderboard(); };
 
-        // ✨ 切換下拉選單時，自動抓取該主題的排行榜
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list');
             const themeSelect = document.getElementById('theme-select');
@@ -231,7 +231,6 @@
             document.getElementById('front-board-title').innerText = `🏆 ${themeName} Top 5`;
             listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取排行榜中...</div>";
 
-            // 把選擇的主題參數傳給 Google
             const url = `${GOOGLE_API_URL}?action=get&theme=${currentTheme}`;
 
             fetch(url)
@@ -242,15 +241,13 @@
                     listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>此關卡還沒有紀錄，搶下第一名吧！</div>";
                     return;
                 }
-
                 board.forEach((player, index) => {
                     const row = document.createElement('div');
                     row.className = 'front-board-row';
                     let rankStr = `#${index + 1}`;
-                    if(index === 0) { rankStr = '🥇'; }
-                    if(index === 1) { rankStr = '🥈'; }
-                    if(index === 2) { rankStr = '🥉'; }
-                    
+                    if(index === 0) rankStr = '🥇';
+                    if(index === 1) rankStr = '🥈';
+                    if(index === 2) rankStr = '🥉';
                     row.innerHTML = `<span>${rankStr} ${player.name}</span> <span>${player.score} pts</span>`;
                     listDiv.appendChild(row);
                 });
@@ -290,19 +287,13 @@
 
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
-            if(inputName === "") {
-                alert("請輸入玩家姓名喔！");
-                document.getElementById('player-name').focus();
-                return;
-            }
+            if(inputName === "") { alert("請輸入玩家姓名喔！"); document.getElementById('player-name').focus(); return; }
 
             const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
             const hasBadWord = badWords.some(bad => cleanName.includes(bad));
             if(hasBadWord) {
                 alert("請使用有禮貌的名字喔！😇");
-                document.getElementById('player-name').value = "";
-                document.getElementById('player-name').focus();
-                return;
+                document.getElementById('player-name').value = ""; document.getElementById('player-name').focus(); return;
             }
 
             playerName = inputName;
@@ -310,6 +301,11 @@
 
             bgm.volume = 0.4;
             bgm.play().catch(e => console.log("BGM Error"));
+
+            // ✨ 設定當 67.mp3 播完時，自動把原本音樂播回來
+            secretBgm.onended = function() {
+                bgm.play().catch(e => console.log("BGM Resume Error"));
+            };
 
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('header').style.visibility = 'visible';
@@ -349,17 +345,17 @@
 
             const charsPerLine = Math.floor(area.clientWidth / charWidth);
             const lines = Math.floor(area.clientHeight / lineHeight);
-            
             const totalCapacity = Math.floor(charsPerLine * lines * 0.65); 
 
-            const words = [...currentVocab].sort(() => Math.random() - 0.5);
-            const totalWordChars = words.reduce((sum, w) => sum + w.length, 0);
+            // ✨ 關鍵：在這裡偷偷把 "ROCK" 加進去渲染名單，但絕對不放進 currentVocab 裡！
+            const renderWords = [...currentVocab, "ROCK"].sort(() => Math.random() - 0.5);
+            const totalWordChars = renderWords.reduce((sum, w) => sum + w.length, 0);
             
             let garbageBudget = totalCapacity - totalWordChars;
             if (garbageBudget < 0) garbageBudget = 100; 
-            const baseGarbagePerWord = Math.floor(garbageBudget / words.length);
+            const baseGarbagePerWord = Math.floor(garbageBudget / renderWords.length);
 
-            words.forEach(w => {
+            renderWords.forEach(w => {
                 let variance = Math.floor(baseGarbagePerWord * 0.3);
                 let currentGarbage = baseGarbagePerWord + (Math.floor(Math.random() * (variance * 2)) - variance);
                 if (currentGarbage < 0) currentGarbage = 0;
@@ -367,7 +363,9 @@
                 area.appendChild(document.createTextNode(getGarbage(currentGarbage)));
                 
                 const s = document.createElement('span');
-                s.className = 'target'; s.textContent = w; s.setAttribute('data-word', w);
+                s.className = 'target'; 
+                s.textContent = w; 
+                s.setAttribute('data-word', w);
                 area.appendChild(s);
             });
 
@@ -409,10 +407,33 @@
         function handleTap(e) {
             if (foundCount >= currentVocab.length) return;
             const isTarget = e.target.classList.contains('target');
-            const isFound = e.target.classList.contains('found');
+            const isFound = e.target.classList.contains('found') || e.target.classList.contains('found-egg');
             
             if (isTarget && !isFound) {
                 const w = e.target.getAttribute('data-word');
+                
+                // ✨ 處理隱藏彩蛋邏輯
+                if (w === "ROCK") {
+                    e.target.classList.add('found-egg');
+                    score += 100;
+                    document.getElementById('score-val').textContent = score;
+                    showBurst(e.clientX, e.clientY, "+100 🌟", "#f1c40f");
+                    
+                    // 音效切換
+                    bgm.pause();
+                    secretBgm.currentTime = 0;
+                    secretBgm.volume = 0.6;
+                    secretBgm.play().catch(err => console.log(err));
+
+                    // 顯示保密提示窗
+                    const modal = document.getElementById('secret-modal');
+                    modal.style.display = 'block';
+                    setTimeout(() => { modal.style.display = 'none'; }, 3000);
+                    
+                    return; // 找到彩蛋不列入通關條件，直接中斷
+                }
+
+                // 正常通關邏輯
                 e.target.classList.add('found');
                 score += 10; 
                 foundCount++;
@@ -420,7 +441,11 @@
                 showBurst(e.clientX, e.clientY, "+10", "#2ed573");
                 document.getElementById('bank-' + w).classList.add('completed');
                 document.getElementById('score-val').textContent = score;
-                if(foundCount === currentVocab.length) { playSfx('celebration'); calculateAndEndGame(); }
+                
+                if(foundCount === currentVocab.length) { 
+                    playSfx('celebration'); 
+                    calculateAndEndGame(); 
+                }
             } else if (e.target.closest('#game-area') && !isTarget && !isFound) {
                 score = Math.max(0, score - 2); 
                 playSfx('error');
@@ -442,6 +467,7 @@
         function calculateAndEndGame() {
             clearInterval(interval);
             bgm.pause();
+            secretBgm.pause(); // 確保遊戲結束時停止所有音樂
             
             let multiplier = 1.0;
             let tierName = "🐢 標準 (x1.0)";
@@ -466,7 +492,6 @@
             saveAndDisplayGlobalLeaderboard(finalScore, timeStr);
         }
 
-        // ✨ 傳送成績時一併附上主題參數
         function saveAndDisplayGlobalLeaderboard(finalScore, timeStr) {
             const listDiv = document.getElementById('leaderboard-list');
             const themeSelect = document.getElementById('theme-select');
@@ -482,31 +507,25 @@
             .then(response => response.json())
             .then(board => {
                 listDiv.innerHTML = "";
-                
                 if (!board || board.length === 0) {
                     listDiv.innerHTML = "<div style='text-align:center;'>目前還沒有紀錄，你就是第一名！</div>";
                     return;
                 }
-
                 board.forEach((player, index) => {
                     const row = document.createElement('div');
                     row.className = 'board-row';
-                    
                     let rankStr = `#${index + 1}`;
                     if(index === 0) { rankStr = '🥇'; row.classList.add('rank-1'); }
                     if(index === 1) { rankStr = '🥈'; row.classList.add('rank-2'); }
                     if(index === 2) { rankStr = '🥉'; row.classList.add('rank-3'); }
-
                     row.innerHTML = `<span>${rankStr} ${player.name} (${player.time})</span> <span>${player.score} pts</span>`;
                     listDiv.appendChild(row);
                 });
             })
             .catch(error => {
                 listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-weight:700;'>排行榜連線失敗 😢</div>";
-                console.error("Fetch Error:", error);
             });
         }
     </script>
 </body>
 </html>
-
