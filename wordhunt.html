@@ -21,7 +21,7 @@
 
         /* ✨ 漂浮的音樂控制按鈕 */
         .sound-toggle {
-            position: fixed; top: 15px; right: 15px;
+            position: fixed; top: 12px; right: 15px;
             background: white; border: 3px solid var(--success); border-radius: 50px;
             padding: 8px 15px; font-size: 16px; font-weight: 900;
             cursor: pointer; font-family: 'Quicksand', sans-serif; color: #2d3436;
@@ -30,12 +30,22 @@
         .sound-toggle:hover { transform: scale(1.05); }
         .sound-toggle:active { transform: scale(0.95); }
 
+        /* ✨ 關鍵修復：加入 padding-right 140px，強制保留右上角空間，防止與音效按鈕重疊 */
         #header {
             height: 60px; background: white; border-bottom: 2px solid #dfe6e9;
             display: flex; justify-content: space-around; align-items: center;
-            padding: 0 15px; flex-shrink: 0; visibility: hidden;
+            padding: 0 140px 0 10px; 
+            flex-shrink: 0; visibility: hidden;
         }
+        
         .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; }
+
+        .exit-btn {
+            background: #ff7675; color: white; border: none; padding: 8px 15px;
+            border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer;
+            transition: 0.2s; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #d63031;
+        }
+        .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #d63031; }
 
         #word-bank {
             background: var(--bank-bg); padding: 10px;
@@ -139,8 +149,13 @@
         .shake { animation: shake 0.3s linear; }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
 
+        /* ✨ 手機版 RWD 樣式微調 */
         @media (max-width: 768px) {
-            .sound-toggle { top: 10px; right: 10px; font-size: 14px; padding: 6px 12px; }
+            .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; }
+            #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } /* 手機版也保留安全距離 */
+            .stat-pill { font-size: 13px !important; padding: 4px 6px; }
+            .exit-btn { font-size: 13px; padding: 5px 8px; }
+            
             #start-overlay { padding-top: 10px; }
             #start-overlay h1 { font-size: 40px !important; margin-bottom: 5px; }
             #start-overlay p { font-size: 16px !important; margin-bottom: 10px !important; }
@@ -149,8 +164,6 @@
             #theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 10px !important; }
             .start-btn { font-size: 28px; padding: 10px 40px; margin-bottom: 10px; }
             
-            #header { padding: 0 5px; height: 50px; }
-            .stat-pill { font-size: 14px !important; padding: 4px 8px; }
             .bank-item { font-size: 14px; padding: 5px 8px; }
             #game-area { font-size: 22px !important; letter-spacing: 2px !important; padding: 10px !important; line-height: 1.15 !important; }
             .float-num { font-size: 70px !important; }
@@ -170,7 +183,7 @@
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
 
     <div id="start-overlay">
-        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Speedrun Hunt! ⚡</h1>
+        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Word Hunt! ⚡</h1>
         <p style="font-size: 18px; margin-bottom: 15px;">挑戰你的極限速度！</p>
         
         <div class="front-leaderboard">
@@ -194,7 +207,7 @@
         <div class="stat-pill">👤 <span id="display-name">Player</span></div>
         <div class="stat-pill">🏆 <span id="score-val" style="color:var(--primary); font-size:26px;">0</span></div>
         <div class="stat-pill">⏱️ <span id="timer-val">00m 00s</span></div>
-        <button onclick="location.href='index.html'" style="font-weight:900; border:none; background:none; cursor:pointer; color:#636e72;">回大廳</button>
+        <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
     </div>
 
     <div id="word-bank"></div>
@@ -217,7 +230,7 @@
             <h2 class="leaderboard-title" id="end-board-title">🌍 世界英雄榜</h2>
             <div id="leaderboard-list"></div>
         </div>
-        <button onclick="location.reload()" style="padding:15px 50px; font-size:24px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 30px;">再玩一次</button>
+        <button onclick="location.href='index.html'" style="padding:15px 50px; font-size:24px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 30px;">回大廳</button>
     </div>
 
     <script>
@@ -235,7 +248,7 @@
 
         let currentVocab = [], score = 0, foundCount = 0, seconds = 0, interval;
         let playerName = "Player"; 
-        let isMuted = false; // ✨ 記錄目前的靜音狀態
+        let isMuted = false; 
         
         const bgm = document.getElementById('bgm');
         const secretBgm = document.getElementById('secret-bgm');
@@ -245,9 +258,8 @@
 
         window.onload = function() { fetchFrontLeaderboard(); };
 
-        // ✨ 靜音切換功能
         function toggleSound(e) {
-            if (e) e.stopPropagation(); // 防止點擊按鈕時觸發背景點擊扣分
+            if (e) e.stopPropagation(); 
             isMuted = !isMuted;
             const btn = document.getElementById('sound-btn');
             
@@ -301,7 +313,7 @@
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSfx(type) {
-            if (isMuted) return; // ✨ 如果靜音開啟，直接不播放特效音
+            if (isMuted) return; 
             if (audioCtx.state === 'suspended') audioCtx.resume();
             
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
@@ -447,8 +459,7 @@
         }
 
         function handleTap(e) {
-            // ✨ 確保點擊靜音按鈕時，不會觸發遊戲的扣分機制
-            if (e.target.closest('.sound-toggle')) return;
+            if (e.target.closest('.sound-toggle') || e.target.closest('.exit-btn')) return;
 
             if (foundCount >= currentVocab.length) return;
             const isTarget = e.target.classList.contains('target');
@@ -569,3 +580,5 @@
     </script>
 </body>
 </html>
+
+
