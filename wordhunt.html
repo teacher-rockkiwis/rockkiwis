@@ -19,7 +19,6 @@
             overflow: hidden; display: flex; flex-direction: column; user-select: none;
         }
 
-        /* ✨ 漂浮的音樂控制按鈕 */
         .sound-toggle {
             position: fixed; top: 12px; right: 15px;
             background: white; border: 3px solid var(--success); border-radius: 50px;
@@ -30,7 +29,6 @@
         .sound-toggle:hover { transform: scale(1.05); }
         .sound-toggle:active { transform: scale(0.95); }
 
-        /* ✨ 關鍵修復：加入 padding-right 140px，強制保留右上角空間，防止與音效按鈕重疊 */
         #header {
             height: 60px; background: white; border-bottom: 2px solid #dfe6e9;
             display: flex; justify-content: space-around; align-items: center;
@@ -77,17 +75,13 @@
         .found { color: var(--primary) !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(108, 92, 231, 0.6); }
         .found-egg { color: #f1c40f !important; font-weight: 900 !important; text-shadow: 0 0 20px rgba(241, 196, 15, 0.8); }
 
-        #start-overlay {
+        #start-overlay, #end-msg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary); color: white;
             display: flex; flex-direction: column; justify-content: flex-start; align-items: center; 
             z-index: 20000; overflow-y: auto; padding: 30px 10px;
         }
-        #end-msg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.98); display: none; flex-direction: column; 
-            justify-content: center; align-items: center; z-index: 20000; overflow-y: auto; padding: 20px; text-align: center;
-        }
+        #start-overlay { background: var(--primary); color: white; }
+        #end-msg { background: rgba(255,255,255,0.98); display: none; text-align: center; }
 
         #secret-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -149,10 +143,9 @@
         .shake { animation: shake 0.3s linear; }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
 
-        /* ✨ 手機版 RWD 樣式微調 */
         @media (max-width: 768px) {
             .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; }
-            #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } /* 手機版也保留安全距離 */
+            #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } 
             .stat-pill { font-size: 13px !important; padding: 4px 6px; }
             .exit-btn { font-size: 13px; padding: 5px 8px; }
             
@@ -241,9 +234,7 @@
         };
 
         const badWords = [
-            "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl",
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "機掰", "雞掰", "擊敗", "智障", "白痴", "白癡", "垃圾", "沙小", "三小", "王八", "賤", "去死", "腦殘",
-            "操", "肏", "草泥馬", "操你", "媽的", "幹你娘", "幹您娘", "趕羚羊", "機車", "他媽", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ"
+            "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "幹", "靠北", "機掰", "智障", "白痴", "白癡", "垃圾", "沙小", "三小", "王八", "賤", "去死", "腦殘", "操", "肏", "草泥馬", "操你", "媽的", "幹你娘", "幹您娘", "趕羚羊", "機車", "他媽", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ"
         ];
 
         let currentVocab = [], score = 0, foundCount = 0, seconds = 0, interval;
@@ -253,7 +244,6 @@
         const bgm = document.getElementById('bgm');
         const secretBgm = document.getElementById('secret-bgm');
 
-        // ⚠️ 請換成您的 Google Apps Script 網址 ⚠️
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         window.onload = function() { fetchFrontLeaderboard(); };
@@ -285,9 +275,7 @@
             document.getElementById('front-board-title').innerText = `🏆 ${themeName} 英雄榜`;
             listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取排行榜中...</div>";
 
-            const url = `${GOOGLE_API_URL}?action=get&theme=${currentTheme}`;
-
-            fetch(url)
+            fetch(`${GOOGLE_API_URL}?action=get&theme=${currentTheme}`)
             .then(response => response.json())
             .then(board => {
                 listDiv.innerHTML = "";
@@ -343,13 +331,11 @@
 
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
-            if(inputName === "") { alert("請輸入玩家姓名喔！"); document.getElementById('player-name').focus(); return; }
+            if(inputName === "") { alert("請輸入玩家姓名喔！"); return; }
 
             const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
-            const hasBadWord = badWords.some(bad => cleanName.includes(bad));
-            if(hasBadWord) {
-                alert("請使用有禮貌的名字喔！😇");
-                document.getElementById('player-name').value = ""; document.getElementById('player-name').focus(); return;
+            if(badWords.some(bad => cleanName.includes(bad))) {
+                alert("請使用有禮貌的名字喔！😇"); return;
             }
 
             playerName = inputName;
@@ -357,17 +343,13 @@
 
             bgm.volume = 0.4;
             bgm.play().catch(e => console.log("BGM Error"));
-
-            secretBgm.onended = function() {
-                bgm.play().catch(e => console.log("BGM Resume Error"));
-            };
+            secretBgm.onended = function() { bgm.play(); };
 
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('header').style.visibility = 'visible';
             document.getElementById('word-bank').style.visibility = 'visible';
             
-            const key = document.getElementById('theme-select').value;
-            currentVocab = themes[key];
+            currentVocab = themes[document.getElementById('theme-select').value];
             
             initBoard();
             seconds = 0;
@@ -402,7 +384,13 @@
             const lines = Math.floor(area.clientHeight / lineHeight);
             const totalCapacity = Math.floor(charsPerLine * lines * 0.65); 
 
-            const renderWords = [...currentVocab, "ROCK"].sort(() => Math.random() - 0.5);
+            // ✨ 只有 1% 的機率，才會把 ROCK 偷偷塞進去生成清單裡！
+            let renderWords = [...currentVocab];
+            if (Math.random() < 0.01) {
+                renderWords.push("ROCK");
+            }
+            renderWords.sort(() => Math.random() - 0.5);
+
             const totalWordChars = renderWords.reduce((sum, w) => sum + w.length, 0);
             
             let garbageBudget = totalCapacity - totalWordChars;
@@ -417,9 +405,7 @@
                 area.appendChild(document.createTextNode(getGarbage(currentGarbage)));
                 
                 const s = document.createElement('span');
-                s.className = 'target'; 
-                s.textContent = w; 
-                s.setAttribute('data-word', w);
+                s.className = 'target'; s.textContent = w; s.setAttribute('data-word', w);
                 area.appendChild(s);
             });
 
@@ -475,8 +461,7 @@
                     showBurst(e.clientX, e.clientY, "+100 🌟", "#f1c40f");
                     
                     bgm.pause();
-                    secretBgm.currentTime = 0;
-                    secretBgm.volume = 0.6;
+                    secretBgm.currentTime = 0; secretBgm.volume = 0.6;
                     secretBgm.play().catch(err => console.log(err));
 
                     const modal = document.getElementById('secret-modal');
@@ -509,20 +494,16 @@
 
         function showBurst(x, y, txt, color) {
             const div = document.createElement('div');
-            div.className = 'float-num';
-            div.textContent = txt; div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color;
+            div.className = 'float-num'; div.textContent = txt; div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color;
             document.body.appendChild(div);
             setTimeout(() => div.remove(), 800);
         }
 
         function calculateAndEndGame() {
             clearInterval(interval);
-            bgm.pause();
-            secretBgm.pause(); 
+            bgm.pause(); secretBgm.pause(); 
             
-            let multiplier = 1.0;
-            let tierName = "🐢 標準 (x1.0)";
-            
+            let multiplier = 1.0; let tierName = "🐢 標準 (x1.0)";
             if (seconds <= 60) { multiplier = 3.0; tierName = "⚡ SSS 級 (x3.0)"; }
             else if (seconds <= 120) { multiplier = 2.0; tierName = "🚀 SS 級 (x2.0)"; }
             else if (seconds <= 180) { multiplier = 1.5; tierName = "🏃 S 級 (x1.5)"; }
@@ -539,7 +520,6 @@
             document.getElementById('final-total-display').textContent = finalScore;
 
             document.getElementById('end-msg').style.display = "flex";
-
             saveAndDisplayGlobalLeaderboard(finalScore, timeStr);
         }
 
@@ -554,28 +534,14 @@
             
             const url = `${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${finalScore}&time=${encodeURIComponent(timeStr)}&theme=${currentTheme}`;
 
-            fetch(url)
-            .then(response => response.json())
-            .then(board => {
+            fetch(url).then(r => r.json()).then(board => {
                 listDiv.innerHTML = "";
-                if (!board || board.length === 0) {
-                    listDiv.innerHTML = "<div style='text-align:center; padding:10px;'>目前還沒有紀錄，你就是第一名！</div>";
-                    return;
-                }
-                board.forEach((player, index) => {
-                    const row = document.createElement('div');
-                    row.className = 'board-row';
-                    let rankStr = `#${index + 1}`;
-                    if(index === 0) { rankStr = '🥇'; row.classList.add('rank-1'); }
-                    if(index === 1) { rankStr = '🥈'; row.classList.add('rank-2'); }
-                    if(index === 2) { rankStr = '🥉'; row.classList.add('rank-3'); }
-                    row.innerHTML = `<span>${rankStr} ${player.name} (${player.time})</span> <span>${player.score} pts</span>`;
-                    listDiv.appendChild(row);
+                if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px;'>目前還沒有紀錄，你就是第一名！</div>"; return; }
+                board.forEach((p, i) => {
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name} (${p.time})</span><span>${p.score} pts</span></div>`;
                 });
-            })
-            .catch(error => {
-                listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-weight:700;'>排行榜連線失敗 😢</div>";
-            });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-weight:700;'>排行榜連線失敗 😢</div>");
         }
     </script>
 </body>
