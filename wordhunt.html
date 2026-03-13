@@ -225,7 +225,22 @@
         </div>
         <button onclick="location.href='index.html'" style="padding:15px 50px; font-size:24px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 30px;">回大廳</button>
     </div>
-
+// 🛡️ 防外掛與防作弊系統 (Anti-Cheat)
+        document.addEventListener('contextmenu', event => event.preventDefault()); // 禁用滑鼠右鍵
+        document.addEventListener('keydown', function(e) {
+            // 禁用 F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+            if (e.keyCode === 123 || 
+               (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
+               (e.ctrlKey && e.keyCode === 85)) { 
+                e.preventDefault();
+                return false;
+            }
+        });
+        // 啟動無限 Debugger 迴圈與自動清除 Console
+        setInterval(function() {
+            try { (function() { return false; }['constructor']('debugger')()); } catch(err) {}
+            console.clear();
+        }, 1000);
     <script>
         const themes = {
             body: ["eye", "eyes", "ear", "ears", "head", "heads", "nose", "noses", "mouth", "mouths", "arm", "arms", "hand", "hands", "shoulder", "shoulders", "foot", "feet", "leg", "legs", "hurt"],
