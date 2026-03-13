@@ -91,6 +91,12 @@
         }
         @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
+        /* ✨ 防止 iPad 顯示最後一個字母的黑魔法 ✨ */
+        .secure-input {
+            -webkit-text-security: disc;
+            text-security: disc;
+        }
+
         #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 20px 10px; }
         #start-overlay { background: var(--primary); color: white; } #end-msg { background: rgba(255,255,255,0.98); display: none; text-align: center; justify-content: center;}
         
@@ -150,12 +156,15 @@
         <div class="admin-lock" onclick="showPwdModal()">🔒</div>
     </div>
 
-    <!-- ✨ 隱藏字元的密碼輸入視窗 ✨ -->
+    <!-- ✨ 防偷窺的密碼輸入視窗 ✨ -->
     <div id="pwd-modal">
         <div class="pwd-box">
             <h3 style="margin-top:0; font-size:24px; color:var(--primary);">🛡️ 教師解鎖</h3>
-            <!-- input type="password" 讓輸入的內容變成黑點點 -->
-            <input type="password" id="admin-pwd-input" placeholder="請輸入通行密碼" style="font-size:20px; padding:12px; width:100%; margin-bottom:20px; border-radius:10px; border:2px solid #bdc3c7; text-align:center; outline:none; font-family: 'Quicksand', sans-serif;" onkeypress="if(event.key === 'Enter') verifyPwd()">
+            
+            <!-- 將 type 改成 text 騙過 iPad，再用 CSS 的 secure-input 把它偽裝成點點 -->
+            <!-- autocomplete, autocorrect, autocapitalize 關掉，防止鍵盤上方跑出字詞預測 -->
+            <input type="text" id="admin-pwd-input" class="secure-input" placeholder="請輸入通行密碼" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="font-size:20px; padding:12px; width:100%; margin-bottom:20px; border-radius:10px; border:2px solid #bdc3c7; text-align:center; outline:none; font-family: 'Quicksand', sans-serif;" onkeypress="if(event.key === 'Enter') verifyPwd()">
+            
             <div style="display:flex; gap:10px;">
                 <button onclick="closePwdModal()" style="flex:1; padding:12px; background:#bdc3c7; color:white; border:none; border-radius:10px; font-weight:900; font-size:16px; cursor:pointer;">取消</button>
                 <button onclick="verifyPwd()" style="flex:1; padding:12px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:900; font-size:16px; cursor:pointer;">確認</button>
@@ -203,7 +212,13 @@
     </div>
 
     <script>
-        const badWords = ["fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "幹", "靠北", "機掰", "智障", "白痴", "白癡", "垃圾", "操", "肏", "草泥馬", "媽的", "ㄘㄠˋ", "ㄍㄢˋ"];
+        const badWords = [
+            "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl",
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "智障", "白痴", "白癡", "北七", "北漆", "垃圾", "沙小", "三小", "王八", "賤", "去死", "死全家", "死媽", "死爸", "孤兒", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障",
+            "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04",
+            "屁", "屎", "大便", "吃屎", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚",
+            "林北", "恁爸", "破麻", "綠茶", "傻逼", "沙雕", "🖕", "💩","艮","乾",
+        ];
 
         let clicks = 0;
         let playerName = "Player";
@@ -282,19 +297,16 @@
             document.getElementById('pwd-modal').style.display = 'none';
         }
 
-        // ✨ 高手級防破解驗證 (字元位移加密法) ✨
         function verifyPwd() {
-            const pwdInput = document.getElementById('admin-pwd-input').value;
+            const pwdInput = document.getElementById('admin-pwd-input').value.toLowerCase();
             
-            // 這是 "rock888" 每個字母轉換為數字後再加 10 的結果陣列
-            // 如果學生按 F12，他們只會看到這串數字，完全不會知道密碼是 rock888
+            // "rock888" 字元位移加密
             const secretMap = [124, 121, 109, 117, 66, 66, 66]; 
             
             let isMatch = (pwdInput.length === secretMap.length);
             
             if (isMatch) {
                 for (let i = 0; i < pwdInput.length; i++) {
-                    // 把輸入的字元轉換成數字並加 10，跟上面的密碼地圖比對
                     if (pwdInput.charCodeAt(i) + 10 !== secretMap[i]) {
                         isMatch = false; 
                         break;
@@ -426,10 +438,8 @@
                     let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
                     listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span>${p.score} 次</span></div>`;
                 });
-            }).catch(() => listDiv.innerHTML = "<div style='color:var(--error); text-align:center;'>連線失敗</div>");
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
         }
     </script>
 </body>
 </html>
-
-
