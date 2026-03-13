@@ -6,10 +6,7 @@
     <title>Dr. ROCK - Grammar ER</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #0984e3; --success: #00b894; --error: #d63031;
-            --bg: #dfe6e9; --bed-bg: #ffffff;
-        }
+        :root { --primary: #0984e3; --success: #00b894; --error: #d63031; --bg: #dfe6e9; --bed-bg: #ffffff; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { background-color: var(--bg); margin: 0; padding: 0; height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
         .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: #2d3436; box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 50000; transition: 0.2s; }
@@ -102,30 +99,23 @@
         </div>
         <button onclick="location.href='index.html'" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">回大廳</button>
     </div>
-// 🛡️ 防外掛與防作弊系統 (Anti-Cheat)
-        document.addEventListener('contextmenu', event => event.preventDefault()); // 禁用滑鼠右鍵
+
+    <script>
+        // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
+        document.addEventListener('contextmenu', event => event.preventDefault()); 
         document.addEventListener('keydown', function(e) {
-            // 禁用 F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-            if (e.keyCode === 123 || 
-               (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
-               (e.ctrlKey && e.keyCode === 85)) { 
-                e.preventDefault();
-                return false;
+            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
+                e.preventDefault(); return false; 
             }
         });
-        // 啟動無限 Debugger 迴圈與自動清除 Console
-        setInterval(function() {
-            try { (function() { return false; }['constructor']('debugger')()); } catch(err) {}
-            console.clear();
-        }, 1000);
-    <script>
+        setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
+
         const badWords = [
             "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl",
             "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "機掰", "雞掰", "擊敗", "智障", "白痴", "白癡", "垃圾", "沙小", "三小", "王八", "賤", "去死", "腦殘",
             "操", "肏", "草泥馬", "操你", "媽的", "幹你娘", "幹您娘", "趕羚羊", "機車", "他媽", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ",
             "屁", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "林北", "恁爸", "🖕"
         ];
-
         const grammarData = {
             "er-level1": { "hurt": ["eyes", "ears", "hands", "feet", "legs"], "hurts": ["eye", "ear", "hand", "foot", "leg", "head", "nose", "mouth"] },
             "er-level2": { "hurt": ["eyes", "ears", "arms", "hands", "shoulders", "feet", "legs", "teeth"], "hurts": ["eye", "ear", "arm", "hand", "shoulder", "foot", "leg", "head", "nose", "mouth", "back", "neck", "tooth"] },
@@ -179,7 +169,8 @@
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("請輸入醫生姓名喔！"); return; }
-            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請使用有禮貌的名字喔！😇"); return; }
+            const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
+            if(badWords.some(bad => cleanName.includes(bad))) { alert("請使用有禮貌的名字喔！😇"); return; }
             playerName = inputName; document.getElementById('display-name').innerText = "Dr. " + playerName;
             bgm.volume = 0.4; bgm.play().catch(e => console.log(e)); secretBgm.onended = function() { bgm.play(); };
             document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('hospital-ward').style.visibility = 'visible';
@@ -194,7 +185,6 @@
             let bedIdx = emptyBeds[Math.floor(Math.random() * emptyBeds.length)]; activeBeds[bedIdx] = true;
             const bedEl = document.getElementById(`bed-${bedIdx}`), bubbleEl = document.getElementById(`bubble-${bedIdx}`), emojiEl = document.getElementById(`emoji-${bedIdx}`), btnsEl = document.getElementById(`btns-${bedIdx}`);
 
-            // ✨ 彩蛋機率調降為 1%
             let isEasterEgg = Math.random() < 0.01;
 
             if (isEasterEgg) {
