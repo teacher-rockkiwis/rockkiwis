@@ -6,35 +6,111 @@
     <title>What The Dog Doin'?</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #e67e22; --secondary: #d35400; --success: #27ae60; --error: #c0392b; --bg: #fdf6e3; --text-dark: #2c3e50; }
+        :root {
+            --primary: #e67e22; --secondary: #d35400; --success: #27ae60; --error: #c0392b;
+            --bg: #fdf6e3; --text-dark: #2c3e50;
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        body { background-color: var(--bg); margin: 0; padding: 0; height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
-        .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: var(--text-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 50000; transition: 0.2s; }
+
+        body {
+            background-color: var(--bg); margin: 0; padding: 0;
+            height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif;
+            overflow: hidden; display: flex; flex-direction: column; user-select: none;
+        }
+
+        .sound-toggle {
+            position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success);
+            border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900;
+            cursor: pointer; font-family: 'Quicksand', sans-serif; color: var(--text-dark);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 50000; transition: 0.2s;
+        }
         .sound-toggle:hover { transform: scale(1.05); } .sound-toggle:active { transform: scale(0.95); }
-        #header { height: 60px; background: white; border-bottom: 3px solid var(--primary); display: flex; justify-content: space-around; align-items: center; padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; z-index: 100; }
+
+        #header {
+            height: 60px; background: white; border-bottom: 3px solid var(--primary);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; z-index: 100;
+        }
         .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; color: var(--text-dark); }
-        .exit-btn { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #c0392b; }
+        .exit-btn {
+            background: #e74c3c; color: white; border: none; padding: 8px 15px;
+            border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer;
+            transition: 0.2s; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #c0392b;
+        }
         .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #c0392b; }
-        #game-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; visibility: hidden; width: 100%; max-width: 800px; margin: 0 auto; }
-        #big-counter { font-size: 80px; font-weight: 900; color: var(--primary); text-shadow: 4px 4px 0px rgba(0,0,0,0.1); margin-bottom: 20px; font-variant-numeric: tabular-nums; }
-        #doge-img { width: 350px; max-width: 85%; object-fit: contain; cursor: pointer; -webkit-user-drag: none; user-select: none; transition: transform 0.05s linear; filter: drop-shadow(0 15px 15px rgba(0,0,0,0.2)); }
-        #upload-btn { margin-top: 40px; background: var(--success); color: white; border: none; padding: 15px 40px; font-size: 24px; border-radius: 50px; font-weight: 900; font-family: 'Quicksand', sans-serif; cursor: pointer; box-shadow: 0 8px 0 #219150; transition: 0.2s; }
+
+        #game-area {
+            flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 10px; visibility: hidden; width: 100%; max-width: 800px; margin: 0 auto;
+        }
+
+        #big-counter {
+            font-size: 80px; font-weight: 900; color: var(--primary);
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.1); margin-bottom: 20px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #doge-img {
+            width: 350px; max-width: 85%; object-fit: contain; cursor: pointer;
+            -webkit-user-drag: none; user-select: none;
+            transition: transform 0.05s linear; 
+            filter: drop-shadow(0 15px 15px rgba(0,0,0,0.2));
+        }
+        
+        #upload-btn {
+            margin-top: 40px; background: var(--success); color: white; border: none;
+            padding: 15px 40px; font-size: 24px; border-radius: 50px; font-weight: 900;
+            font-family: 'Quicksand', sans-serif; cursor: pointer; box-shadow: 0 8px 0 #219150; transition: 0.2s;
+        }
         #upload-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #219150; }
+
+        /* ✨ 鎖定畫面 Overlay ✨ */
+        #locked-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; z-index: 40000; text-align: center;
+        }
+        .locked-box {
+            background: white; padding: 40px 30px; border-radius: 25px; text-align: center;
+            max-width: 90%; width: 450px; border: 5px solid #f39c12; box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+        }
+        /* ✨ 隱藏的後門按鈕 ✨ */
+        .admin-lock {
+            position: fixed; bottom: 15px; right: 15px; font-size: 20px; opacity: 0.3; cursor: pointer; z-index: 50000;
+        }
+
         #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 20px 10px; }
         #start-overlay { background: var(--primary); color: white; } #end-msg { background: rgba(255,255,255,0.98); display: none; text-align: center; justify-content: center;}
+        
         .name-input { font-size: 24px; padding: 12px 20px; border-radius: 15px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 90%; max-width: 350px; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .start-btn { background: var(--success); color: white; border: none; padding: 15px 40px; font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #27ae60; margin-bottom: 20px; }
+
         .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: var(--text-dark); margin-top: 20px;}
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
-        #front-leaderboard-list { max-height: 200px; overflow-y: auto; padding-right: 5px; } #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
+        #front-leaderboard-list { max-height: 200px; overflow-y: auto; padding-right: 5px; }
+        #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
         .front-board-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
+
         .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; }
         .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: var(--text-dark); text-align: center;}
         .leaderboard-title { font-size: 20px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center; border-top: 2px dashed #ddd; padding-top: 15px; }
-        #leaderboard-list { max-height: 200px; overflow-y: auto; } .board-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #dfe6e9; font-size: 16px; font-weight: 700; color: var(--text-dark);}
+        #leaderboard-list { max-height: 200px; overflow-y: auto; }
+        .board-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #dfe6e9; font-size: 16px; font-weight: 700; color: var(--text-dark);}
+
         .click-float { position: fixed; pointer-events: none; font-weight: 900; font-size: 30px; color: #d35400; z-index: 30000; animation: floatUp 0.6s forwards; text-shadow: 2px 2px 0px white; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-50px) scale(1.5); opacity: 0; } }
-        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 100px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay h1 { font-size: 36px !important; } #big-counter { font-size: 60px; } #doge-img { width: 280px; } #upload-btn { font-size: 20px; padding: 12px 30px; } }
+
+        @media (max-width: 768px) {
+            .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; }
+            #header { padding: 0 100px 0 5px; height: 50px; gap: 5px; } 
+            .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; }
+            #start-overlay h1 { font-size: 36px !important; }
+            #big-counter { font-size: 60px; }
+            #doge-img { width: 280px; }
+            #upload-btn { font-size: 20px; padding: 12px 30px; }
+            .locked-box { padding: 30px 20px; }
+        }
     </style>
 </head>
 <body>
@@ -43,7 +119,28 @@
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
 
-    <div id="start-overlay">
+    <!-- ✨ 狗狗休假中：時間防護牆 ✨ -->
+    <div id="locked-overlay">
+        <div class="locked-box">
+            <h2 style="color:#e67e22; font-size:32px; margin-top:0; margin-bottom:10px;">🐶 狗狗休假中...</h2>
+            <p style="font-size:18px; font-weight:700; color:#2c3e50; line-height:1.6; margin-bottom: 20px;">
+                網址被你抓到了！<br>
+                但我們只在 <strong style="color:#e74c3c; font-size: 22px;">週五 17:00 ~ 週日 22:00</strong> 開放喔！
+            </p>
+            <div style="background: #f1f2f6; padding: 15px; border-radius: 15px;">
+                <div style="font-size: 16px; color: #636e72; font-weight: 900; margin-bottom: 5px;">距離大門解鎖還有：</div>
+                <div id="modal-timer" style="font-size: 32px; font-weight: 900; color: #e74c3c; font-variant-numeric: tabular-nums;">
+                    -- : -- : --
+                </div>
+            </div>
+            <button onclick="location.href='index.html'" style="background:#7f8c8d; color:white; border:none; padding:10px 20px; border-radius:50px; font-size:16px; font-weight:900; cursor:pointer; margin-top:20px;">回遊戲大廳</button>
+        </div>
+        <!-- 老師專屬後門按鈕 -->
+        <div class="admin-lock" onclick="adminBypass()">🔒</div>
+    </div>
+
+    <!-- 正常遊戲開始畫面 -->
+    <div id="start-overlay" style="display:none;">
         <h1 style="font-size: 45px; margin-top: 30px; margin-bottom: 5px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">🐶 What The Dog Doin?</h1>
         <p style="font-size: 16px; margin-bottom: 20px;">無情連點大挑戰！測試你的手速極限！</p>
         
@@ -71,7 +168,9 @@
     <div id="end-msg">
         <h1 id="end-title" style="font-size: 40px; color: var(--primary); margin: 0; margin-top: 10px;">手速結算！🎉</h1>
         <div class="result-panel">
-            <div class="score-breakdown">瘋狂點擊次數：<br><span id="final-total-display" style="color:var(--error); font-size:40px;">0</span> 次</div>
+            <div class="score-breakdown">
+                瘋狂點擊次數：<br><span id="final-total-display" style="color:var(--error); font-size:40px;">0</span> 次
+            </div>
             <h2 class="leaderboard-title" id="end-board-title">🌍 點擊狂人排行榜</h2>
             <div id="leaderboard-list"></div>
         </div>
@@ -80,82 +179,207 @@
     </div>
 
     <script>
-        // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
-        document.addEventListener('contextmenu', event => event.preventDefault()); 
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
-                e.preventDefault(); return false; 
-            }
-        });
-        setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
+        const badWords = ["fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "幹", "靠北", "機掰", "智障", "白痴", "白癡", "垃圾", "操", "肏", "草泥馬", "媽的", "ㄘㄠˋ", "ㄍㄢˋ"];
 
-        const badWords = [
-            "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl",
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "機掰", "雞掰", "擊敗", "智障", "白痴", "白癡", "垃圾", "沙小", "三小", "王八", "賤", "去死", "腦殘",
-            "操", "肏", "草泥馬", "操你", "媽的", "幹你娘", "幹您娘", "趕羚羊", "機車", "他媽", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ",
-            "屁", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "林北", "恁爸", "🖕"
-        ];
+        let clicks = 0;
+        let playerName = "Player";
+        let isMuted = false;
+        let isAdmin = false; // 老師後門權限
+        let countdownInterval;
 
-        let clicks = 0, playerName = "Player", isMuted = false;
-        const sfxWtdd = document.getElementById('sfx-wtdd'), dogeImg = document.getElementById('doge-img'), bigCounter = document.getElementById('big-counter'), headerScore = document.getElementById('score-val');
+        const sfxWtdd = document.getElementById('sfx-wtdd');
+        const dogeImg = document.getElementById('doge-img');
+        const bigCounter = document.getElementById('big-counter');
+        const headerScore = document.getElementById('score-val');
+        
+        // ⚠️ 請換成您的 Google Apps Script 網址 ⚠️
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        window.onload = function() { fetchFrontLeaderboard(); setupDogeInteractions(); };
+        window.onload = function() { 
+            checkTimeAndLock();
+            countdownInterval = setInterval(checkTimeAndLock, 1000);
+        };
+
+        // ✨ 檢查時間並決定是否鎖定網頁
+        function checkTimeAndLock() {
+            if (isAdmin) return; // 如果老師開了後門，直接無視時間限制
+
+            const now = new Date();
+            const day = now.getDay();
+            const hours = now.getHours();
+
+            // 開放條件：週五(5) 17:00 之後 ~ 週日(0) 22:00 之前
+            const isOpen = (day === 5 && hours >= 17) || (day === 6) || (day === 0 && hours < 22);
+
+            if (isOpen) {
+                // 時間到了，自動解鎖！
+                clearInterval(countdownInterval);
+                document.getElementById('locked-overlay').style.display = 'none';
+                document.getElementById('start-overlay').style.display = 'flex';
+                fetchFrontLeaderboard();
+                setupDogeInteractions();
+            } else {
+                // 還沒到時間，顯示倒數
+                document.getElementById('locked-overlay').style.display = 'flex';
+                updateModalCountdown(now, day, hours);
+            }
+        }
+
+        // ✨ 更新防護牆上的倒數計時
+        function updateModalCountdown(now, day, hours) {
+            let nextOpen = new Date(now);
+            let daysToFriday = 0;
+
+            if (day === 5 && hours < 17) {
+                daysToFriday = 0; // 今天下午就開
+            } else if (day === 0 && hours >= 22) {
+                daysToFriday = 5; // 週日晚上關閉後，等下週五
+            } else {
+                daysToFriday = (5 - day + 7) % 7; // 平日等週五
+            }
+
+            nextOpen.setDate(now.getDate() + daysToFriday);
+            nextOpen.setHours(17, 0, 0, 0);
+
+            const diff = nextOpen - now;
+            
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+            const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+            const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+
+            let timeStr = d > 0 ? `${d}天 ${h}:${m}:${s}` : `${h}:${m}:${s}`;
+            document.getElementById('modal-timer').innerHTML = timeStr;
+        }
+
+        // ✨ 老師專屬解鎖密碼
+        function adminBypass() {
+            let pwd = prompt("🔒 教師測試模式，請輸入通行密碼：");
+            if (pwd === "rock888") {
+                isAdmin = true;
+                clearInterval(countdownInterval);
+                alert("✅ 密碼正確！防護牆已暫時解除。");
+                document.getElementById('locked-overlay').style.display = 'none';
+                document.getElementById('start-overlay').style.display = 'flex';
+                fetchFrontLeaderboard();
+                setupDogeInteractions();
+            } else if (pwd !== null) {
+                alert("❌ 密碼錯誤！");
+            }
+        }
 
         function toggleSound(e) {
-            if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn');
+            if (e) e.stopPropagation(); isMuted = !isMuted; 
+            const btn = document.getElementById('sound-btn');
             if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; sfxWtdd.muted = true; } 
             else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; sfxWtdd.muted = false; }
         }
 
         function fetchFrontLeaderboard() {
-            const listDiv = document.getElementById('front-leaderboard-list'); listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            const listDiv = document.getElementById('front-leaderboard-list');
+            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
             fetch(`${GOOGLE_API_URL}?action=get&theme=doge-clicker`).then(response => response.json()).then(board => {
-                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px;'>目前無紀錄，快來搶下首殺！</div>"; return; }
-                board.slice(0, 10).forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='front-board-row'><span>${rankStr} ${p.name}</span><span>${p.score} 次</span></div>`; });
+                listDiv.innerHTML = "";
+                if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px;'>目前無紀錄，快來搶下首殺！</div>"; return; }
+                board.slice(0, 10).forEach((p, i) => {
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
+                    listDiv.innerHTML += `<div class='front-board-row'><span>${rankStr} ${p.name}</span><span>${p.score} 次</span></div>`;
+                });
             }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗 😢</div>");
         }
 
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("請輸入姓名喔！"); return; }
-            const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
-            if(badWords.some(bad => cleanName.includes(bad))) { alert("請保持禮貌喔！😇"); return; }
-            playerName = inputName; document.getElementById('display-name').innerText = playerName;
-            document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('game-area').style.visibility = 'visible';
-            clicks = 0; updateCounterDisplay();
+            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
+
+            playerName = inputName; 
+            document.getElementById('display-name').innerText = playerName;
+
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('header').style.visibility = 'visible';
+            document.getElementById('game-area').style.visibility = 'visible';
+            
+            clicks = 0; 
+            updateCounterDisplay();
         }
 
         function setupDogeInteractions() {
             const pressEvent = (e) => {
-                e.preventDefault(); if (e.type === 'touchstart' && e.touches.length > 1) return;
-                dogeImg.src = 'wtdd.png'; dogeImg.style.transform = 'scale(0.95)';
-                if (!isMuted) { sfxWtdd.currentTime = 0; sfxWtdd.play().catch(err => console.log(err)); }
-                clicks++; updateCounterDisplay(); createClickEffect(e);
+                e.preventDefault(); 
+                if (e.type === 'touchstart' && e.touches.length > 1) return; 
+
+                dogeImg.src = 'wtdd.png';
+                dogeImg.style.transform = 'scale(0.95)'; 
+
+                if (!isMuted) {
+                    sfxWtdd.currentTime = 0;
+                    sfxWtdd.play().catch(err => console.log(err));
+                }
+
+                clicks++;
+                updateCounterDisplay();
+                createClickEffect(e);
             };
-            const releaseEvent = (e) => { e.preventDefault(); dogeImg.src = 'shiba.png'; dogeImg.style.transform = 'scale(1)'; };
-            dogeImg.addEventListener('mousedown', pressEvent); dogeImg.addEventListener('touchstart', pressEvent, { passive: false });
-            dogeImg.addEventListener('mouseup', releaseEvent); dogeImg.addEventListener('touchend', releaseEvent); dogeImg.addEventListener('mouseleave', releaseEvent);
+
+            const releaseEvent = (e) => {
+                e.preventDefault();
+                dogeImg.src = 'shiba.png';
+                dogeImg.style.transform = 'scale(1)';
+            };
+
+            dogeImg.addEventListener('mousedown', pressEvent);
+            dogeImg.addEventListener('touchstart', pressEvent, { passive: false });
+            dogeImg.addEventListener('mouseup', releaseEvent);
+            dogeImg.addEventListener('touchend', releaseEvent);
+            dogeImg.addEventListener('mouseleave', releaseEvent); 
         }
 
-        function updateCounterDisplay() { bigCounter.innerText = clicks; headerScore.innerText = clicks; }
+        function updateCounterDisplay() {
+            bigCounter.innerText = clicks;
+            headerScore.innerText = clicks;
+        }
 
         function createClickEffect(e) {
-            let x, y; if (e.touches && e.touches.length > 0) { x = e.touches[0].clientX; y = e.touches[0].clientY; } else { x = e.clientX; y = e.clientY; }
+            let x, y;
+            if (e.touches && e.touches.length > 0) {
+                x = e.touches[0].clientX; y = e.touches[0].clientY;
+            } else {
+                x = e.clientX; y = e.clientY;
+            }
+
             x += (Math.random() * 40 - 20); y += (Math.random() * 40 - 20);
-            const div = document.createElement('div'); div.className = 'click-float'; div.innerText = "+1"; div.style.left = x + 'px'; div.style.top = y + 'px'; document.body.appendChild(div); setTimeout(() => div.remove(), 600);
+
+            const div = document.createElement('div');
+            div.className = 'click-float'; div.innerText = "+1";
+            div.style.left = x + 'px'; div.style.top = y + 'px';
+            document.body.appendChild(div);
+            
+            setTimeout(() => div.remove(), 600);
         }
 
         function endGame() {
             if (clicks === 0) { alert("你還沒點擊呢！"); return; }
-            document.getElementById('final-total-display').textContent = clicks; document.getElementById('end-msg').style.display = "flex";
-            const listDiv = document.getElementById('leaderboard-list'); listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:18px;'>📡 正在上傳手速紀錄...</div>";
+
+            document.getElementById('final-total-display').textContent = clicks;
+            document.getElementById('end-msg').style.display = "flex";
+
+            const listDiv = document.getElementById('leaderboard-list');
+            listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:18px;'>📡 正在上傳手速紀錄...</div>";
+            
             const url = `${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${clicks}&time=Clicker&theme=doge-clicker`;
+
             fetch(url).then(r => r.json()).then(board => {
-                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div>你是第一個紀錄保持人！</div>"; return; }
-                board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span>${p.score} 次</span></div>`; });
+                listDiv.innerHTML = "";
+                if (!board || board.length === 0) { listDiv.innerHTML = "<div>你是第一個紀錄保持人！</div>"; return; }
+                board.forEach((p, i) => {
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span>${p.score} 次</span></div>`;
+                });
             }).catch(() => listDiv.innerHTML = "<div style='color:var(--error); text-align:center;'>連線失敗</div>");
         }
     </script>
 </body>
 </html>
+
+
