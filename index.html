@@ -105,8 +105,8 @@
         }
         .game-card:active .play-btn { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
 
-        /* 週末限定鎖定視窗設計 */
-        #weekend-modal {
+        /* 週末限定鎖定與警告視窗共用背景 */
+        .overlay-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); z-index: 99999; justify-content: center; align-items: center;
         }
@@ -115,6 +115,17 @@
             max-width: 90%; width: 450px; border: 5px solid #f39c12;
             box-shadow: 0 15px 30px rgba(0,0,0,0.5); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        
+        /* 嚴肅警告視窗特殊樣式 */
+        .warning-content {
+            border-color: #e74c3c;
+        }
+        .warning-btn {
+            background: #e74c3c; color: white; border: none; padding: 12px 30px; border-radius: 50px;
+            font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 0 #c0392b; transition: 0.1s; margin-top: 10px;
+        }
+        .warning-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #c0392b; }
+
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         @media (max-width: 768px) {
@@ -124,6 +135,7 @@
             .game-container { flex-direction: column; align-items: center; gap: 20px; margin-bottom: 40px;}
             .game-card { width: 100%; max-width: 350px; padding: 25px; }
             .game-icon { font-size: 50px; width: 100px; height: 100px; line-height: 100px; }
+            .modal-content { padding: 30px 20px; }
         }
     </style>
 </head>
@@ -175,16 +187,13 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
-<!-- 新遊戲：發音極速特快車 -->
-        <a href="phonics.html" class="game-card" style="border-color:transparent; transition:all 0.2s;" onmouseover="this.style.borderColor='#00cec9'" onmouseout="this.style.borderColor='transparent'">
-            <div class="game-icon" style="background: #00b894; color: white; filter: drop-shadow(0 0 10px rgba(0, 206, 201, 0.5));">🚀</div>
-            <h2 class="game-title">Phonics Hyperdrive</h2>
-            <p class="game-desc">發音極速特快車！<br>拒絕無聊慢車！在三條軌道間切換，找出正確發音並達成 5x 狂熱連擊！</p>
-            <div class="play-btn" style="background: #00cec9;">PLAY NOW</div>
-            
+        <a href="phonics.html" class="game-card card-7">
+            <div class="game-icon">📦</div>
+            <h2 class="game-title">Phonics Express</h2>
+            <p class="game-desc">音波快遞公司！<br>聽發音分辨單字，將神秘包裹送到正確的輸送帶上！</p>
+            <div class="play-btn">PLAY NOW</div>
         </a>
 
-        <!-- ✨ 遊戲 7：Doge Clicker (WTDD) 放最後面壓軸 ✨ -->
         <a href="javascript:void(0)" onclick="checkWeekendAccess(event)" class="game-card card-6">
             <div class="game-icon" style="display: flex; justify-content: center; align-items: center; overflow: hidden; background: white; border: 4px solid #f39c12; padding: 0;">
                 <img src="wtdd.png" alt="WTDD" style="width: 100%; height: 100%; object-fit: cover;">
@@ -199,8 +208,21 @@
 
     </div>
 
-    <!-- ✨ 狗狗休假中 鎖定彈窗 ✨ -->
-    <div id="weekend-modal">
+    <!-- ✨ 嚴肅警告公告彈窗 ✨ -->
+    <div id="warning-modal" class="overlay-modal" style="z-index: 999999;">
+        <div class="modal-content warning-content">
+            <h2 style="color:#e74c3c; font-size:32px; margin-top:0; margin-bottom:15px;">⚠️ ROCK 老師公告 ⚠️</h2>
+            <p style="font-size:18px; font-weight:700; color:#2c3e50; line-height:1.6; margin-bottom: 20px; text-align: left;">
+                近期發現有同學使用<strong style="color:#e74c3c;">不雅字眼</strong>或<strong style="color:#e74c3c;">謾罵他人</strong>的詞彙作為玩家姓名。<br><br>
+                若再次發現此情形，本網站將 <strong style="color:#e74c3c; font-size:22px; text-decoration: underline;">無條件關閉一天</strong>。<br><br>
+                請不要因為個人的無禮行為，剝奪了其他同學學習與遊戲的權利。請大家好好愛護並尊重這個專屬的學習空間！
+            </p>
+            <button class="warning-btn" onclick="closeWarning()">我了解了，會遵守規定</button>
+        </div>
+    </div>
+
+    <!-- 週末限定鎖定彈窗 -->
+    <div id="weekend-modal" class="overlay-modal">
         <div class="modal-content">
             <h2 style="color:#e67e22; font-size:32px; margin-top:0; margin-bottom:10px;">🐶 狗狗休假中...</h2>
             <p style="font-size:18px; font-weight:700; color:#2c3e50; line-height:1.6; margin-bottom: 20px;">
@@ -220,21 +242,17 @@
     </div>
 
     <script>
-        // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
-        document.addEventListener('contextmenu', event => event.preventDefault()); 
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
-                e.preventDefault(); return false; 
-            }
-        });
-        setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
-
         const bgm = document.getElementById('bgm');
         const soundBtn = document.getElementById('sound-btn');
         let isPlaying = false;
         let isDogeOpen = false;
 
         window.onload = function() {
+            // ✨ 檢查是否已經顯示過警告彈窗 (SessionStorage)
+            if (!sessionStorage.getItem('rockWarningShown')) {
+                document.getElementById('warning-modal').style.display = 'flex';
+            }
+
             bgm.volume = 0.5;
             let playPromise = bgm.play();
 
@@ -253,6 +271,12 @@
             updateCountdown();
             setInterval(updateCountdown, 1000);
         };
+
+        // ✨ 關閉警告視窗並記錄
+        function closeWarning() {
+            document.getElementById('warning-modal').style.display = 'none';
+            sessionStorage.setItem('rockWarningShown', 'true');
+        }
 
         function toggleSound() {
             if (isPlaying) {
@@ -274,7 +298,7 @@
             const day = now.getDay();
             const hours = now.getHours();
 
-            isDogeOpen = (day === 5 && hours >= 17) || day === 6 || day === 0;
+            isDogeOpen = (day === 5 && hours >= 17) || day === 6 || (day === 0 && hours < 22);
 
             const cardDesc = document.getElementById('doge-card-desc');
             const modalTimer = document.getElementById('modal-timer');
@@ -286,8 +310,15 @@
             }
 
             let nextOpen = new Date(now);
-            let daysToFriday = (5 - day + 7) % 7;
-            if (day === 5 && hours < 17) { daysToFriday = 0; }
+            let daysToFriday = 0;
+            
+            if (day === 5 && hours < 17) {
+                daysToFriday = 0; 
+            } else if (day === 0 && hours >= 22) {
+                daysToFriday = 5; 
+            } else {
+                daysToFriday = (5 - day + 7) % 7; 
+            }
 
             nextOpen.setDate(now.getDate() + daysToFriday);
             nextOpen.setHours(17, 0, 0, 0); 
@@ -327,5 +358,3 @@
     </script>
 </body>
 </html>
-
-
