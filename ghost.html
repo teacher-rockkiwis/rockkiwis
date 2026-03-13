@@ -6,107 +6,96 @@
     <title>Dr. ROCK - Ghostbusters</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #9b59b6; --success: #2ed573; --error: #ff4757; --bg: #2c3e50; --window-dark: #636e72; --window-lit: #ffeaa7; --text-dark: #2d3436; }
+        :root { --primary: #9b59b6; --secondary: #8e44ad; --success: #2ecc71; --error: #e74c3c; --bg: #2c3e50; --text-light: #ecf0f1; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { background-color: var(--bg); margin: 0; padding: 0; height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
-        .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: var(--text-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 50000; transition: 0.2s; }
-        .sound-toggle:hover { transform: scale(1.05); } .sound-toggle:active { transform: scale(0.95); }
-        #header { height: 60px; background: rgba(255,255,255,0.95); border-bottom: 3px solid #8e44ad; display: flex; justify-content: space-around; align-items: center; padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; z-index: 100; }
-        .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; color: var(--text-dark); }
-        .exit-btn { background: #ff7675; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #d63031; }
-        .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #d63031; }
-        #radar-box { background: #000; color: #2ed573; text-align: center; padding: 10px; font-size: 28px; font-weight: 900; letter-spacing: 1px; border-bottom: 4px solid #2ed573; box-shadow: 0 5px 20px rgba(46, 213, 115, 0.4); visibility: hidden; z-index: 90; text-shadow: 0 0 8px #2ed573; }
-        #mansion { flex-grow: 1; padding: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; visibility: hidden; align-content: center; max-width: 1000px; margin: 0 auto; width: 100%; }
-        .window { background: var(--window-dark); border-radius: 15px; border: 6px solid #1e272e; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: inset 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s background; height: 100%; min-height: 180px; }
-        .window.lit { background: var(--window-lit); box-shadow: 0 0 30px rgba(255, 234, 167, 0.5); border-color: #f39c12; }
-        .window.error { background: var(--error); border-color: #c0392b; animation: shake 0.3s; }
-        .room-label { background: rgba(0,0,0,0.7); color: white; text-align: center; padding: 5px; font-size: 18px; font-weight: 900; z-index: 20; letter-spacing: 1px; }
-        .ghost-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; transform: translateY(100%); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); padding-bottom: 10px; }
-        .window.lit .ghost-area { transform: translateY(0); }
-        .ghost-emoji { font-size: 60px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); animation: float 2s infinite ease-in-out; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .grammar-panel { background: white; border-radius: 10px; padding: 8px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 5px; width: 90%; border: 3px solid #8e44ad; }
-        .action-btns { display: flex; gap: 5px; margin-bottom: 5px; }
-        .btn-grammar { flex: 1; padding: 8px 0; font-size: 18px; font-weight: 900; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.1s; background: #8e44ad; box-shadow: 0 4px 0 #6c3483; }
-        .btn-grammar:active { transform: translateY(4px); box-shadow: 0 0 0 #6c3483; }
-        .btn-grammar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-        .btn-rock { background: #f1c40f; color: var(--text-dark); box-shadow: 0 4px 0 #d4ac0d; font-size: 20px;}
-        .sentence-tail { font-size: 14px; font-weight: 900; color: var(--text-dark); }
+        .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; color: #2d3436; z-index: 50000; transition: 0.2s; }
+        #header { height: 60px; background: rgba(255,255,255,0.95); border-bottom: 3px solid var(--primary); display: flex; justify-content: space-around; align-items: center; padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; z-index: 100; }
+        .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; color: #2d3436; }
+        .exit-btn { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #c0392b; }
+        .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #c0392b; }
+        #game-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 10px; visibility: hidden; width: 100%; max-width: 600px; margin: 0 auto; position: relative; }
+        #radar-box { background: rgba(0, 0, 0, 0.6); border: 2px solid var(--success); border-radius: 15px; padding: 15px; text-align: center; width: 95%; margin-top: 10px; margin-bottom: 15px; box-shadow: 0 0 15px rgba(46, 204, 113, 0.3); }
+        #radar-title { color: var(--success); font-size: 16px; margin: 0 0 5px 0; }
+        #question { color: var(--text-light); font-size: 26px; font-weight: 900; margin: 0; }
+        .house-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 15px; width: 95%; flex-grow: 1; margin-bottom: 15px; }
+        .room { background: #34495e; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 4px solid #7f8c8d; cursor: pointer; position: relative; transition: 0.2s; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .room:active { transform: scale(0.95); }
+        .room.selected { border-color: var(--primary); box-shadow: 0 0 20px var(--primary); }
+        .room-icon { font-size: 50px; margin-bottom: 10px; pointer-events: none; }
+        .room-name { color: white; font-size: 20px; font-weight: 900; pointer-events: none; }
+        .ghost-reveal { position: absolute; font-size: 60px; opacity: 0; transform: scale(0); transition: 0.3s; pointer-events: none; }
+        .show-ghost { opacity: 1; transform: scale(1); animation: floatGhost 2s infinite ease-in-out; }
+        @keyframes floatGhost { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.1); } }
+        #answer-panel { position: absolute; bottom: 20px; width: 95%; background: rgba(255,255,255,0.95); padding: 15px; border-radius: 20px; display: none; flex-direction: column; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 50; }
+        #ans-prefix { font-size: 24px; font-weight: 900; color: #2d3436; margin-bottom: 10px; }
+        .ans-options { display: flex; gap: 10px; width: 100%; justify-content: center; }
+        .btn-ans { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 20px; font-weight: 900; background: var(--primary); color: white; box-shadow: 0 5px 0 #8e44ad; cursor: pointer; transition: 0.1s; }
+        .btn-ans:active { transform: translateY(5px); box-shadow: 0 0 0 #8e44ad; }
         #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 30px 10px; }
         #start-overlay { background: var(--primary); color: white; } #end-msg { background: rgba(255,255,255,0.98); display: none; text-align: center; }
-        .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: var(--text-dark); }
+        .name-input { font-size: 24px; padding: 12px 25px; border-radius: 20px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 300px; max-width: 90%; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .start-btn { background: var(--success); color: white; border: none; padding: 15px 50px; font-size: 30px; border-radius: 50px; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #27ae60; margin-bottom: 20px; }
+        .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #2d3436; }
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
         #front-leaderboard-list { max-height: 150px; overflow-y: auto; padding-right: 5px; } #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
         .front-board-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
-        .name-input { font-size: 24px; padding: 12px 25px; border-radius: 20px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 300px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); outline: none; }
-        .start-btn { background: var(--success); color: white; border: none; padding: 15px 50px; font-size: 30px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #219150; margin-bottom: 30px; }
         .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 450px; max-width: 100%; margin: 10px 0 20px 0; text-align: left; }
-        .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: var(--text-dark);}
-        .final-score-display { font-size: 36px; color: var(--error); text-align: center; font-weight: 900; margin-top: 10px; }
         #leaderboard-list { max-height: 200px; overflow-y: auto; padding-right: 5px; } #leaderboard-list::-webkit-scrollbar { width: 6px; } #leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #leaderboard-list::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
-        .board-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #dfe6e9; font-size: 18px; font-weight: 700; color: var(--text-dark);}
-        #secret-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); color: white; padding: 30px 40px; border-radius: 20px; z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f; width: 85%; max-width: 450px; }
-        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 80px; z-index: 30000; text-shadow: 4px 4px 0px white, -4px -4px 0px white; animation: burst 0.8s forwards; }
+        .board-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #dfe6e9; font-size: 18px; font-weight: 700; color: #2d3436;}
+        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 60px; z-index: 30000; animation: burst 0.8s forwards; text-shadow: 3px 3px 0px white, -3px -3px 0px white; }
         @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-30px); opacity: 1; } 100% { transform: scale(1.2) translateY(-150px); opacity: 0; } }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
-        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #mansion { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; } #win-4 { grid-column: span 2; } #radar-box { font-size: 18px; padding: 8px; } .ghost-emoji { font-size: 45px; margin-bottom: 5px; } .btn-grammar { font-size: 14px; padding: 6px 0; } .sentence-tail { font-size: 12px; } #start-overlay h1 { font-size: 40px !important; } .name-input { font-size: 20px; padding: 10px; } .start-btn { font-size: 24px; padding: 10px 40px; } .float-num { font-size: 60px; } }
+        #secret-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); color: white; padding: 30px; border-radius: 20px; z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f; width: 85%; max-width: 350px; }
+        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 100px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay h1 { font-size: 40px !important; } .name-input { font-size: 20px; padding: 10px; } .start-btn { font-size: 24px; padding: 10px 40px; } #question { font-size: 20px; } .room-icon { font-size: 40px; } .room-name { font-size: 16px; } .btn-ans { font-size: 16px; padding: 10px; } }
     </style>
 </head>
 <body>
-    <audio id="bgm" src="ghost.mp3" loop></audio>
+    <audio id="bgm" src="music.mp3" loop></audio>
     <audio id="secret-bgm" src="67.mp3"></audio>
-
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
 
     <div id="start-overlay">
-        <h1 style="font-size: 50px; margin-bottom: 5px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">👻 抓鬼特攻隊</h1>
-        <div style="background: rgba(255,255,255,0.2); border: 2px solid white; padding: 5px 20px; border-radius: 50px; font-weight: 900; font-size: 18px; margin-bottom: 10px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">📘 四年級 Unit 1</div>
-        <p style="font-size: 16px; margin-bottom: 15px;">Where are they? 聽從雷達指示抓出幽靈！</p>
+        <h1 style="font-size: 50px; margin-bottom: 5px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">👻 Ghostbusters</h1>
+        <p style="font-size: 16px; margin-bottom: 15px;">抓鬼特攻隊！看雷達找人！</p>
         <div class="front-leaderboard">
-            <h3 id="front-board-title">🏆 抓鬼英雄榜</h3>
+            <h3 id="front-board-title">🏆 特攻隊英雄榜</h3>
             <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取中...</div></div>
         </div>
-        <input type="text" id="player-name" class="name-input" placeholder="輸入特攻隊員姓名..." autocomplete="off" maxlength="12">
-        <select id="theme-select" onchange="fetchFrontLeaderboard()" style="font-size: 18px; padding: 8px 15px; margin-bottom: 15px; border-radius: 15px; border:none; outline:none; font-family: 'Quicksand'; font-weight: 700;">
-            <option value="ghost-level1">🔋 基礎任務 (慢速)</option>
-            <option value="ghost-level2">⚡ 進階任務 (快速)</option>
-        </select>
-        <button class="start-btn" onclick="startGame()">開始抓鬼！</button>
+        <input type="text" id="player-name" class="name-input" placeholder="輸入隊員姓名..." autocomplete="off" maxlength="12">
+        <button class="start-btn" onclick="startGame()">出動抓鬼！</button>
     </div>
 
     <div id="header">
         <div class="stat-pill">👤 <span id="display-name">Player</span></div>
-        <div class="stat-pill">👻 抓獲: <span id="caught-val" style="color:var(--primary);">0</span>/20</div>
+        <div class="stat-pill">🎯 <span id="progress" style="color:var(--primary);">1</span>/10</div>
         <div class="stat-pill">🏆 <span id="score-val" style="color:#f39c12;">0</span></div>
-        <div class="stat-pill">⏱️ <span id="timer-val">00m 00s</span></div>
         <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
     </div>
 
-    <div id="radar-box">📡 正在搜尋目標...</div>
-
-    <div id="mansion">
-        <div class="window" id="win-0"><div class="room-label" id="label-0">🛏️ bedroom</div><div class="ghost-area" id="ghost-0"></div></div>
-        <div class="window" id="win-1"><div class="room-label" id="label-1">🛋️ living room</div><div class="ghost-area" id="ghost-1"></div></div>
-        <div class="window" id="win-2"><div class="room-label" id="label-2">🪑 dining room</div><div class="ghost-area" id="ghost-2"></div></div>
-        <div class="window" id="win-3"><div class="room-label" id="label-3">🍳 kitchen</div><div class="ghost-area" id="ghost-3"></div></div>
-        <div class="window" id="win-4"><div class="room-label" id="label-4">🛁 bathroom</div><div class="ghost-area" id="ghost-4"></div></div>
+    <div id="game-area">
+        <div id="radar-box"><h3 id="radar-title">📡 幽靈探測雷達</h3><p id="question">Loading...</p></div>
+        <div class="house-grid">
+            <div class="room" id="room-0" onclick="selectRoom(0, 'bedroom')"><div class="room-icon">🛏️</div><div class="room-name">bedroom</div><div class="ghost-reveal" id="ghost-0">👻</div></div>
+            <div class="room" id="room-1" onclick="selectRoom(1, 'living room')"><div class="room-icon">🛋️</div><div class="room-name">living room</div><div class="ghost-reveal" id="ghost-1">👻</div></div>
+            <div class="room" id="room-2" onclick="selectRoom(2, 'kitchen')"><div class="room-icon">🍳</div><div class="room-name">kitchen</div><div class="ghost-reveal" id="ghost-2">👻</div></div>
+            <div class="room" id="room-3" onclick="selectRoom(3, 'bathroom')"><div class="room-icon">🛁</div><div class="room-name">bathroom</div><div class="ghost-reveal" id="ghost-3">👻</div></div>
+        </div>
+        <div id="answer-panel"><div id="ans-prefix">Who is here?</div><div class="ans-options" id="ans-btns"></div></div>
     </div>
 
     <div id="secret-modal">
         <h2 style="margin:0 0 10px 0; color:#f1c40f; font-size:36px;">😎 隱藏彩蛋！</h2>
-        <p style="font-size:22px; margin:0; line-height: 1.5;">你找到了 ROCK 老師！<br>獲得額外 <strong style="font-size: 30px;">+100</strong> 分！<br><span style="color:#fdcb6e; font-size:18px;">(這是我們的秘密，請勿聲張🤫)</span></p>
+        <p style="font-size:22px; margin:0; line-height: 1.5;">ROCK 老師幫你抓鬼！<br>獲得額外 <strong style="font-size: 30px;">+100</strong> 分！</p>
     </div>
 
     <div id="end-msg">
         <h1 id="end-title" style="font-size: 45px; color: var(--primary); margin: 0; margin-top: 10px;">任務完成！🎉</h1>
         <div class="result-panel">
-            <div class="score-breakdown">
-                <div>🎯 基礎得分： <span id="base-score-display"></span> pts</div>
-                <div>⏱️ 任務時間： <span id="time-taken-display"></span></div>
-                <div>⚡ 速度加成： <span id="multiplier-display" style="color:var(--success)"></span></div>
-                <div class="final-score-display">最終總分： <span id="final-total-display"></span></div>
+            <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: #2d3436; text-align: center;">
+                抓鬼積分：<span id="final-total-display" style="color:var(--error); font-size:36px;">0</span> pts
             </div>
-            <h2 class="leaderboard-title" id="end-board-title">🌍 抓鬼英雄榜</h2>
+            <h2 style="font-size: 20px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center;">🌍 特攻隊英雄榜</h2>
             <div id="leaderboard-list"></div>
         </div>
         <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">再玩一次</button>
@@ -114,62 +103,44 @@
     </div>
 
     <script>
-        // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
+        // 🛡️ 防外掛與防作弊系統
         document.addEventListener('contextmenu', event => event.preventDefault()); 
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
-                e.preventDefault(); return false; 
-            }
-        });
+        document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
-       const badWords = [
-    // 英文髒話與不雅詞彙 (已避開會誤擋 Chloe, Cassie 等英文名字的短詞)
-    "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-    
-    // 國罵、三字經、諧音
-    "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-    
-    // 智力、精神疾病、身心障礙歧視 (國中小最愛罵)
-    "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
-    
-    // 咒罵死亡、家人、孤兒 (惡意攻擊)
-    "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
-    
-    // 性別特質、性傾向歧視、蕩婦羞辱
-    "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
-    
-    // 排泄物、器官、一般羞辱
-    "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
-];
-
+        const badWords = [
+            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
+            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
+            "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
+            "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
+            "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑ِمض", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
+        ];
         
         const questions = [ { q: "Where are you?", ans: "I am", wrong1: "He is", wrong2: "She is" }, { q: "Where is Tom?", ans: "He is", wrong1: "I am", wrong2: "She is" }, { q: "Where is your brother?", ans: "He is", wrong1: "I am", wrong2: "She is" }, { q: "Where is Grandpa?", ans: "He is", wrong1: "I am", wrong2: "She is" }, { q: "Where is Mary?", ans: "She is", wrong1: "I am", wrong2: "He is" }, { q: "Where is Mom?", ans: "She is", wrong1: "I am", wrong2: "He is" }, { q: "Where is your sister?", ans: "She is", wrong1: "I am", wrong2: "He is" } ];
-        const roomData = [ { id: 0, text: "bedroom" }, { id: 1, text: "living room" }, { id: 2, text: "dining room" }, { id: 3, text: "kitchen" }, { id: 4, text: "bathroom" } ];
-        const originalLabels = ["🛏️ bedroom", "🛋️ living room", "🪑 dining room", "🍳 kitchen", "🛁 bathroom"];
 
-        let score = 0, caughtCount = 0, targetCaught = 20, seconds = 0; let playerName = "Player", currentTheme = "ghost-level1"; let timerInterval, spawnInterval; 
-        let activeWindows = [false, false, false, false, false]; 
-        let isMuted = false; 
-        let lastWinIdx = -1; 
+        let currentQuestion = 0, score = 0, playerName = "Player";
+        let activeRoomIdx = -1, correctAnsStr = "";
+        let isMuted = false, eggBuffer = "";
+        let userIP = "Unknown"; // ✨ IP 追蹤
 
-        const bgm = document.getElementById('bgm'); const secretBgm = document.getElementById('secret-bgm'); const radar = document.getElementById('radar-box');
+        const bgm = document.getElementById('bgm'); const secretBgm = document.getElementById('secret-bgm');
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        window.onload = function() { fetchFrontLeaderboard(); };
+        window.onload = function() { 
+            fetchFrontLeaderboard(); 
+            document.addEventListener('keydown', (e) => { if(document.getElementById('game-area').style.visibility === 'visible' && /^[a-zA-Z]$/.test(e.key)) { eggBuffer += e.key.toUpperCase(); if(eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4); if(eggBuffer === "ROCK") triggerEasterEgg(); } });
+            
+            // ✨ 偷抓 IP ✨
+            fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
+        };
 
-        function toggleSound(e) {
-            if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn');
-            if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; bgm.muted = true; secretBgm.muted = true; } 
-            else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; bgm.muted = false; secretBgm.muted = false; }
-        }
+        function toggleSound(e) { if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn'); if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; bgm.muted = true; secretBgm.muted = true; } else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; bgm.muted = false; secretBgm.muted = false; } }
 
         function fetchFrontLeaderboard() {
-            const listDiv = document.getElementById('front-leaderboard-list'); const themeSelect = document.getElementById('theme-select');
-            currentTheme = themeSelect.value; document.getElementById('front-board-title').innerText = `🏆 ${themeSelect.options[themeSelect.selectedIndex].text} 英雄榜`;
-            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
-            fetch(`${GOOGLE_API_URL}?action=get&theme=${currentTheme}`).then(response => response.json()).then(board => {
-                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px;'>目前無紀錄，搶下首殺吧！</div>"; return; }
+            const listDiv = document.getElementById('front-leaderboard-list'); listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            fetch(`${GOOGLE_API_URL}?action=get&theme=ghostbusters`).then(response => response.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px;'>目前無紀錄，搶下首殺！</div>"; return; }
                 board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='front-board-row'><span>${rankStr} ${p.name}</span><span>${p.score} pts</span></div>`; });
             }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗 😢</div>");
         }
@@ -178,101 +149,82 @@
         function playSfx(type) {
             if (isMuted) return; if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'success') { osc.type = 'square'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); } 
-            else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
+            if (type === 'select') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); } 
+            else if (type === 'success') { osc.type = 'sine'; osc.frequency.setValueAtTime(523, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1046, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } 
+            else if (type === 'error') { osc.type = 'square'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); }
         }
 
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("請輸入隊員姓名喔！"); return; }
-            const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
-            if(badWords.some(bad => cleanName.includes(bad))) { alert("請使用有禮貌的名字喔！😇"); return; }
+            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
             playerName = inputName; document.getElementById('display-name').innerText = playerName;
             bgm.volume = 0.4; bgm.play().catch(e => console.log(e)); secretBgm.onended = function() { bgm.play(); };
-            document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('mansion').style.visibility = 'visible'; radar.style.visibility = 'visible';
-            score = 0; caughtCount = 0; seconds = 0; timerInterval = setInterval(countUp, 1000);
-            let speed = currentTheme === "ghost-level2" ? 2500 : 3500; spawnGhost(); spawnInterval = setInterval(spawnGhost, speed);
+            document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('game-area').style.visibility = 'visible';
+            score = 0; currentQuestion = 0; document.getElementById('score-val').textContent = score;
+            loadQuestion();
         }
 
-        function spawnGhost() {
-            if (caughtCount >= targetCaught) return;
-            for(let i=0; i<5; i++) { if(activeWindows[i]) clearWindow(i); }
+        function loadQuestion() {
+            if (currentQuestion >= 10) { endGame(); return; }
+            document.getElementById('progress').textContent = currentQuestion + 1;
+            const qData = questions[Math.floor(Math.random() * questions.length)];
+            document.getElementById('question').innerText = qData.q;
+            correctAnsStr = `${qData.ans} in the...`;
+            let opts = [correctAnsStr, `${qData.wrong1} in the...`, `${qData.wrong2} in the...`].sort(() => Math.random() - 0.5);
             
-            let winIdx;
-            do { winIdx = Math.floor(Math.random() * 5); } while (winIdx === lastWinIdx);
-            lastWinIdx = winIdx;
-
-            activeWindows[winIdx] = true;
-            const winEl = document.getElementById(`win-${winIdx}`), ghostArea = document.getElementById(`ghost-${winIdx}`), labelEl = document.getElementById(`label-${winIdx}`);
-
-            let isEasterEgg = Math.random() < 0.01;
-
-            if (isEasterEgg) {
-                radar.innerHTML = "🚨 異常信號：Where is ROCK?"; radar.style.color = "#f1c40f"; radar.style.borderColor = "#f1c40f"; labelEl.innerText = "🕹️ arcade"; 
-                ghostArea.innerHTML = `<div class="grammar-panel"><div class="action-btns"><button class="btn-grammar btn-rock" onclick="handleCatch(${winIdx}, 'ROCK', 'ROCK', event)">ROCK</button></div><div class="sentence-tail">in the arcade.</div></div><div class="ghost-emoji">😎</div>`;
-            } else {
-                radar.style.color = "#2ed573"; radar.style.borderColor = "#2ed573";
-                let qData = questions[Math.floor(Math.random() * questions.length)], roomDataObj = roomData[winIdx]; radar.innerHTML = `📡 目標：${qData.q}`;
-                let wrongChoice = Math.random() > 0.5 ? qData.wrong1 : qData.wrong2; let btn1, btn2;
-                if(Math.random() > 0.5) { btn1 = `<button class="btn-grammar" onclick="handleCatch(${winIdx}, '${qData.ans}', '${qData.ans}', event)">${qData.ans}</button>`; btn2 = `<button class="btn-grammar" onclick="handleCatch(${winIdx}, '${wrongChoice}', '${qData.ans}', event)">${wrongChoice}</button>`; } 
-                else { btn1 = `<button class="btn-grammar" onclick="handleCatch(${winIdx}, '${wrongChoice}', '${qData.ans}', event)">${wrongChoice}</button>`; btn2 = `<button class="btn-grammar" onclick="handleCatch(${winIdx}, '${qData.ans}', '${qData.ans}', event)">${qData.ans}</button>`; }
-                ghostArea.innerHTML = `<div class="grammar-panel"><div class="action-btns">${btn1}${btn2}</div><div class="sentence-tail">in the ${roomDataObj.text}.</div></div><div class="ghost-emoji">👻</div>`;
+            const btnContainer = document.getElementById('ans-btns'); btnContainer.innerHTML = "";
+            opts.forEach(opt => {
+                const btn = document.createElement('button'); btn.className = 'btn-ans'; btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt); btnContainer.appendChild(btn);
+            });
+            document.getElementById('answer-panel').style.display = 'none';
+            for(let i=0; i<4; i++) {
+                document.getElementById(`room-${i}`).classList.remove('selected');
+                document.getElementById(`ghost-${i}`).classList.remove('show-ghost');
             }
-            winEl.classList.add('lit');
+            activeRoomIdx = Math.floor(Math.random() * 4);
         }
 
-        function handleCatch(winIdx, chosenAnswer, correctAnswer, event) {
-            if (!activeWindows[winIdx]) return;
-            if (event && event.target) { event.target.disabled = true; } // 防連點
-
-            const rect = event.target.getBoundingClientRect(), x = rect.left + rect.width / 2, y = rect.top;
+        function selectRoom(idx, roomName) {
+            playSfx('select');
+            for(let i=0; i<4; i++) document.getElementById(`room-${i}`).classList.remove('selected');
+            document.getElementById(`room-${idx}`).classList.add('selected');
+            document.getElementById('answer-panel').style.display = 'flex';
             
-            if (chosenAnswer === 'ROCK') {
-                activeWindows[winIdx] = false; 
-                score += 100; showBurst(x, y, "+100 🌟", "#f1c40f"); bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err));
-                const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => { modal.style.display = 'none'; }, 3000);
-                clearWindow(winIdx); document.getElementById('score-val').textContent = score; return;
-            }
+            const btnContainer = document.getElementById('ans-btns');
+            btnContainer.childNodes.forEach(btn => {
+                let baseOpt = btn.innerText.split(' in the')[0]; btn.innerText = `${baseOpt} in the ${roomName}`;
+            });
+            correctAnsStr = `${correctAnsStr.split(' in the')[0]} in the ${roomName}`;
+        }
 
-            if (chosenAnswer === correctAnswer) {
-                activeWindows[winIdx] = false; 
-                score += 10; caughtCount++; playSfx('success'); showBurst(x, y, "+10", "#00b894"); document.getElementById('score-val').textContent = score; document.getElementById('caught-val').textContent = caughtCount; clearWindow(winIdx);
-                
-                if (caughtCount >= targetCaught) { 
-                    setTimeout(calculateAndEndGame, 500); 
-                } else { 
-                    clearInterval(spawnInterval); let speed = currentTheme === "ghost-level2" ? 2500 : 3500; 
-                    setTimeout(() => { spawnGhost(); spawnInterval = setInterval(spawnGhost, speed); }, 100); // 淨空防連點
-                }
+        function checkAnswer(selectedOpt) {
+            const isCorrectRoom = document.getElementById(`room-${activeRoomIdx}`).classList.contains('selected');
+            if (selectedOpt === correctAnsStr && isCorrectRoom) {
+                playSfx('success'); score += 10; document.getElementById('score-val').textContent = score;
+                document.getElementById(`ghost-${activeRoomIdx}`).classList.add('show-ghost');
+                const rect = document.getElementById(`room-${activeRoomIdx}`).getBoundingClientRect(); showBurst(rect.left + rect.width/2, rect.top, "+10", "#2ecc71");
+                setTimeout(loadQuestion, 1000);
             } else {
-                score = Math.max(0, score - 2); playSfx('error'); showBurst(x, y, "-2", "#d63031"); document.getElementById('score-val').textContent = score;
-                const winEl = document.getElementById(`win-${winIdx}`); winEl.classList.add('error'); setTimeout(() => { winEl.classList.remove('error'); }, 300);
+                playSfx('error'); document.getElementById('game-area').style.animation = 'shake 0.3s';
+                document.body.style.backgroundColor = "rgba(231, 76, 60, 0.3)"; setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
+                setTimeout(() => document.getElementById('game-area').style.animation = 'none', 300);
             }
         }
 
-        function clearWindow(winIdx) { activeWindows[winIdx] = false; const winEl = document.getElementById(`win-${winIdx}`); winEl.classList.remove('lit'); document.getElementById(`label-${winIdx}`).innerText = originalLabels[winIdx]; }
+        function triggerEasterEgg() { eggBuffer = ""; score += 100; document.getElementById('score-val').textContent = score; showBurst(window.innerWidth/2 - 50, window.innerHeight/2, "+100 🌟", "#f1c40f"); bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err)); const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => modal.style.display = 'none', 3000); }
         function showBurst(x, y, txt, color) { const div = document.createElement('div'); div.className = 'float-num'; div.textContent = txt; div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color; document.body.appendChild(div); setTimeout(() => div.remove(), 800); }
-        function countUp() { seconds++; document.getElementById('timer-val').textContent = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; }
 
-        function calculateAndEndGame() {
-            clearInterval(timerInterval); clearInterval(spawnInterval); bgm.pause(); secretBgm.pause();
-            let multiplier = 1.0; let tierName = "🐢 見習探員 (x1.0)";
-            if (seconds <= 30) { multiplier = 3.0; tierName = "⚡ 捉鬼大師 (x3.0)"; } else if (seconds <= 45) { multiplier = 2.0; tierName = "🚀 菁英探員 (x2.0)"; } else if (seconds <= 60) { multiplier = 1.5; tierName = "🏃 資深探員 (x1.5)"; } else if (seconds <= 80) { multiplier = 1.2; tierName = "🚶 正式探員 (x1.2)"; }
+        function endGame() {
+            bgm.pause(); secretBgm.pause(); document.getElementById('final-total-display').textContent = score; document.getElementById('end-msg').style.display = "flex";
+            const listDiv = document.getElementById('leaderboard-list'); listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳成績到總部...</div>";
             
-            const finalScore = Math.min(Math.floor(score * multiplier), 999); // 分數安全上限
-            const timeStr = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; 
-            
-            document.getElementById('base-score-display').textContent = score; document.getElementById('time-taken-display').textContent = timeStr; document.getElementById('multiplier-display').textContent = tierName; document.getElementById('final-total-display').textContent = finalScore;
-            document.getElementById('end-msg').style.display = "flex"; saveAndDisplayGlobalLeaderboard(finalScore, timeStr);
-        }
-
-        function saveAndDisplayGlobalLeaderboard(finalScore, timeStr) {
-            const listDiv = document.getElementById('leaderboard-list'), themeSelect = document.getElementById('theme-select'), themeName = themeSelect.options[themeSelect.selectedIndex].text;
-            document.getElementById('end-board-title').innerText = `🌍 ${themeName} 英雄榜`; listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳成績到特攻隊總部...</div>";
-            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${finalScore}&time=${encodeURIComponent(timeStr)}&theme=${currentTheme}`).then(r => r.json()).then(board => {
-                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div>你是第一個破關的探員！</div>"; return; }
-                board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name} (${p.time})</span><span>${p.score} pts</span></div>`; });
-            }).catch(() => listDiv.innerHTML = "<div style='color:var(--error); text-align:center;'>連線失敗</div>");
+            // ✨ 加入 IP 傳送 ✨
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=Finished&theme=ghostbusters&ip=${userIP}`).then(r => r.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) return;
+                board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span>${p.score} pts</span></div>`; });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
         }
     </script>
 </body>
