@@ -3,250 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Word Hunt - Global Leaderboard</title>
+    <title>Dr. ROCK - Word Hunt</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6c5ce7; --success: #2ed573; --error: #ff4757; --wall-text: #2c3e50; --bank-bg: #f8f9fa; }
+        :root { --primary: #6c5ce7; --secondary: #a29bfe; --success: #00b894; --error: #d63031; --bg: #2d3436; --text-dark: #2d3436; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        body { background-color: #ffffff; margin: 0; padding: 0; height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
-        .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: #2d3436; box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 50000; transition: 0.2s; }
-        .sound-toggle:hover { transform: scale(1.05); } .sound-toggle:active { transform: scale(0.95); }
-        #header { height: 60px; background: white; border-bottom: 2px solid #dfe6e9; display: flex; justify-content: space-around; align-items: center; padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; }
-        .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; }
+        body { background-color: var(--bg); margin: 0; padding: 0; height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
+        .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: var(--text-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 50000; transition: 0.2s; }
+        #header { height: 60px; background: rgba(255,255,255,0.95); border-bottom: 3px solid var(--primary); display: flex; justify-content: space-around; align-items: center; padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; z-index: 100; }
+        .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; color: var(--text-dark); }
         .exit-btn { background: #ff7675; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #d63031; }
         .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #d63031; }
-        #word-bank { background: var(--bank-bg); padding: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border-bottom: 3px solid #dfe6e9; flex-shrink: 0; visibility: hidden; max-height: 20vh; overflow-y: auto; }
-        .bank-item { background: white; padding: 8px 12px; border-radius: 12px; font-size: 20px; color: #2c3e50; border: 2px solid #bdc3c7; text-align: center; font-weight: 900; }
-        .bank-item.completed { background: var(--primary) !important; color: white !important; border-color: #f1c40f; animation: super-flip 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes super-flip { 0% { transform: scale(1); } 50% { transform: scale(1.6) rotateY(180deg); background-color: #f1c40f; box-shadow: 0 0 40px #f1c40f; } 100% { transform: scale(1.1) rotateY(360deg); } }
-        #game-area { flex-grow: 1; position: relative; padding: 15px 30px; font-size: 32px; line-height: 1.25; letter-spacing: 5px; word-break: break-all; color: var(--wall-text); text-align: justify; cursor: pointer; overflow: hidden; font-weight: 900; }
-        .target { color: inherit; display: inline-block; transition: 0.2s; padding: 8px 3px; margin: -8px -3px; position: relative; z-index: 10; }
-        .found { color: var(--primary) !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(108, 92, 231, 0.6); }
-        .found-egg { color: #f1c40f !important; font-weight: 900 !important; text-shadow: 0 0 20px rgba(241, 196, 15, 0.8); }
+        #game-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; visibility: hidden; width: 100%; max-width: 600px; margin: 0 auto; }
+        #target-word-display { font-size: 40px; font-weight: 900; color: #f1c40f; margin-bottom: 10px; letter-spacing: 2px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        #grid-container { display: grid; gap: 5px; padding: 15px; background: #636e72; border-radius: 15px; box-shadow: inset 0 5px 15px rgba(0,0,0,0.3); }
+        .cell { background: white; color: var(--text-dark); display: flex; justify-content: center; align-items: center; font-size: 26px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: 0.1s; box-shadow: 0 4px 0 #b2bec3; }
+        .cell:active { transform: translateY(4px); box-shadow: 0 0 0 #b2bec3; }
+        .cell.selected { background: #f1c40f; color: white; border-color: #f39c12; transform: scale(1.05); z-index: 10; }
+        .cell.found { background: var(--success); color: white; border-color: #009432; box-shadow: none; pointer-events: none; opacity: 0.8; }
         #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 30px 10px; }
         #start-overlay { background: var(--primary); color: white; } #end-msg { background: rgba(255,255,255,0.98); display: none; text-align: center; }
-        #secret-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); color: white; padding: 30px 40px; border-radius: 20px; z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f; width: 80%; max-width: 400px; }
-        .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #2d3436; text-align: left; }
+        .name-input { font-size: 24px; padding: 12px 25px; border-radius: 20px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 300px; max-width: 90%; outline: none; }
+        .start-btn { background: var(--success); color: white; border: none; padding: 15px 50px; font-size: 30px; border-radius: 50px; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #00b894; margin-bottom: 20px; }
+        .grade-group { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; width: 90%; max-width: 400px; }
+        .grade-title { font-size: 18px; font-weight: 900; margin: 0 0 10px 0; color: #ffeaa7; text-align: left; }
+        select.theme-select { width: 100%; font-size: 18px; padding: 10px 15px; border-radius: 10px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; }
+        .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: var(--text-dark); }
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
-        #front-leaderboard-list { max-height: 180px; overflow-y: auto; padding-right: 5px; } #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
-        .front-board-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
-        .name-input { font-size: 24px; padding: 12px 25px; border-radius: 20px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 300px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); outline: none; }
-        .start-btn { background: var(--success); color: white; border: none; padding: 15px 50px; font-size: 35px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #219150; transition: 0.1s; margin-bottom: 30px; }
-        .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 450px; max-width: 100%; margin: 10px 0 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: left; }
-        .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; color: #2d3436; font-weight: 700; }
-        .final-score-display { font-size: 36px; color: var(--error); text-align: center; font-weight: 900; margin-top: 10px; }
-        .leaderboard-title { font-size: 24px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center; border-top: 2px dashed #ddd; padding-top: 15px; }
-        #leaderboard-list { max-height: 200px; overflow-y: auto; padding-right: 5px; } #leaderboard-list::-webkit-scrollbar { width: 6px; } #leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
-        .board-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #dfe6e9; font-size: 18px; font-weight: 700; color: #2d3436; } .board-row:last-child { border-bottom: none; }
-        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 120px; z-index: 30000; text-shadow: 6px 6px 0px white, -6px -6px 0px white; animation: burst 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
-        @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-50px); opacity: 1; } 100% { transform: scale(1.2) translateY(-250px); opacity: 0; } }
-        .shake { animation: shake 0.3s linear; } @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
-        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay { padding-top: 10px; } #start-overlay h1 { font-size: 40px !important; margin-bottom: 5px; } #start-overlay p { font-size: 16px !important; margin-bottom: 10px !important; } .front-leaderboard { width: 95%; padding: 10px; margin-bottom: 10px; } .name-input { width: 85%; font-size: 20px; padding: 10px; margin-bottom: 10px; } #theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 10px !important; } .start-btn { font-size: 28px; padding: 10px 40px; margin-bottom: 10px; } .bank-item { font-size: 14px; padding: 5px 8px; } #game-area { font-size: 22px !important; letter-spacing: 2px !important; padding: 10px !important; line-height: 1.15 !important; } .float-num { font-size: 70px !important; } #end-title { font-size: 36px !important; } .result-panel { width: 95%; padding: 15px; } .score-breakdown { font-size: 16px; padding: 10px; } .final-score-display { font-size: 28px; } .board-row { font-size: 14px; padding: 6px; } }
+        #front-leaderboard-list { max-height: 150px; overflow-y: auto; padding-right: 5px; } #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
+        .front-board-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
+        .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 450px; max-width: 100%; margin: 10px 0 20px 0; text-align: left; }
+        #leaderboard-list { max-height: 200px; overflow-y: auto; padding-right: 5px; } #leaderboard-list::-webkit-scrollbar { width: 6px; } #leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #leaderboard-list::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
+        .board-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #dfe6e9; font-size: 18px; font-weight: 700; color: var(--text-dark);}
+        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 60px; z-index: 30000; animation: burst 0.8s forwards; text-shadow: 3px 3px 0px white, -3px -3px 0px white; }
+        @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-30px); opacity: 1; } 100% { transform: scale(1.2) translateY(-150px); opacity: 0; } }
+        #secret-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); color: white; padding: 30px 40px; border-radius: 20px; z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f; width: 85%; max-width: 450px; }
+        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 100px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay h1 { font-size: 40px !important; } .name-input { font-size: 20px; padding: 10px; } .start-btn { font-size: 24px; padding: 10px 40px; } #target-word-display { font-size: 30px; } .cell { font-size: 20px; border-radius: 5px; } }
     </style>
 </head>
-<body onclick="handleTap(event)">
-
+<body>
     <audio id="bgm" src="music.mp3" loop></audio>
     <audio id="secret-bgm" src="67.mp3"></audio>
-
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
 
     <div id="start-overlay">
-        <h1 style="font-size: 60px; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">Word Hunt! ⚡</h1>
-        <p style="font-size: 18px; margin-bottom: 15px;">挑戰你的極限速度！</p>
-        
+        <h1 style="font-size: 50px; margin-bottom: 5px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">⚡ Word Hunt</h1>
+        <p style="font-size: 16px; margin-bottom: 15px;">極速單字尋寶！越快找到分數越高！</p>
         <div class="front-leaderboard">
-            <h3 id="front-board-title">🏆 賽季英雄榜</h3>
-            <div id="front-leaderboard-list">
-                <div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取排行榜中...</div>
-            </div>
+            <h3 id="front-board-title">🏆 尋寶英雄榜</h3>
+            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取中...</div></div>
         </div>
-        
-        <input type="text" id="player-name" class="name-input" placeholder="輸入玩家姓名..." autocomplete="off" maxlength="12">
-        
-        <select id="theme-select" onchange="fetchFrontLeaderboard()" style="font-size: 20px; padding: 10px 20px; margin-bottom: 15px; border-radius: 15px; border:none; outline:none; font-family: 'Quicksand'; font-weight: 700;">
-            <option value="body">🦴 五年級 - Body Parts</option>
-            <option value="home">🏠 四年級 - Home Space</option>
-            <option value="numbers">🔢 四年級進階 - Home & Numbers</option>
-        </select>
-        <button class="start-btn" onclick="startGame()">START</button>
+        <input type="text" id="player-name" class="name-input" placeholder="輸入尋寶家姓名..." autocomplete="off" maxlength="12">
+        <div class="grade-group">
+            <div class="grade-title">📘 選擇挑戰關卡：</div>
+            <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
+                <optgroup label="四年級 (Grade 4)">
+                    <option value="hunt-g4-unit1">🏠 G4 Unit 1 - Home Space</option>
+                </optgroup>
+                <optgroup label="五年級 (Grade 5)">
+                    <option value="hunt-g5-unit1">🦴 G5 Unit 1 - Body Parts</option>
+                </optgroup>
+            </select>
+        </div>
+        <button class="start-btn" onclick="startGame()">開始尋寶！</button>
     </div>
 
     <div id="header">
         <div class="stat-pill">👤 <span id="display-name">Player</span></div>
-        <div class="stat-pill">🏆 <span id="score-val" style="color:var(--primary); font-size:26px;">0</span></div>
-        <div class="stat-pill">⏱️ <span id="timer-val">00m 00s</span></div>
+        <div class="stat-pill">⏱️ <span id="timer" style="color:var(--error);">0</span>s</div>
+        <div class="stat-pill">🏆 <span id="score-val" style="color:#f39c12;">0</span></div>
         <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
     </div>
 
-    <div id="word-bank"></div>
-    <div id="game-area"></div>
+    <div id="game-area">
+        <div id="target-word-display">TARGET</div>
+        <div id="grid-container"></div>
+    </div>
 
     <div id="secret-modal">
-        <h2 style="margin:0 0 10px 0; color:#f1c40f; font-size:36px;">🤫 隱藏彩蛋！</h2>
-        <p style="font-size:20px; margin:0; line-height: 1.5;">你找到了 ROCK 老師！<br>狂加 <strong style="font-size: 26px;">100</strong> 分！<br>請對其他同學保密喔！</p>
+        <h2 style="margin:0 0 10px 0; color:#f1c40f; font-size:36px;">😎 隱藏彩蛋！</h2>
+        <p style="font-size:22px; margin:0; line-height: 1.5;">ROCK 老師親自幫你找！<br>獲得額外 <strong style="font-size: 30px;">+100</strong> 分！</p>
     </div>
 
     <div id="end-msg">
-        <h1 id="end-title" style="font-size: 50px; color: var(--primary); margin: 0; margin-top: 10px;">闖關成功！🎉</h1>
+        <h1 id="end-title" style="font-size: 45px; color: var(--primary); margin: 0; margin-top: 10px;">尋寶完成！🎉</h1>
         <div class="result-panel">
-            <div class="score-breakdown">
-                <div>🎯 基礎得分： <span id="base-score-display"></span> pts</div>
-                <div>⏱️ 使用時間： <span id="time-taken-display"></span></div>
-                <div>⚡ 時間加成： <span id="multiplier-display" style="color:var(--success)"></span></div>
-                <div class="final-score-display">最終總分： <span id="final-total-display"></span></div>
+            <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: var(--text-dark); text-align: center;">
+                尋寶積分：<span id="final-total-display" style="color:var(--error); font-size:36px;">0</span> pts
             </div>
-            <h2 class="leaderboard-title" id="end-board-title">🌍 世界英雄榜</h2>
+            <h2 style="font-size: 20px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center;">🌍 尋寶英雄榜</h2>
             <div id="leaderboard-list"></div>
         </div>
-        <button onclick="location.href='index.html'" style="padding:15px 50px; font-size:24px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 30px;">回大廳</button>
+        <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">再找一次</button>
+        <button onclick="location.href='index.html'" style="padding:12px 40px; font-size:20px; background:#636e72; color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px; margin-left: 10px;">回大廳</button>
     </div>
 
     <script>
-        // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
+        // 🛡️ 防外掛與防作弊系統
         document.addEventListener('contextmenu', event => event.preventDefault()); 
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
-                e.preventDefault(); return false; 
-            }
-        });
+        document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
         const themes = {
-            body: ["eye", "eyes", "ear", "ears", "head", "heads", "nose", "noses", "mouth", "mouths", "arm", "arms", "hand", "hands", "shoulder", "shoulders", "foot", "feet", "leg", "legs", "hurt"],
-            home: ["bathroom", "bedroom", "kitchen", "diningroom", "livingroom", "balcony", "basement", "garage", "tv", "light", "tap", "fan"],
-            numbers: ["bathroom", "bedroom", "kitchen", "diningroom", "livingroom", "balcony", "basement", "garage", "tv", "light", "tap", "fan", "sixty", "seventy", "eighty", "ninety", "onehundred"]
+            "hunt-g4-unit1": ["bedroom", "livingroom", "diningroom", "kitchen", "bathroom", "balcony", "garage", "basement"],
+            "hunt-g5-unit1": ["head", "eye", "ear", "nose", "mouth", "hand", "arm", "leg", "foot", "shoulder", "tooth"]
         };
 
         const badWords = [
-    // 英文髒話與不雅詞彙 (已避開會誤擋 Chloe, Cassie 等英文名字的短詞)
-    "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-    
-    // 國罵、三字經、諧音
-    "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-    
-    // 智力、精神疾病、身心障礙歧視 (國中小最愛罵)
-    "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
-    
-    // 咒罵死亡、家人、孤兒 (惡意攻擊)
-    "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
-    
-    // 性別特質、性傾向歧視、蕩婦羞辱
-    "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
-    
-    // 排泄物、器官、一般羞辱
-    "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
-];
-
+            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
+            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
+            "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
+            "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
+            "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
+        ];
 
         let currentVocab = [], score = 0, foundCount = 0, seconds = 0, interval;
-        let playerName = "Player"; 
-        let isMuted = false; 
-        
-        const bgm = document.getElementById('bgm');
-        const secretBgm = document.getElementById('secret-bgm');
+        let playerName = "Player", currentTheme = "hunt-g4-unit1";
+        let grid = [], gridSize = 10, currentWord = "";
+        let selectedCells = [], startCell = null, currentDirection = null;
+        let isMuted = false, eggBuffer = "";
+        let userIP = "Unknown"; // ✨ IP 追蹤
+
+        const bgm = document.getElementById('bgm'); const secretBgm = document.getElementById('secret-bgm');
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        window.onload = function() { fetchFrontLeaderboard(); };
+        window.onload = function() { 
+            fetchFrontLeaderboard(); 
+            document.addEventListener('keydown', (e) => { if(document.getElementById('game-area').style.visibility === 'visible' && /^[a-zA-Z]$/.test(e.key)) { eggBuffer += e.key.toUpperCase(); if(eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4); if(eggBuffer === "ROCK") triggerEasterEgg(); } });
+            
+            // ✨ 偷抓 IP ✨
+            fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
+        };
 
-        function toggleSound(e) {
-            if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn');
-            if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; bgm.muted = true; secretBgm.muted = true; } 
-            else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; bgm.muted = false; secretBgm.muted = false; }
-        }
+        function toggleSound(e) { if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn'); if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; bgm.muted = true; secretBgm.muted = true; } else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; bgm.muted = false; secretBgm.muted = false; } }
 
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list'), themeSelect = document.getElementById('theme-select');
-            const currentTheme = themeSelect.value, themeName = themeSelect.options[themeSelect.selectedIndex].text;
-            document.getElementById('front-board-title').innerText = `🏆 ${themeName} 英雄榜`;
-            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取排行榜中...</div>";
-            fetch(`${GOOGLE_API_URL}?action=get&theme=${currentTheme}`).then(r => r.json()).then(board => {
-                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72; padding:10px;'>此關卡還沒有紀錄，搶下第一名吧！</div>"; return; }
-                board.forEach((p, i) => { const row = document.createElement('div'); row.className = 'front-board-row'; let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; row.innerHTML = `<span>${rankStr} ${p.name}</span> <span>${p.score} pts</span>`; listDiv.appendChild(row); });
-            }).catch(e => { listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-size:14px;'>排行榜連線失敗 😢</div>"; });
+            currentTheme = themeSelect.value; const optionText = themeSelect.options[themeSelect.selectedIndex].text;
+            const themeName = optionText.includes('-') ? optionText.split('-')[1].trim() : optionText;
+            document.getElementById('front-board-title').innerText = `🏆 ${themeName} 榜`; listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            fetch(`${GOOGLE_API_URL}?action=get&theme=${currentTheme}`).then(response => response.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px;'>目前無紀錄，搶下首殺！</div>"; return; }
+                board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='front-board-row'><span>${rankStr} ${p.name}</span><span>${p.score} pts</span></div>`; });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗 😢</div>");
         }
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSfx(type) {
             if (isMuted) return; if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'success') { osc.type = 'sine'; osc.frequency.setValueAtTime(523, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1046, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } 
-            else if (type === 'error') { osc.type = 'square'; osc.frequency.setValueAtTime(120, audioCtx.currentTime); gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); } 
-            else if (type === 'celebration') { [523, 659, 783, 1046].forEach((f, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(f, audioCtx.currentTime + i*0.1); g.gain.setValueAtTime(0.1, audioCtx.currentTime + i*0.1); o.start(audioCtx.currentTime + i*0.1); o.stop(audioCtx.currentTime + i*0.1 + 0.4); }); }
+            if (type === 'select') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); } 
+            else if (type === 'success') { osc.type = 'sine'; osc.frequency.setValueAtTime(523, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1046, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
         }
 
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
-            if(inputName === "") { alert("請輸入玩家姓名喔！"); return; }
-            const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
-            if(badWords.some(bad => cleanName.includes(bad))) { alert("請使用有禮貌的名字喔！😇"); return; }
+            if(inputName === "") { alert("請輸入姓名喔！"); return; }
+            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
             playerName = inputName; document.getElementById('display-name').innerText = playerName;
-            bgm.volume = 0.4; bgm.play().catch(e => console.log("BGM Error")); secretBgm.onended = function() { bgm.play(); };
-            document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('word-bank').style.visibility = 'visible';
-            currentVocab = themes[document.getElementById('theme-select').value];
-            initBoard(); seconds = 0; interval = setInterval(countUp, 1000);
+            bgm.volume = 0.4; bgm.play().catch(e => console.log(e)); secretBgm.onended = function() { bgm.play(); };
+            document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('game-area').style.visibility = 'visible';
+            
+            let rawVocab = themes[currentTheme]; currentVocab = rawVocab.sort(() => 0.5 - Math.random()).slice(0, 5).map(w => w.toUpperCase());
+            score = 0; foundCount = 0; seconds = 0; document.getElementById('score-val').textContent = score; document.getElementById('timer').textContent = seconds;
+            interval = setInterval(() => { seconds++; document.getElementById('timer').textContent = seconds; }, 1000);
+            
+            nextWord();
         }
 
-        function initBoard() {
-            const bank = document.getElementById('word-bank'); bank.innerHTML = "";
-            currentVocab.sort().forEach(w => { const div = document.createElement('div'); div.className = 'bank-item'; div.id = 'bank-' + w; div.textContent = w === "tv" ? "TV" : w.replace('room', ' room').replace('onehundred', 'one hundred'); bank.appendChild(div); });
-            generatePerfectScatteredWall();
+        function nextWord() {
+            if (foundCount >= currentVocab.length) { endGame(); return; }
+            currentWord = currentVocab[foundCount]; document.getElementById('target-word-display').innerText = currentWord;
+            generateGrid();
         }
 
-        function generatePerfectScatteredWall() {
-            const area = document.getElementById('game-area'); area.innerHTML = "";
-            const testSpan = document.createElement('span'); testSpan.style.visibility = 'hidden'; testSpan.style.position = 'absolute'; testSpan.style.whiteSpace = 'nowrap'; testSpan.textContent = "abcdefghijklmnopqrstuvwxyz"; area.appendChild(testSpan);
-            const charWidth = testSpan.offsetWidth / 26, lineHeight = testSpan.offsetHeight; area.removeChild(testSpan);
-            const charsPerLine = Math.floor(area.clientWidth / charWidth), lines = Math.floor(area.clientHeight / lineHeight);
-            const totalCapacity = Math.floor(charsPerLine * lines * 0.65); 
-            let renderWords = [...currentVocab]; if (Math.random() < 0.01) renderWords.push("ROCK"); renderWords.sort(() => Math.random() - 0.5);
-            const totalWordChars = renderWords.reduce((sum, w) => sum + w.length, 0);
-            let garbageBudget = totalCapacity - totalWordChars; if (garbageBudget < 0) garbageBudget = 100; 
-            const baseGarbagePerWord = Math.floor(garbageBudget / renderWords.length);
-            renderWords.forEach(w => {
-                let variance = Math.floor(baseGarbagePerWord * 0.3), currentGarbage = baseGarbagePerWord + (Math.floor(Math.random() * (variance * 2)) - variance);
-                if (currentGarbage < 0) currentGarbage = 0; area.appendChild(document.createTextNode(getGarbage(currentGarbage)));
-                const s = document.createElement('span'); s.className = 'target'; s.textContent = w; s.setAttribute('data-word', w); area.appendChild(s);
-            });
-            let safety = 0; while (area.scrollHeight <= area.clientHeight && safety < 800) { area.appendChild(document.createTextNode(getGarbage(10))); safety++; }
-            if (area.scrollHeight > area.clientHeight) { let lastNode = area.lastChild; if (lastNode && lastNode.nodeType === 3) { let text = lastNode.textContent; while (area.scrollHeight > area.clientHeight && text.length > 0) { text = text.slice(0, -1); lastNode.textContent = text; } } }
-        }
-
-        function getGarbage(len) { const chars = "abcdefghijklmnopqrstuvwxyz"; let res = ""; for(let i=0; i<len; i++) { let char = chars[Math.floor(Math.random()*26)]; if (res.endsWith('t') && char === 'v') char = 'x'; res += char; } return res; }
-        function countUp() { seconds++; document.getElementById('timer-val').textContent = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; }
-
-        function handleTap(e) {
-            if (e.target.closest('.sound-toggle') || e.target.closest('.exit-btn')) return;
-            if (foundCount >= currentVocab.length) return;
-            const isTarget = e.target.classList.contains('target'), isFound = e.target.classList.contains('found') || e.target.classList.contains('found-egg');
-            if (isTarget && !isFound) {
-                const w = e.target.getAttribute('data-word');
-                if (w === "ROCK") { e.target.classList.add('found-egg'); score += 100; document.getElementById('score-val').textContent = score; showBurst(e.clientX, e.clientY, "+100 🌟", "#f1c40f"); bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err)); const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => { modal.style.display = 'none'; }, 3000); return; }
-                e.target.classList.add('found'); score += 10; foundCount++; playSfx('success'); showBurst(e.clientX, e.clientY, "+10", "#2ed573"); document.getElementById('bank-' + w).classList.add('completed'); document.getElementById('score-val').textContent = score;
-                if(foundCount === currentVocab.length) { playSfx('celebration'); calculateAndEndGame(); }
-            } else if (e.target.closest('#game-area') && !isTarget && !isFound) {
-                score = Math.max(0, score - 2); playSfx('error'); showBurst(e.clientX, e.clientY, "-2", "#ff4757"); document.body.classList.add('shake'); setTimeout(() => document.body.classList.remove('shake'), 300); document.getElementById('score-val').textContent = score;
+        function generateGrid() {
+            gridSize = Math.max(8, currentWord.length + 2);
+            if(window.innerWidth < 600) gridSize = Math.max(6, currentWord.length + 1);
+            grid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+            let placed = false;
+            while(!placed) {
+                let dir = Math.floor(Math.random() * 3); let row = Math.floor(Math.random() * gridSize); let col = Math.floor(Math.random() * gridSize);
+                let dr = dir===0 ? 0 : dir===1 ? 1 : 1, dc = dir===0 ? 1 : dir===1 ? 0 : 1;
+                if(row + dr*currentWord.length <= gridSize && col + dc*currentWord.length <= gridSize) {
+                    for(let i=0; i<currentWord.length; i++) grid[row + dr*i][col + dc*i] = currentWord[i];
+                    placed = true;
+                }
             }
+            for(let r=0; r<gridSize; r++) for(let c=0; c<gridSize; c++) if(grid[r][c] === '') grid[r][c] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            
+            const cont = document.getElementById('grid-container'); cont.innerHTML = '';
+            cont.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            let cellSize = window.innerWidth < 600 ? `${(window.innerWidth-50)/gridSize}px` : '40px';
+            
+            for(let r=0; r<gridSize; r++) {
+                for(let c=0; c<gridSize; c++) {
+                    const cell = document.createElement('div'); cell.className = 'cell'; cell.innerText = grid[r][c];
+                    cell.style.width = cellSize; cell.style.height = cellSize; cell.dataset.r = r; cell.dataset.c = c;
+                    cell.addEventListener('pointerdown', startSelect); cell.addEventListener('pointerenter', enterSelect);
+                    cont.appendChild(cell);
+                }
+            }
+            document.addEventListener('pointerup', endSelect);
         }
 
+        function startSelect(e) { e.preventDefault(); selectedCells.forEach(c => c.classList.remove('selected')); selectedCells = [e.target]; e.target.classList.add('selected'); startCell = e.target; currentDirection = null; playSfx('select'); }
+        function enterSelect(e) {
+            if(!startCell) return;
+            let r1 = parseInt(startCell.dataset.r), c1 = parseInt(startCell.dataset.c), r2 = parseInt(e.target.dataset.r), c2 = parseInt(e.target.dataset.c);
+            let dr = r2 - r1, dc = c2 - c1;
+            if (dr === 0 && dc !== 0) currentDirection = [0, dc > 0 ? 1 : -1];
+            else if (dc === 0 && dr !== 0) currentDirection = [dr > 0 ? 1 : -1, 0];
+            else if (Math.abs(dr) === Math.abs(dc)) currentDirection = [dr > 0 ? 1 : -1, dc > 0 ? 1 : -1];
+            else return;
+
+            selectedCells.forEach(c => c.classList.remove('selected')); selectedCells = [];
+            let steps = Math.max(Math.abs(dr), Math.abs(dc));
+            for(let i=0; i<=steps; i++) {
+                let cell = document.querySelector(`.cell[data-r="${r1 + currentDirection[0]*i}"][data-c="${c1 + currentDirection[1]*i}"]`);
+                if(cell) { cell.classList.add('selected'); selectedCells.push(cell); }
+            }
+            playSfx('select');
+        }
+        function endSelect() {
+            if(!startCell) return;
+            let word = selectedCells.map(c => c.innerText).join('');
+            if(word === currentWord || word === currentWord.split('').reverse().join('')) {
+                playSfx('success'); selectedCells.forEach(c => { c.classList.remove('selected'); c.classList.add('found'); });
+                let timeBonus = Math.max(0, 30 - seconds) * 2; score += (50 + timeBonus);
+                document.getElementById('score-val').textContent = score;
+                const rect = selectedCells[Math.floor(selectedCells.length/2)].getBoundingClientRect(); showBurst(rect.left, rect.top, `+${50+timeBonus}`, "#00b894");
+                foundCount++; setTimeout(nextWord, 800);
+            } else { selectedCells.forEach(c => c.classList.remove('selected')); }
+            startCell = null; selectedCells = []; currentDirection = null;
+        }
+
+        function triggerEasterEgg() { eggBuffer = ""; score += 100; document.getElementById('score-val').textContent = score; showBurst(window.innerWidth/2 - 50, window.innerHeight/2, "+100 🌟", "#f1c40f"); bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err)); const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => modal.style.display = 'none', 3000); }
         function showBurst(x, y, txt, color) { const div = document.createElement('div'); div.className = 'float-num'; div.textContent = txt; div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color; document.body.appendChild(div); setTimeout(() => div.remove(), 800); }
 
-        function calculateAndEndGame() {
-            clearInterval(interval); bgm.pause(); secretBgm.pause(); 
-            let multiplier = 1.0; let tierName = "🐢 標準 (x1.0)";
-            if (seconds <= 60) { multiplier = 3.0; tierName = "⚡ SSS 級 (x3.0)"; } else if (seconds <= 120) { multiplier = 2.0; tierName = "🚀 SS 級 (x2.0)"; } else if (seconds <= 180) { multiplier = 1.5; tierName = "🏃 S 級 (x1.5)"; } else if (seconds <= 240) { multiplier = 1.2; tierName = "🚶 A 級 (x1.2)"; }
-            const finalScore = Math.floor(score * multiplier); const timeStr = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; 
-            document.getElementById('base-score-display').textContent = score; document.getElementById('time-taken-display').textContent = timeStr; document.getElementById('multiplier-display').textContent = tierName; document.getElementById('final-total-display').textContent = finalScore;
-            document.getElementById('end-msg').style.display = "flex"; saveAndDisplayGlobalLeaderboard(finalScore, timeStr);
-        }
-
-        function saveAndDisplayGlobalLeaderboard(finalScore, timeStr) {
-            const listDiv = document.getElementById('leaderboard-list'), themeSelect = document.getElementById('theme-select'), currentTheme = themeSelect.value, themeName = themeSelect.options[themeSelect.selectedIndex].text;
-            document.getElementById('end-board-title').innerText = `🌍 ${themeName} 英雄榜`; listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 正在上傳成績到世界排行榜...</div>";
-            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${finalScore}&time=${encodeURIComponent(timeStr)}&theme=${currentTheme}`).then(r => r.json()).then(board => {
-                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px;'>目前還沒有紀錄，你就是第一名！</div>"; return; }
-                board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name} (${p.time})</span><span>${p.score} pts</span></div>`; });
-            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-weight:700;'>排行榜連線失敗 😢</div>");
+        function endGame() {
+            clearInterval(interval); bgm.pause(); secretBgm.pause(); document.getElementById('final-total-display').textContent = score; document.getElementById('end-msg').style.display = "flex";
+            const listDiv = document.getElementById('leaderboard-list'), themeSelect = document.getElementById('theme-select');
+            const optionText = themeSelect.options[themeSelect.selectedIndex].text, themeName = optionText.includes('-') ? optionText.split('-')[1].trim() : optionText;
+            document.getElementById('end-board-title').innerText = `🌍 ${themeName} 英雄榜`; listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳成績到總部...</div>";
+            
+            // ✨ 加入 IP 傳送 ✨
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=${seconds}s&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) return;
+                board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span>${p.score} pts</span></div>`; });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
         }
     </script>
 </body>
