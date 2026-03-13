@@ -33,6 +33,7 @@
         .action-btns { display: flex; gap: 5px; margin-bottom: 5px; }
         .btn-grammar { flex: 1; padding: 8px 0; font-size: 18px; font-weight: 900; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.1s; background: #8e44ad; box-shadow: 0 4px 0 #6c3483; }
         .btn-grammar:active { transform: translateY(4px); box-shadow: 0 0 0 #6c3483; }
+        .btn-grammar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-rock { background: #f1c40f; color: var(--text-dark); box-shadow: 0 4px 0 #d4ac0d; font-size: 20px;}
         .sentence-tail { font-size: 14px; font-weight: 900; color: var(--text-dark); }
         #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 30px 10px; }
@@ -112,7 +113,8 @@
             <h2 class="leaderboard-title" id="end-board-title">🌍 抓鬼英雄榜</h2>
             <div id="leaderboard-list"></div>
         </div>
-        <button onclick="location.href='index.html'" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">回大廳</button>
+        <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">再玩一次</button>
+        <button onclick="location.href='index.html'" style="padding:12px 40px; font-size:20px; background:#7f8c8d; color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">回大廳</button>
     </div>
 
     <script>
@@ -126,7 +128,10 @@
         const roomData = [ { id: 0, text: "bedroom" }, { id: 1, text: "living room" }, { id: 2, text: "dining room" }, { id: 3, text: "kitchen" }, { id: 4, text: "bathroom" } ];
         const originalLabels = ["🛏️ bedroom", "🛋️ living room", "🪑 dining room", "🍳 kitchen", "🛁 bathroom"];
 
-        let score = 0, caughtCount = 0, targetCaught = 20, seconds = 0; let playerName = "Player", currentTheme = "ghost-level1"; let timerInterval, spawnInterval; let activeWindows = [false, false, false, false, false]; let isMuted = false; 
+        let score = 0, caughtCount = 0, targetCaught = 20, seconds = 0; let playerName = "Player", currentTheme = "ghost-level1"; let timerInterval, spawnInterval; 
+        let activeWindows = [false, false, false, false, false]; 
+        let isMuted = false; 
+        let lastWinIdx = -1; // ✨ 用來記錄上一個出現鬼的窗戶
 
         const bgm = document.getElementById('bgm'); const secretBgm = document.getElementById('secret-bgm'); const radar = document.getElementById('radar-box');
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
@@ -171,10 +176,17 @@
         function spawnGhost() {
             if (caughtCount >= targetCaught) return;
             for(let i=0; i<5; i++) { if(activeWindows[i]) clearWindow(i); }
-            let winIdx = Math.floor(Math.random() * 5); activeWindows[winIdx] = true;
+            
+            let winIdx;
+            // ✨ 防呆機制：確保下一隻鬼「絕對不會」跟上一隻出現在同一個窗戶
+            do {
+                winIdx = Math.floor(Math.random() * 5);
+            } while (winIdx === lastWinIdx);
+            lastWinIdx = winIdx;
+
+            activeWindows[winIdx] = true;
             const winEl = document.getElementById(`win-${winIdx}`), ghostArea = document.getElementById(`ghost-${winIdx}`), labelEl = document.getElementById(`label-${winIdx}`);
 
-            // ✨ 彩蛋機率調降為 1%
             let isEasterEgg = Math.random() < 0.01;
 
             if (isEasterEgg) {
@@ -193,19 +205,41 @@
 
         function handleCatch(winIdx, chosenAnswer, correctAnswer, event) {
             if (!activeWindows[winIdx]) return;
+
+            // ✨ 防連點外掛機制：按下去的瞬間立刻把這顆按鈕鎖死 (disabled)
+            if (event && event.target) {
+                event.target.disabled = true;
+            }
+
             const rect = event.target.getBoundingClientRect(), x = rect.left + rect.width / 2, y = rect.top;
+            
             if (chosenAnswer === 'ROCK') {
+                activeWindows[winIdx] = false; // ✨ 立刻關閉活躍狀態，拒絕後續點擊
                 score += 100; showBurst(x, y, "+100 🌟", "#f1c40f"); bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err));
                 const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => { modal.style.display = 'none'; }, 3000);
                 clearWindow(winIdx); document.getElementById('score-val').textContent = score; return;
             }
+
             if (chosenAnswer === correctAnswer) {
+                activeWindows[winIdx] = false; // ✨ 立刻關閉活躍狀態，拒絕後續點擊
                 score += 10; caughtCount++; playSfx('success'); showBurst(x, y, "+10", "#00b894"); document.getElementById('score-val').textContent = score; document.getElementById('caught-val').textContent = caughtCount; clearWindow(winIdx);
-                if (caughtCount >= targetCaught) { setTimeout(calculateAndEndGame, 500); } 
-                else { clearInterval(spawnInterval); let speed = currentTheme === "ghost-level2" ? 2500 : 3500; spawnGhost(); spawnInterval = setInterval(spawnGhost, speed); }
+                
+                if (caughtCount >= targetCaught) { 
+                    setTimeout(calculateAndEndGame, 500); 
+                } else { 
+                    clearInterval(spawnInterval); 
+                    let speed = currentTheme === "ghost-level2" ? 2500 : 3500; 
+                    
+                    // ✨ 延遲 100ms 淨空時間再出下一隻鬼，澈底洗掉所有的無效連點
+                    setTimeout(() => {
+                        spawnGhost(); 
+                        spawnInterval = setInterval(spawnGhost, speed); 
+                    }, 100);
+                }
             } else {
                 score = Math.max(0, score - 2); playSfx('error'); showBurst(x, y, "-2", "#d63031"); document.getElementById('score-val').textContent = score;
                 const winEl = document.getElementById(`win-${winIdx}`); winEl.classList.add('error'); setTimeout(() => { winEl.classList.remove('error'); }, 300);
+                // 答錯的話保留 activeWindows，讓學生可以按另一顆正確的按鈕
             }
         }
 
@@ -217,7 +251,11 @@
             clearInterval(timerInterval); clearInterval(spawnInterval); bgm.pause(); secretBgm.pause();
             let multiplier = 1.0; let tierName = "🐢 見習探員 (x1.0)";
             if (seconds <= 30) { multiplier = 3.0; tierName = "⚡ 捉鬼大師 (x3.0)"; } else if (seconds <= 45) { multiplier = 2.0; tierName = "🚀 菁英探員 (x2.0)"; } else if (seconds <= 60) { multiplier = 1.5; tierName = "🏃 資深探員 (x1.5)"; } else if (seconds <= 80) { multiplier = 1.2; tierName = "🚶 正式探員 (x1.2)"; }
-            const finalScore = Math.floor(score * multiplier); const timeStr = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; 
+            
+            // 安全鎖：即使被亂改 URL，至少在前端顯示的最高分不會爆表
+            const finalScore = Math.min(Math.floor(score * multiplier), 999); 
+            const timeStr = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; 
+            
             document.getElementById('base-score-display').textContent = score; document.getElementById('time-taken-display').textContent = timeStr; document.getElementById('multiplier-display').textContent = tierName; document.getElementById('final-total-display').textContent = finalScore;
             document.getElementById('end-msg').style.display = "flex"; saveAndDisplayGlobalLeaderboard(finalScore, timeStr);
         }
