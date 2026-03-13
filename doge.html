@@ -215,7 +215,10 @@
         let isMuted = false;
         let isAdmin = false; 
         let countdownInterval;
-        let hasSetupGame = false; // ✨ 防重複綁定機制的旗標 ✨
+        let hasSetupGame = false; 
+        
+        // ✨ 新增用來存儲 IP 的變數 ✨
+        let userIP = "Unknown";
 
         const sfxWtdd = document.getElementById('sfx-wtdd');
         const dogeImg = document.getElementById('doge-img');
@@ -228,6 +231,12 @@
         window.onload = function() { 
             checkTimeAndLock();
             countdownInterval = setInterval(checkTimeAndLock, 1000);
+            
+            // ✨ 網頁一載入，就默默去抓使用者的 IP ✨
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => { userIP = data.ip; })
+                .catch(err => console.log("無法獲取 IP"));
         };
 
         function checkTimeAndLock() {
@@ -244,7 +253,6 @@
                 document.getElementById('locked-overlay').style.display = 'none';
                 document.getElementById('start-overlay').style.display = 'flex';
                 
-                // ✨ 確保初始化遊戲邏輯只會執行一次 ✨
                 if (!hasSetupGame) {
                     fetchFrontLeaderboard();
                     setupDogeInteractions();
@@ -314,7 +322,6 @@
                 document.getElementById('locked-overlay').style.display = 'none';
                 document.getElementById('start-overlay').style.display = 'flex';
                 
-                // ✨ 確保初始化遊戲邏輯只會執行一次 ✨
                 if (!hasSetupGame) {
                     fetchFrontLeaderboard();
                     setupDogeInteractions();
@@ -363,17 +370,14 @@
             updateCounterDisplay();
         }
 
-        // ✨ 全面升級成 Pointer Events (指標事件) 防止重複觸發 ✨
-        let isPressed = false; // 防連點的狀態鎖
+        let isPressed = false; 
 
         function setupDogeInteractions() {
-            // 停用原本可能產生干擾的右鍵選單
             dogeImg.oncontextmenu = (e) => e.preventDefault();
 
-            // 按下事件 (統一處理滑鼠與觸控)
             dogeImg.onpointerdown = (e) => {
                 e.preventDefault(); 
-                if (isPressed) return; // 如果已經是按下狀態，不重複執行
+                if (isPressed) return; 
                 isPressed = true;
 
                 dogeImg.src = 'wtdd.png';
@@ -389,7 +393,6 @@
                 createClickEffect(e);
             };
 
-            // 放開事件 (統一處理滑鼠、觸控放開、移出圖片範圍)
             const releaseEvent = (e) => {
                 e.preventDefault();
                 if (!isPressed) return;
@@ -410,7 +413,6 @@
         }
 
         function createClickEffect(e) {
-            // Pointer event 直接支援 clientX 與 clientY
             let x = e.clientX + (Math.random() * 40 - 20); 
             let y = e.clientY + (Math.random() * 40 - 20);
 
@@ -431,7 +433,8 @@
             const listDiv = document.getElementById('leaderboard-list');
             listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:18px;'>📡 正在上傳手速紀錄...</div>";
             
-            const url = `${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${clicks}&time=Clicker&theme=doge-clicker`;
+            // ✨ 把剛剛抓到的 userIP 加到網址最後面傳送給 Google Apps Script ✨
+            const url = `${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${clicks}&time=Clicker&theme=doge-clicker&ip=${userIP}`;
 
             fetch(url).then(r => r.json()).then(board => {
                 listDiv.innerHTML = "";
