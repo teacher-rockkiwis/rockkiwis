@@ -83,9 +83,9 @@
         .card-5 .game-icon { background: #af7ac5; color: white; }
         .card-5 .play-btn { background: #8e44ad; }
 
-        .card-7:hover { border-color: #3498db; }
-        .card-7 .game-icon { background: #5dade2; color: white; }
-        .card-7 .play-btn { background: #3498db; }
+        .card-7:hover { border-color: #00b894; }
+        .card-7 .game-icon { background: #55efc4; color: white; filter: drop-shadow(0 0 10px rgba(0, 184, 148, 0.5)); }
+        .card-7 .play-btn { background: #00b894; }
 
         .card-6:hover { border-color: #e67e22; }
         .card-6 .game-icon { background: #f39c12; color: white; }
@@ -187,10 +187,11 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
+        <!-- ✨ 更新：Phonics Hyperdrive 卡片 -->
         <a href="phonics.html" class="game-card card-7">
-            <div class="game-icon">📦</div>
-            <h2 class="game-title">Phonics Express</h2>
-            <p class="game-desc">音波快遞公司！<br>聽發音分辨單字，將神秘包裹送到正確的輸送帶上！</p>
+            <div class="game-icon">🚀</div>
+            <h2 class="game-title">Phonics Hyperdrive</h2>
+            <p class="game-desc">發音極速特快車！<br>聽音辨字極速挑戰！注意聽系統唸出的單字，找出正確軌道狂飆！</p>
             <div class="play-btn">PLAY NOW</div>
         </a>
 
@@ -208,7 +209,7 @@
 
     </div>
 
-    <!-- ✨ 嚴肅警告公告彈窗 ✨ -->
+    <!-- 嚴肅警告公告彈窗 -->
     <div id="warning-modal" class="overlay-modal" style="z-index: 999999;">
         <div class="modal-content warning-content">
             <h2 style="color:#e74c3c; font-size:32px; margin-top:0; margin-bottom:15px;">⚠️ ROCK 老師公告 ⚠️</h2>
@@ -248,7 +249,7 @@
         let isDogeOpen = false;
 
         window.onload = function() {
-            // ✨ 檢查是否已經顯示過警告彈窗 (SessionStorage)
+            // 檢查是否已經顯示過警告彈窗 (SessionStorage)
             if (!sessionStorage.getItem('rockWarningShown')) {
                 document.getElementById('warning-modal').style.display = 'flex';
             }
@@ -272,7 +273,7 @@
             setInterval(updateCountdown, 1000);
         };
 
-        // ✨ 關閉警告視窗並記錄
+        // 關閉警告視窗並記錄
         function closeWarning() {
             document.getElementById('warning-modal').style.display = 'none';
             sessionStorage.setItem('rockWarningShown', 'true');
