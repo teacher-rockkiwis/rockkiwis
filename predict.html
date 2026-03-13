@@ -21,11 +21,23 @@
         #target-words-box h3 { margin: 0 0 5px 0; font-size: 16px; color: var(--gold); }
         #word-list { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 95%; margin-bottom: 15px; }
-        .slot { background: var(--slot-bg); border-radius: 15px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: var(--text-dark); border: 4px solid #95a5a6; cursor: pointer; transition: 0.2s; position: relative; box-shadow: inset 0 3px 5px rgba(0,0,0,0.1); }
+        .slot { background: var(--slot-bg); border-radius: 15px; height: 60px; display: flex; align-items: center; justify-content: center; position: relative; border: 4px solid #95a5a6; cursor: text; transition: 0.2s; box-shadow: inset 0 3px 5px rgba(0,0,0,0.1); }
         .slot.active { border-color: var(--primary); box-shadow: 0 0 15px var(--primary); transform: scale(1.05); z-index: 10; background: white;}
-        .slot.success { background: var(--success); color: white; border-color: #2ecc71; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .slot.fail { background: var(--error); color: white; border-color: #e74c3c; opacity: 0.8; }
-        .slot-num { position: absolute; top: -10px; left: -10px; background: var(--text-dark); color: white; width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .slot.success { background: var(--success); border-color: #2ecc71; }
+        .slot.success .slot-input { color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .slot.fail { background: var(--error); border-color: #e74c3c; opacity: 0.8; }
+        .slot.fail .slot-input { color: white; }
+        
+        /* ✨ 新增原生 input 樣式，完美融入原本的格子 ✨ */
+        .slot-input {
+            width: 100%; height: 100%; border: none; background: transparent;
+            font-size: 22px; font-weight: 900; font-family: 'Quicksand', sans-serif;
+            color: var(--text-dark); text-align: center; outline: none;
+            /* 防止iOS在輸入格放大 */
+            touch-action: manipulation;
+        }
+        
+        .slot-num { position: absolute; top: -10px; left: -10px; background: var(--text-dark); color: white; width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 5; pointer-events: none;}
         .system-reveal { position: absolute; bottom: -25px; font-size: 14px; background: rgba(0,0,0,0.8); color: var(--gold); padding: 2px 10px; border-radius: 10px; white-space: nowrap; visibility: hidden; z-index: 20;}
         .controls { display: flex; gap: 10px; width: 95%; margin-bottom: 15px; }
         .btn-action { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 20px; font-weight: 900; font-family: 'Quicksand', sans-serif; cursor: pointer; transition: 0.2s; color: white; }
@@ -113,12 +125,31 @@
             <h3>本輪指定單字 (請打亂順序填入)：</h3>
             <div id="word-list">loading...</div>
         </div>
+        
+        <!-- ✨ 結構全面升級：使用原生的 input text 達成 Tab 切換與游標點擊修改 ✨ -->
         <div class="grid-container">
-            <div class="slot active" id="slot-0" onclick="focusSlot(0)"><div class="slot-num">1</div><span id="txt-0"></span><div class="system-reveal" id="rev-0"></div></div>
-            <div class="slot" id="slot-1" onclick="focusSlot(1)"><div class="slot-num">2</div><span id="txt-1"></span><div class="system-reveal" id="rev-1"></div></div>
-            <div class="slot" id="slot-2" onclick="focusSlot(2)"><div class="slot-num">3</div><span id="txt-2"></span><div class="system-reveal" id="rev-2"></div></div>
-            <div class="slot" id="slot-3" onclick="focusSlot(3)"><div class="slot-num">4</div><span id="txt-3"></span><div class="system-reveal" id="rev-3"></div></div>
+            <div class="slot active" id="slot-0" onclick="document.getElementById('txt-0').focus()">
+                <div class="slot-num">1</div>
+                <input type="text" id="txt-0" class="slot-input" autocomplete="off" spellcheck="false" maxlength="15" onfocus="setActiveSlot(0)" oninput="handleNativeInput(0)">
+                <div class="system-reveal" id="rev-0"></div>
+            </div>
+            <div class="slot" id="slot-1" onclick="document.getElementById('txt-1').focus()">
+                <div class="slot-num">2</div>
+                <input type="text" id="txt-1" class="slot-input" autocomplete="off" spellcheck="false" maxlength="15" onfocus="setActiveSlot(1)" oninput="handleNativeInput(1)">
+                <div class="system-reveal" id="rev-1"></div>
+            </div>
+            <div class="slot" id="slot-2" onclick="document.getElementById('txt-2').focus()">
+                <div class="slot-num">3</div>
+                <input type="text" id="txt-2" class="slot-input" autocomplete="off" spellcheck="false" maxlength="15" onfocus="setActiveSlot(2)" oninput="handleNativeInput(2)">
+                <div class="system-reveal" id="rev-2"></div>
+            </div>
+            <div class="slot" id="slot-3" onclick="document.getElementById('txt-3').focus()">
+                <div class="slot-num">4</div>
+                <input type="text" id="txt-3" class="slot-input" autocomplete="off" spellcheck="false" maxlength="15" onfocus="setActiveSlot(3)" oninput="handleNativeInput(3)">
+                <div class="system-reveal" id="rev-3"></div>
+            </div>
         </div>
+
         <div class="controls">
             <button class="btn-action" id="submit-btn" disabled>🔒 鎖定開獎</button>
         </div>
@@ -173,12 +204,19 @@
 
         window.onload = function() { 
             fetchFrontLeaderboard(); buildKeyboard();
-            document.addEventListener('keydown', (e) => {
+            
+            // ✨ 實體鍵盤的彩蛋支援 ✨
+            document.addEventListener('keyup', (e) => {
                 if(document.getElementById('game-area').style.visibility === 'visible' && !isRevealing) {
-                    if (e.key === 'Backspace') handleKey('DEL'); else if (e.key === ' ') { e.preventDefault(); handleKey('SPACE'); } else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
+                    if(/^[a-zA-Z]$/.test(e.key)) {
+                        eggBuffer += e.key.toUpperCase();
+                        if (eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4);
+                        if (eggBuffer === "ROCK") triggerEasterEgg();
+                    }
                 }
             });
-            // ✨ 偷抓 IP ✨
+
+            // 偷抓 IP
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
@@ -228,18 +266,70 @@
             document.getElementById('word-list').innerText = roundWords.join(', ');
             userInputs = ["", "", "", ""]; isRevealing = false;
             document.getElementById('submit-btn').innerText = "🔒 鎖定開獎"; document.getElementById('submit-btn').disabled = true; document.getElementById('submit-btn').onclick = revealAnswers;
-            for(let i=0; i<4; i++) { let slot = document.getElementById(`slot-${i}`); slot.className = 'slot'; document.getElementById(`txt-${i}`).innerText = ""; let rev = document.getElementById(`rev-${i}`); rev.style.visibility = 'hidden'; rev.style.animation = 'none'; rev.innerText = ""; }
-            focusSlot(0);
+            for(let i=0; i<4; i++) { 
+                let slot = document.getElementById(`slot-${i}`); slot.className = 'slot'; 
+                let inputEl = document.getElementById(`txt-${i}`); inputEl.value = ""; inputEl.readOnly = false;
+                let rev = document.getElementById(`rev-${i}`); rev.style.visibility = 'hidden'; rev.style.animation = 'none'; rev.innerText = ""; 
+            }
+            // 遊戲開始，游標自動聚焦第一格
+            document.getElementById('txt-0').focus();
         }
 
-        function focusSlot(idx) { if(isRevealing) return; currentSlot = idx; for(let i=0; i<4; i++) { document.getElementById(`slot-${i}`).classList.remove('active'); } document.getElementById(`slot-${idx}`).classList.add('active'); }
+        // ✨ 處理原生 input 的焦點狀態，確保 Tab 鍵能帶動紫色的背景框 ✨
+        function setActiveSlot(idx) { 
+            if(isRevealing) return; 
+            currentSlot = idx; 
+            for(let i=0; i<4; i++) { document.getElementById(`slot-${i}`).classList.remove('active'); } 
+            document.getElementById(`slot-${idx}`).classList.add('active'); 
+        }
 
+        // ✨ 處理實體鍵盤的原生輸入事件 ✨
+        function handleNativeInput(idx) {
+            playSfx('type');
+            userInputs[idx] = document.getElementById(`txt-${idx}`).value;
+            validateInputs();
+        }
+
+        // ✨ 處理畫面下方「虛擬鍵盤」的點擊，支援在特定游標位置插入/刪除 ✨
         function handleKey(key) {
             if(isRevealing) return;
+            
+            // 處理虛擬鍵盤的彩蛋輸入
             if(key.length === 1) { eggBuffer += key; if (eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4); if (eggBuffer === "ROCK") { triggerEasterEgg(); return; } }
-            playSfx('type'); let currentText = userInputs[currentSlot];
-            if (key === 'DEL') { userInputs[currentSlot] = currentText.slice(0, -1); } else if (key === 'SPACE') { if(currentText.length < 15) userInputs[currentSlot] += " "; } else { if(currentText.length < 15) userInputs[currentSlot] += key.toLowerCase(); }
-            document.getElementById(`txt-${currentSlot}`).innerText = userInputs[currentSlot]; validateInputs();
+            
+            playSfx('type'); 
+            
+            let inputEl = document.getElementById(`txt-${currentSlot}`);
+            inputEl.focus(); // 確保虛擬按鍵點擊後游標還在
+            
+            let start = inputEl.selectionStart;
+            let end = inputEl.selectionEnd;
+            let val = inputEl.value;
+
+            if (key === 'DEL') {
+                // 如果有選取範圍，則刪除選取範圍；如果沒有，則刪除游標前一個字元
+                if (start === end && start > 0) {
+                    inputEl.value = val.slice(0, start - 1) + val.slice(start);
+                    inputEl.setSelectionRange(start - 1, start - 1);
+                } else if (start !== end) {
+                    inputEl.value = val.slice(0, start) + val.slice(end);
+                    inputEl.setSelectionRange(start, start);
+                }
+            } else if (key === 'SPACE') {
+                if (val.length < 15) {
+                    inputEl.value = val.slice(0, start) + ' ' + val.slice(end);
+                    inputEl.setSelectionRange(start + 1, start + 1);
+                }
+            } else {
+                if (val.length < 15) {
+                    inputEl.value = val.slice(0, start) + key.toLowerCase() + val.slice(end);
+                    inputEl.setSelectionRange(start + 1, start + 1);
+                }
+            }
+            
+            // 更新記錄並檢查是否可以開獎
+            userInputs[currentSlot] = inputEl.value; 
+            validateInputs();
         }
 
         function validateInputs() {
@@ -252,7 +342,13 @@
         async function revealAnswers() {
             if(document.getElementById('submit-btn').disabled) return;
             isRevealing = true; document.getElementById('submit-btn').disabled = true;
-            for(let i=0; i<4; i++) document.getElementById(`slot-${i}`).classList.remove('active');
+            
+            // 鎖定所有輸入框，不讓學生在動畫時偷改
+            for(let i=0; i<4; i++) { 
+                document.getElementById(`slot-${i}`).classList.remove('active'); 
+                document.getElementById(`txt-${i}`).readOnly = true;
+            }
+            
             bgmGuess.pause(); let hits = 0; await new Promise(r => setTimeout(r, 500));
             for(let i=0; i<4; i++) {
                 if (!isMuted) { sfxDrumroll.currentTime = 0; sfxDrumroll.play().catch(e => console.log(e)); }
@@ -278,7 +374,7 @@
             else { btn.innerText = "🏁 觀看結算"; btn.disabled = false; btn.onclick = endGame; }
         }
 
-        function triggerEasterEgg() { eggBuffer = ""; totalScore += 100; document.getElementById('score-val').textContent = totalScore; showBurst(window.innerWidth/2 - 50, window.innerHeight/2, "+100 🌟", "#f1c40f"); stopAllAudio(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err)); const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => { modal.style.display = 'none'; userInputs[currentSlot] = ""; document.getElementById(`txt-${currentSlot}`).innerText = ""; stopAllAudio(); if (!isRevealing) bgmGuess.play().catch(e => console.log(e)); }, 3000); }
+        function triggerEasterEgg() { eggBuffer = ""; totalScore += 100; document.getElementById('score-val').textContent = totalScore; showBurst(window.innerWidth/2 - 50, window.innerHeight/2, "+100 🌟", "#f1c40f"); stopAllAudio(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err)); const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => { modal.style.display = 'none'; userInputs[currentSlot] = ""; document.getElementById(`txt-${currentSlot}`).value = ""; stopAllAudio(); if (!isRevealing) bgmGuess.play().catch(e => console.log(e)); }, 3000); }
         function showBurst(x, y, txt, color) { const div = document.createElement('div'); div.className = 'float-num'; div.textContent = txt; div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color; document.body.appendChild(div); setTimeout(() => div.remove(), 800); }
 
         function endGame() {
