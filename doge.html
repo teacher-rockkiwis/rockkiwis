@@ -75,10 +75,21 @@
             background: white; padding: 40px 30px; border-radius: 25px; text-align: center;
             max-width: 90%; width: 450px; border: 5px solid #f39c12; box-shadow: 0 15px 30px rgba(0,0,0,0.5);
         }
-        /* ✨ 隱藏的後門按鈕 ✨ */
+        /* 隱藏的後門按鈕 */
         .admin-lock {
-            position: fixed; bottom: 15px; right: 15px; font-size: 20px; opacity: 0.3; cursor: pointer; z-index: 50000;
+            position: fixed; bottom: 15px; right: 15px; font-size: 20px; opacity: 0.3; cursor: pointer; z-index: 45000;
         }
+
+        /* ✨ 自訂密碼輸入彈窗 ✨ */
+        #pwd-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); z-index: 60000; justify-content: center; align-items: center;
+        }
+        .pwd-box {
+            background: white; padding: 30px; border-radius: 20px; text-align: center; width: 320px; max-width: 90%;
+            border: 4px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.5); animation: popIn 0.2s;
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 20px 10px; }
         #start-overlay { background: var(--primary); color: white; } #end-msg { background: rgba(255,255,255,0.98); display: none; text-align: center; justify-content: center;}
@@ -119,7 +130,7 @@
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
 
-    <!-- ✨ 狗狗休假中：時間防護牆 ✨ -->
+    <!-- 狗狗休假中：時間防護牆 -->
     <div id="locked-overlay">
         <div class="locked-box">
             <h2 style="color:#e67e22; font-size:32px; margin-top:0; margin-bottom:10px;">🐶 狗狗休假中...</h2>
@@ -136,7 +147,19 @@
             <button onclick="location.href='index.html'" style="background:#7f8c8d; color:white; border:none; padding:10px 20px; border-radius:50px; font-size:16px; font-weight:900; cursor:pointer; margin-top:20px;">回遊戲大廳</button>
         </div>
         <!-- 老師專屬後門按鈕 -->
-        <div class="admin-lock" onclick="adminBypass()">🔒</div>
+        <div class="admin-lock" onclick="showPwdModal()">🔒</div>
+    </div>
+
+    <!-- ✨ 隱藏字元的密碼輸入視窗 ✨ -->
+    <div id="pwd-modal">
+        <div class="pwd-box">
+            <h3 style="margin-top:0; font-size:24px; color:var(--primary);">🛡️ 教師解鎖</h3>
+            <input type="password" id="admin-pwd-input" placeholder="請輸入通行密碼" style="font-size:20px; padding:12px; width:100%; margin-bottom:20px; border-radius:10px; border:2px solid #bdc3c7; text-align:center; outline:none; font-family: 'Quicksand', sans-serif;" onkeypress="if(event.key === 'Enter') verifyPwd()">
+            <div style="display:flex; gap:10px;">
+                <button onclick="closePwdModal()" style="flex:1; padding:12px; background:#bdc3c7; color:white; border:none; border-radius:10px; font-weight:900; font-size:16px; cursor:pointer;">取消</button>
+                <button onclick="verifyPwd()" style="flex:1; padding:12px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:900; font-size:16px; cursor:pointer;">確認</button>
+            </div>
+        </div>
     </div>
 
     <!-- 正常遊戲開始畫面 -->
@@ -184,7 +207,7 @@
         let clicks = 0;
         let playerName = "Player";
         let isMuted = false;
-        let isAdmin = false; // 老師後門權限
+        let isAdmin = false; 
         let countdownInterval;
 
         const sfxWtdd = document.getElementById('sfx-wtdd');
@@ -200,42 +223,37 @@
             countdownInterval = setInterval(checkTimeAndLock, 1000);
         };
 
-        // ✨ 檢查時間並決定是否鎖定網頁
         function checkTimeAndLock() {
-            if (isAdmin) return; // 如果老師開了後門，直接無視時間限制
+            if (isAdmin) return; 
 
             const now = new Date();
             const day = now.getDay();
             const hours = now.getHours();
 
-            // 開放條件：週五(5) 17:00 之後 ~ 週日(0) 22:00 之前
             const isOpen = (day === 5 && hours >= 17) || (day === 6) || (day === 0 && hours < 22);
 
             if (isOpen) {
-                // 時間到了，自動解鎖！
                 clearInterval(countdownInterval);
                 document.getElementById('locked-overlay').style.display = 'none';
                 document.getElementById('start-overlay').style.display = 'flex';
                 fetchFrontLeaderboard();
                 setupDogeInteractions();
             } else {
-                // 還沒到時間，顯示倒數
                 document.getElementById('locked-overlay').style.display = 'flex';
                 updateModalCountdown(now, day, hours);
             }
         }
 
-        // ✨ 更新防護牆上的倒數計時
         function updateModalCountdown(now, day, hours) {
             let nextOpen = new Date(now);
             let daysToFriday = 0;
 
             if (day === 5 && hours < 17) {
-                daysToFriday = 0; // 今天下午就開
+                daysToFriday = 0; 
             } else if (day === 0 && hours >= 22) {
-                daysToFriday = 5; // 週日晚上關閉後，等下週五
+                daysToFriday = 5; 
             } else {
-                daysToFriday = (5 - day + 7) % 7; // 平日等週五
+                daysToFriday = (5 - day + 7) % 7; 
             }
 
             nextOpen.setDate(now.getDate() + daysToFriday);
@@ -252,19 +270,32 @@
             document.getElementById('modal-timer').innerHTML = timeStr;
         }
 
-        // ✨ 老師專屬解鎖密碼
-        function adminBypass() {
-            let pwd = prompt("🔒 教師測試模式，請輸入通行密碼：");
-            if (pwd === "rock888") {
+        // ✨ 密碼彈窗控制邏輯 ✨
+        function showPwdModal() {
+            document.getElementById('pwd-modal').style.display = 'flex';
+            document.getElementById('admin-pwd-input').value = '';
+            document.getElementById('admin-pwd-input').focus();
+        }
+
+        function closePwdModal() {
+            document.getElementById('pwd-modal').style.display = 'none';
+        }
+
+        function verifyPwd() {
+            const pwdInput = document.getElementById('admin-pwd-input').value;
+            if (pwdInput === "rock888") {
                 isAdmin = true;
                 clearInterval(countdownInterval);
-                alert("✅ 密碼正確！防護牆已暫時解除。");
+                closePwdModal();
+                alert("✅ 密碼正確！防護牆已解除。");
                 document.getElementById('locked-overlay').style.display = 'none';
                 document.getElementById('start-overlay').style.display = 'flex';
                 fetchFrontLeaderboard();
                 setupDogeInteractions();
-            } else if (pwd !== null) {
+            } else {
                 alert("❌ 密碼錯誤！");
+                document.getElementById('admin-pwd-input').value = '';
+                document.getElementById('admin-pwd-input').focus();
             }
         }
 
