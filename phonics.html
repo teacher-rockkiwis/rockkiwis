@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr. ROCK - Phonics Express</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498db; --secondary: #2980b9; --success: #2ecc71; --error: #e74c3c;
+            --bg: #ecf0f1; --belt: #7f8c8d; --box-color: #d35400; --text-dark: #2c3e50;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { background-color: var(--bg); margin: 0; padding: 0; height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
+
+        .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: var(--text-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 50000; transition: 0.2s; }
+        .sound-toggle:hover { transform: scale(1.05); } .sound-toggle:active { transform: scale(0.95); }
+
+        #header { height: 60px; background: rgba(255,255,255,0.95); border-bottom: 4px solid var(--primary); display: flex; justify-content: space-around; align-items: center; padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; z-index: 100; }
+        .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; color: var(--text-dark); }
+        .exit-btn { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #c0392b; }
+        .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #c0392b; }
+
+        #game-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 20px 10px; visibility: hidden; width: 100%; max-width: 800px; margin: 0 auto; position: relative;}
+
+        /* 快遞輸送帶設計 */
+        #conveyor-belt { width: 100%; height: 180px; background: repeating-linear-gradient(90deg, #95a5a6, #95a5a6 20px, #7f8c8d 20px, #7f8c8d 40px); border-radius: 20px; border: 8px solid #34495e; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 15px 0 #2c3e50, inset 0 10px 20px rgba(0,0,0,0.5); margin-top: 30px;}
+        
+        /* 神祕包裹 */
+        #package { background: #e67e22; width: 140px; height: 140px; border-radius: 15px; border: 4px solid #d35400; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 20px rgba(0,0,0,0.4); position: relative; z-index: 10; animation: dropIn 0.5s forwards; }
+        #package:active { transform: scale(0.95); }
+        #package::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 40%; height: 100%; background: rgba(0,0,0,0.1); pointer-events: none;}
+        
+        .pkg-icon { font-size: 50px; margin-bottom: 5px; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.3)); }
+        .pkg-text { font-size: 16px; font-weight: 900; color: white; text-align: center; text-shadow: 0 2px 2px rgba(0,0,0,0.5); }
+        .word-reveal { font-size: 28px; font-weight: 900; color: white; display: none; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 20;}
+
+        @keyframes dropIn { 0% { transform: translateY(-200px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        
+        .pkg-success { background: var(--success) !important; border-color: #27ae60 !important; transform: scale(1.1) !important; box-shadow: 0 0 30px var(--success) !important; }
+        .pkg-error { background: var(--error) !important; border-color: #c0392b !important; transform: scale(0.9) !important; box-shadow: 0 0 30px var(--error) !important; animation: shake 0.3s !important; }
+
+        /* 分類按鈕 */
+        .sorting-bins { display: flex; justify-content: space-between; width: 100%; gap: 15px; margin-bottom: 20px; }
+        .bin-btn { flex: 1; background: white; border: 6px solid var(--primary); border-radius: 20px; padding: 20px 10px; font-size: 22px; font-weight: 900; font-family: 'Quicksand', sans-serif; cursor: pointer; color: var(--text-dark); box-shadow: 0 10px 0 var(--secondary); transition: 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.3;}
+        .bin-btn:active { transform: translateY(10px); box-shadow: 0 0 0 var(--secondary); }
+        .bin-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: translateY(10px); box-shadow: 0 0 0 var(--secondary); }
+        .bin-emoji { font-size: 40px; margin-bottom: 5px; }
+
+        /* Overlay */
+        #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 20px 10px; }
+        #start-overlay { background: var(--primary); color: white; } #end-msg { background: rgba(255,255,255,0.98); display: none; text-align: center; }
+        
+        .grade-group { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; width: 90%; max-width: 350px; }
+        .grade-title { font-size: 18px; font-weight: 900; margin: 0 0 10px 0; color: #f1c40f; text-align: left; }
+        select.theme-select { width: 100%; font-size: 16px; padding: 10px; border-radius: 10px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; }
+        .name-input { font-size: 22px; padding: 12px 20px; border-radius: 15px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 15px; width: 90%; max-width: 350px; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .start-btn { background: var(--success); color: white; border: none; padding: 15px 40px; font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #27ae60; margin-bottom: 20px; }
+
+        .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; }
+        .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: var(--text-dark); text-align: center;}
+        .leaderboard-title { font-size: 20px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center; border-top: 2px dashed #ddd; padding-top: 15px; }
+        #leaderboard-list { max-height: 200px; overflow-y: auto; } .board-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #dfe6e9; font-size: 16px; font-weight: 700; color: var(--text-dark);}
+
+        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 60px; z-index: 30000; text-shadow: 3px 3px 0px white, -3px -3px 0px white; animation: burst 0.8s forwards; }
+        @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-30px); opacity: 1; } 100% { transform: scale(1.2) translateY(-150px); opacity: 0; } }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
+
+        @media (max-width: 768px) {
+            #header { padding: 0 100px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; }
+            #conveyor-belt { height: 150px; margin-top: 20px;} #package { width: 120px; height: 120px; }
+            .bin-btn { font-size: 16px; padding: 15px 5px; } .bin-emoji { font-size: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" src="music.mp3" loop></audio>
+    <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
+
+    <div id="start-overlay">
+        <h1 style="font-size: 45px; margin-bottom: 5px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">📦 Phonics Express</h1>
+        <p style="font-size: 16px; margin-bottom: 15px;">音波快遞公司！聽聲音，將包裹正確分類！</p>
+        
+        <input type="text" id="player-name" class="name-input" placeholder="輸入理貨員姓名..." autocomplete="off" maxlength="12">
+        
+        <div class="grade-group">
+            <div class="grade-title">📘 選擇分貨路線：</div>
+            <select id="theme-select" class="theme-select">
+                <option value="g4">💨 四年級：無聲 th vs 有聲 th</option>
+                <option value="g5">🐳 五年級：wh /w/ vs ph /f/</option>
+            </select>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">開始理貨！</button>
+    </div>
+
+    <div id="header">
+        <div class="stat-pill">👤 <span id="display-name">Player</span></div>
+        <div class="stat-pill">📦 進度: <span id="progress-val" style="color:var(--primary);">0</span>/10</div>
+        <div class="stat-pill">🏆 <span id="score-val" style="color:#f1c40f;">0</span></div>
+        <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
+    </div>
+
+    <div id="game-area">
+        <div style="font-size: 22px; font-weight: 900; color: white; background: var(--text-dark); padding: 5px 20px; border-radius: 50px; margin-bottom: 10px;">點擊包裹聽發音 👂</div>
+        
+        <div id="conveyor-belt">
+            <div id="package" onclick="playCurrentWord()">
+                <div class="pkg-icon" id="pkg-icon">🔊</div>
+                <div class="pkg-text" id="pkg-text">TAP ME</div>
+                <div class="word-reveal" id="word-reveal">WORD</div>
+            </div>
+        </div>
+
+        <div class="sorting-bins">
+            <button class="bin-btn" id="btn-left" onclick="checkAnswer('left')">
+                <div class="bin-emoji" id="emoji-left">💨</div>
+                <span id="text-left">無聲 th</span>
+            </button>
+            <button class="bin-btn" id="btn-right" onclick="checkAnswer('right')">
+                <div class="bin-emoji" id="emoji-right">🐝</div>
+                <span id="text-right">有聲 th</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="end-msg">
+        <h1 id="end-title" style="font-size: 40px; color: var(--primary); margin: 0; margin-top: 10px;">打卡下班！🎉</h1>
+        <div class="result-panel">
+            <div class="score-breakdown">理貨總積分：<span id="final-total-display" style="color:var(--error); font-size:36px;">0</span> pts</div>
+            <h2 class="leaderboard-title" id="end-board-title">🌍 最佳理貨員排行榜</h2>
+            <div id="leaderboard-list"></div>
+        </div>
+        <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 10px;">再玩一次</button>
+        <button onclick="location.href='index.html'" style="padding:12px 40px; font-size:20px; background:#7f8c8d; color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">回大廳</button>
+    </div>
+
+    <script>
+        // 🛡️ 防外掛系統
+        document.addEventListener('contextmenu', event => event.preventDefault()); 
+        document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
+        setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
+
+        const badWords = ["fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "機掰", "雞掰", "擊敗", "智障", "白痴", "白癡", "垃圾", "沙小", "三小", "王八", "賤", "去死", "腦殘", "操", "肏", "草泥馬", "操你", "媽的", "幹你娘", "幹您娘", "趕羚羊", "機車", "他媽", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "屁", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "林北", "恁爸", "🖕"];
+
+        // 📚 發音單字資料庫 (黑科技：免錄音)
+        const phonicsData = {
+            "g4": {
+                themeName: "G4 Phonics",
+                leftConfig: { emoji: "💨", text: "無聲 th<br><span style='font-size:14px'>(如 think)</span>", type: "voiceless" },
+                rightConfig: { emoji: "🐝", text: "有聲 th<br><span style='font-size:14px'>(如 this)</span>", type: "voiced" },
+                words: [
+                    { word: "think", type: "voiceless" }, { word: "math", type: "voiceless" }, { word: "three", type: "voiceless" }, { word: "bath", type: "voiceless" }, { word: "teeth", type: "voiceless" }, { word: "mouth", type: "voiceless" }, { word: "thief", type: "voiceless" },
+                    { word: "this", type: "voiced" }, { word: "that", type: "voiced" }, { word: "brother", type: "voiced" }, { word: "mother", type: "voiced" }, { word: "father", type: "voiced" }, { word: "weather", type: "voiced" }, { word: "they", type: "voiced" }
+                ]
+            },
+            "g5": {
+                themeName: "G5 Phonics",
+                leftConfig: { emoji: "🐳", text: "wh 發 /w/<br><span style='font-size:14px'>(如 whale)</span>", type: "wh" },
+                rightConfig: { emoji: "📱", text: "ph 發 /f/<br><span style='font-size:14px'>(如 phone)</span>", type: "ph" },
+                words: [
+                    { word: "whale", type: "wh" }, { word: "white", type: "wh" }, { word: "wheel", type: "wh" }, { word: "where", type: "wh" }, { word: "when", type: "wh" }, { word: "what", type: "wh" }, { word: "whisper", type: "wh" },
+                    { word: "phone", type: "ph" }, { word: "photo", type: "ph" }, { word: "elephant", type: "ph" }, { word: "dolphin", type: "ph" }, { word: "alphabet", type: "ph" }, { word: "graph", type: "ph" }, { word: "trophy", type: "ph" }
+                ]
+            }
+        };
+
+        let score = 0, currentProgress = 0, maxRounds = 10;
+        let playerName = "Player", currentLevel = "g4";
+        let gameWords = [], currentWordObj = null;
+        let isMuted = false, isProcessing = false;
+
+        const bgm = document.getElementById('bgm');
+        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
+
+        function toggleSound(e) {
+            if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn');
+            if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; bgm.muted = true; } 
+            else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; bgm.muted = false; }
+        }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSfx(type) {
+            if (isMuted) return; if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type === 'success') { osc.type = 'square'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); } 
+            else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
+        }
+
+        // 🗣️ 黑科技：Web Speech API 語音合成
+        function speakWord(text) {
+            window.speechSynthesis.cancel(); // 清除之前的語音
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // 美式發音
+            utterance.rate = 0.85; // 稍微放慢速度讓學生聽清楚
+            utterance.pitch = 1.1; // 稍微調高音調，比較有活力
+            if(!isMuted) window.speechSynthesis.speak(utterance);
+        }
+
+        function startGame() {
+            const inputName = document.getElementById('player-name').value.trim();
+            if(inputName === "") { alert("請輸入理貨員姓名喔！"); return; }
+            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
+
+            playerName = inputName; document.getElementById('display-name').innerText = playerName;
+            currentLevel = document.getElementById('theme-select').value;
+            
+            // 初始化畫面按鈕
+            const config = phonicsData[currentLevel];
+            document.getElementById('emoji-left').innerHTML = config.leftConfig.emoji;
+            document.getElementById('text-left').innerHTML = config.leftConfig.text;
+            document.getElementById('emoji-right').innerHTML = config.rightConfig.emoji;
+            document.getElementById('text-right').innerHTML = config.rightConfig.text;
+
+            // 隨機挑選 10 題
+            let bank = [...config.words];
+            gameWords = bank.sort(() => Math.random() - 0.5).slice(0, maxRounds);
+
+            bgm.volume = 0.3; bgm.play().catch(e => console.log(e));
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('header').style.visibility = 'visible';
+            document.getElementById('game-area').style.visibility = 'visible';
+            
+            score = 0; currentProgress = 0; document.getElementById('score-val').textContent = score;
+            
+            // 啟用語音 API 需要使用者第一次互動，這裡順便觸發一個無聲的
+            let initSpeech = new SpeechSynthesisUtterance(""); window.speechSynthesis.speak(initSpeech);
+
+            loadNextPackage();
+        }
+
+        function loadNextPackage() {
+            if (currentProgress >= maxRounds) { endGame(); return; }
+            isProcessing = false;
+            currentWordObj = gameWords[currentProgress];
+            document.getElementById('progress-val').textContent = currentProgress + 1;
+            
+            const pkg = document.getElementById('package');
+            pkg.className = ''; // 重置動畫
+            document.getElementById('pkg-icon').style.display = 'block';
+            document.getElementById('pkg-text').style.display = 'block';
+            document.getElementById('word-reveal').style.display = 'none';
+            document.getElementById('word-reveal').innerText = currentWordObj.word;
+            
+            // 重啟包裹動畫
+            void pkg.offsetWidth; 
+            pkg.style.animation = 'dropIn 0.5s forwards';
+
+            // 啟用下方按鈕
+            document.getElementById('btn-left').disabled = false;
+            document.getElementById('btn-right').disabled = false;
+
+            // 自動播放一次聲音 (如果瀏覽器允許)
+            setTimeout(() => { if(!isProcessing) speakWord(currentWordObj.word); }, 600);
+        }
+
+        function playCurrentWord() {
+            if(!isProcessing && currentWordObj) {
+                // 點擊包裹時播放
+                speakWord(currentWordObj.word);
+                // 包裹微縮放特效
+                const pkg = document.getElementById('package');
+                pkg.style.transform = 'scale(0.9)';
+                setTimeout(() => { if(!isProcessing) pkg.style.transform = 'scale(1)'; }, 150);
+            }
+        }
+
+        function checkAnswer(chosenSide) {
+            if (isProcessing) return;
+            isProcessing = true; // 鎖定操作
+
+            // 禁用按鈕防連點
+            document.getElementById('btn-left').disabled = true;
+            document.getElementById('btn-right').disabled = true;
+
+            const config = phonicsData[currentLevel];
+            const chosenType = chosenSide === 'left' ? config.leftConfig.type : config.rightConfig.type;
+            const pkg = document.getElementById('package');
+            
+            // 揭曉單字
+            document.getElementById('pkg-icon').style.display = 'none';
+            document.getElementById('pkg-text').style.display = 'none';
+            document.getElementById('word-reveal').style.display = 'block';
+
+            let x = pkg.getBoundingClientRect().left + 50;
+            let y = pkg.getBoundingClientRect().top;
+
+            if (chosenType === currentWordObj.type) {
+                // 答對
+                playSfx('success');
+                pkg.classList.add('pkg-success');
+                score += 10;
+                showBurst(x, y, "+10", "#2ecc71");
+            } else {
+                // 答錯
+                playSfx('error');
+                pkg.classList.add('pkg-error');
+                score = Math.max(0, score - 5);
+                showBurst(x, y, "-5", "#e74c3c");
+                // 念一次正確的給他聽
+                speakWord(currentWordObj.word);
+            }
+            
+            document.getElementById('score-val').textContent = score;
+            currentProgress++;
+
+            // 停留 1.5 秒讓學生看清楚正確拼法，然後進入下一題
+            setTimeout(loadNextPackage, 1500);
+        }
+
+        function showBurst(x, y, txt, color) { const div = document.createElement('div'); div.className = 'float-num'; div.textContent = txt; div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color; document.body.appendChild(div); setTimeout(() => div.remove(), 800); }
+
+        function endGame() {
+            bgm.pause();
+            document.getElementById('final-total-display').textContent = score;
+            document.getElementById('end-msg').style.display = "flex";
+
+            const listDiv = document.getElementById('leaderboard-list');
+            listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:18px;'>📡 上傳成績中...</div>";
+            
+            const themeName = currentLevel === "g4" ? "phonics-g4" : "phonics-g5";
+            const url = `${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=Express&theme=${themeName}`;
+
+            fetch(url).then(r => r.json()).then(board => {
+                listDiv.innerHTML = "";
+                if (!board || board.length === 0) { listDiv.innerHTML = "<div>你是第一個破關的理貨員！</div>"; return; }
+                board.forEach((p, i) => {
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span>${p.score} pts</span></div>`;
+                });
+            }).catch(() => listDiv.innerHTML = "<div style='color:var(--error); text-align:center;'>連線失敗</div>");
+        }
+    </script>
+</body>
+</html>
