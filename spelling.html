@@ -248,7 +248,22 @@
         <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">再挑戰一次</button>
         <button onclick="location.href='index.html'" style="padding:12px 40px; font-size:20px; background:#636e72; color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px; margin-left: 10px;">回大廳</button>
     </div>
-
+// 🛡️ 防外掛與防作弊系統 (Anti-Cheat)
+        document.addEventListener('contextmenu', event => event.preventDefault()); // 禁用滑鼠右鍵
+        document.addEventListener('keydown', function(e) {
+            // 禁用 F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+            if (e.keyCode === 123 || 
+               (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
+               (e.ctrlKey && e.keyCode === 85)) { 
+                e.preventDefault();
+                return false;
+            }
+        });
+        // 啟動無限 Debugger 迴圈與自動清除 Console
+        setInterval(function() {
+            try { (function() { return false; }['constructor']('debugger')()); } catch(err) {}
+            console.clear();
+        }, 1000);
     <script>
         const badWords = [
             "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl",
