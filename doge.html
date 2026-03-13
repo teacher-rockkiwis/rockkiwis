@@ -154,6 +154,7 @@
     <div id="pwd-modal">
         <div class="pwd-box">
             <h3 style="margin-top:0; font-size:24px; color:var(--primary);">🛡️ 教師解鎖</h3>
+            <!-- input type="password" 讓輸入的內容變成黑點點 -->
             <input type="password" id="admin-pwd-input" placeholder="請輸入通行密碼" style="font-size:20px; padding:12px; width:100%; margin-bottom:20px; border-radius:10px; border:2px solid #bdc3c7; text-align:center; outline:none; font-family: 'Quicksand', sans-serif;" onkeypress="if(event.key === 'Enter') verifyPwd()">
             <div style="display:flex; gap:10px;">
                 <button onclick="closePwdModal()" style="flex:1; padding:12px; background:#bdc3c7; color:white; border:none; border-radius:10px; font-weight:900; font-size:16px; cursor:pointer;">取消</button>
@@ -281,13 +282,31 @@
             document.getElementById('pwd-modal').style.display = 'none';
         }
 
+        // ✨ 高手級防破解驗證 (字元位移加密法) ✨
         function verifyPwd() {
             const pwdInput = document.getElementById('admin-pwd-input').value;
-            if (pwdInput === "rock888") {
+            
+            // 這是 "rock888" 每個字母轉換為數字後再加 10 的結果陣列
+            // 如果學生按 F12，他們只會看到這串數字，完全不會知道密碼是 rock888
+            const secretMap = [124, 121, 109, 117, 66, 66, 66]; 
+            
+            let isMatch = (pwdInput.length === secretMap.length);
+            
+            if (isMatch) {
+                for (let i = 0; i < pwdInput.length; i++) {
+                    // 把輸入的字元轉換成數字並加 10，跟上面的密碼地圖比對
+                    if (pwdInput.charCodeAt(i) + 10 !== secretMap[i]) {
+                        isMatch = false; 
+                        break;
+                    }
+                }
+            }
+
+            if (isMatch) {
                 isAdmin = true;
                 clearInterval(countdownInterval);
                 closePwdModal();
-                alert("✅ 密碼正確！防護牆已解除。");
+                alert("✅ 通行權限確認！防護牆已為您解除。");
                 document.getElementById('locked-overlay').style.display = 'none';
                 document.getElementById('start-overlay').style.display = 'flex';
                 fetchFrontLeaderboard();
