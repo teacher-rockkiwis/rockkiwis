@@ -42,7 +42,7 @@
         }
         .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #c0392b; }
 
-        /* 遊戲區域 */  
+        /* 遊戲區域 */
         #game-area {
             flex-grow: 1; display: flex; flex-direction: column; align-items: center;
             padding: 10px; visibility: hidden; width: 100%; max-width: 800px; margin: 0 auto;
@@ -84,7 +84,7 @@
         #submit-btn:disabled { background: #95a5a6; box-shadow: 0 5px 0 #7f8c8d; cursor: not-allowed; }
         #submit-btn:not(:disabled):active { transform: translateY(5px); box-shadow: 0 0 0 #6c3483; }
 
-        /* 虛擬鍵盤 */ 
+        /* 虛擬鍵盤 */
         #keyboard { width: 100%; background: var(--keyboard-bg); padding: 10px 5px 15px 5px; border-radius: 15px 15px 0 0; margin-top: auto; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3); }
         .key-row { display: flex; justify-content: center; gap: 5px; }
         .key { background: white; color: var(--text-dark); border: none; border-radius: 8px; font-size: 22px; font-weight: 900; font-family: 'Quicksand', sans-serif; padding: 10px 0; flex: 1; max-width: 45px; cursor: pointer; box-shadow: 0 4px 0 #95a5a6; text-transform: uppercase; transition: 0.1s;}
@@ -128,7 +128,7 @@
 </head>
 <body>
 
-    <!-- ✨ 豪華版音效陣列 -->
+    <!-- ✨ 豪華版音效陣列：包含 bingo 和 fail -->
     <audio id="bgm-guess" src="guess.mp3" loop></audio>
     <audio id="sfx-drumroll" src="drumroll.mp3"></audio>
     <audio id="sfx-bingo" src="bingo.mp3"></audio>
@@ -213,7 +213,12 @@
     </div>
 
     <script>
-        const badWords = ["fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "幹", "靠北", "機掰", "智障", "白痴", "白癡", "垃圾", "操", "肏", "草泥馬", "媽的", "ㄘㄠˋ", "ㄍㄢˋ"];
+        const badWords = [
+            "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl",
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "機掰", "雞掰", "擊敗", "智障", "白痴", "白癡", "垃圾", "沙小", "三小", "王八", "賤", "去死", "腦殘",
+            "操", "肏", "草泥馬", "操你", "媽的", "幹你娘", "幹您娘", "趕羚羊", "機車", "他媽", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ",
+            "屁", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "林北", "恁爸", "🖕"
+        ];
 
         const wordBanks = {
             "predict-g4-unit1": ["bedroom", "living room", "dining room", "kitchen", "bathroom", "balcony", "garage", "basement"],
@@ -316,7 +321,9 @@
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("請輸入預言家姓名喔！"); return; }
-            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
+            
+            const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
+            if(badWords.some(bad => cleanName.includes(bad))) { alert("請保持禮貌喔！😇"); return; }
 
             playerName = inputName; document.getElementById('display-name').innerText = playerName;
             currentTheme = document.getElementById('theme-select').value;
@@ -436,7 +443,7 @@
                 rev.style.visibility = 'visible';
                 rev.style.animation = 'flipIn 0.4s ease-out';
 
-                // 5. 判斷對錯並播放對應音效
+                // 5. 判斷對錯並播放對應音效 (Bingo 或是 Fail)
                 if (userInput === secret) {
                     slot.classList.add('success');
                     hits++;
@@ -546,5 +553,3 @@
     </script>
 </body>
 </html>
-
-
