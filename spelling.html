@@ -175,6 +175,7 @@
 </head>
 <body>
 
+    <!-- ✨ 這裡改成專屬的 spelling.mp3 了！ -->
     <audio id="bgm" src="spelling.mp3" loop></audio>
     <audio id="secret-bgm" src="67.mp3"></audio>
 
@@ -191,7 +192,7 @@
         
         <input type="text" id="player-name" class="name-input" placeholder="輸入英雄姓名..." autocomplete="off" maxlength="12">
         
-        <!-- ✨ 依年級分類的選單設計 -->
+        <!-- 依年級分類的選單設計 -->
         <div class="grade-group">
             <div class="grade-title">📘 選擇挑戰關卡：</div>
             <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
@@ -249,7 +250,12 @@
     </div>
 
     <script>
-        const badWords = ["fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "幹", "靠北", "機掰", "智障", "白痴", "白癡", "垃圾", "操", "肏", "草泥馬", "媽的", "ㄘㄠˋ", "ㄍㄢˋ"];
+        const badWords = [
+            "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt", "slut", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl",
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "機掰", "雞掰", "擊敗", "智障", "白痴", "白癡", "垃圾", "沙小", "三小", "王八", "賤", "去死", "腦殘",
+            "操", "肏", "草泥馬", "操你", "媽的", "幹你娘", "幹您娘", "趕羚羊", "機車", "他媽", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ",
+            "屁", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "林北", "恁爸", "🖕"
+        ];
 
         // 📝 單字資料庫
         const wordBanks = {
@@ -284,13 +290,13 @@
             ["Z", "X", "C", "V", "B", "N", "M"]
         ];
 
-        let score = 0, currentWordIndex = 0, totalWords = 8; // G4剛好有8題
+        let score = 0, currentWordIndex = 0, totalWords = 8; 
         let playerName = "Player", currentTheme = "spell-g4-unit1";
         let gameVocab = [];
         let currentTarget = "", currentInput = "";
         let wordStartTime = 0, wordTimerInterval;
         let isMuted = false;
-        let eggBuffer = ""; // 偷記錄按鍵用來觸發 ROCK 彩蛋
+        let eggBuffer = ""; 
 
         const bgm = document.getElementById('bgm');
         const secretBgm = document.getElementById('secret-bgm');
@@ -329,7 +335,6 @@
             const themeSelect = document.getElementById('theme-select');
             currentTheme = themeSelect.value;
             
-            // 抓出文字，例如 "🏠 G4 Unit 1 - Home Space"，取 "-" 後面的文字
             const optionText = themeSelect.options[themeSelect.selectedIndex].text;
             const themeName = optionText.includes('-') ? optionText.split('-')[1].trim() : optionText;
             
@@ -360,7 +365,6 @@
                     const btn = document.createElement('button');
                     btn.className = 'key';
                     btn.innerText = letter;
-                    // 點擊虛擬鍵盤
                     btn.onpointerdown = (e) => { e.preventDefault(); handleKeyPress(letter); };
                     rowDiv.appendChild(btn);
                 });
@@ -375,7 +379,7 @@
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             
-            if (type === 'type') { // 打字聲
+            if (type === 'type') { 
                 osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
                 gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
@@ -411,9 +415,8 @@
             document.getElementById('header').style.visibility = 'visible';
             document.getElementById('game-area').style.visibility = 'visible';
             
-            // 設定總題數與隨機抓題
             let bank = [...wordBanks[currentTheme]];
-            totalWords = Math.min(bank.length, 10); // 最多出 10 題
+            totalWords = Math.min(bank.length, 10); 
             document.getElementById('word-progress').parentNode.innerHTML = `🎯 單字: <span id="word-progress" style="color:var(--primary);">1</span>/${totalWords}`;
 
             gameVocab = bank.sort(() => Math.random() - 0.5).slice(0, totalWords);
@@ -470,27 +473,25 @@
             const bar = document.getElementById('timer-bar');
             const hint = document.getElementById('multiplier-hint');
 
-            // 總共給 15 秒的跑條，超過就一直算 1 倍
             let percentage = Math.max(0, 100 - (timePassed / 15) * 100);
             bar.style.width = `${percentage}%`;
 
             if (timePassed <= 3) {
-                bar.style.backgroundColor = "#f1c40f"; // 金色
+                bar.style.backgroundColor = "#f1c40f"; 
                 hint.innerText = "目前倍率：⚡ x5"; hint.style.color = "#f1c40f";
             } else if (timePassed <= 5) {
-                bar.style.backgroundColor = "#00b894"; // 綠色
+                bar.style.backgroundColor = "#00b894"; 
                 hint.innerText = "目前倍率：🚀 x3"; hint.style.color = "#00b894";
             } else if (timePassed <= 10) {
-                bar.style.backgroundColor = "#0984e3"; // 藍色
+                bar.style.backgroundColor = "#0984e3"; 
                 hint.innerText = "目前倍率：🏃 x2"; hint.style.color = "#0984e3";
             } else {
-                bar.style.backgroundColor = "#636e72"; // 灰色
+                bar.style.backgroundColor = "#636e72"; 
                 hint.innerText = "目前倍率：🐢 x1"; hint.style.color = "#636e72";
             }
         }
 
         function handleKeyPress(letter) {
-            // ✨ 彩蛋紀錄器 (密碼式觸發)
             eggBuffer += letter;
             if (eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4);
             if (eggBuffer === "ROCK") {
@@ -499,7 +500,6 @@
 
             if (currentInput.length >= currentTarget.length) return;
 
-            // 處理空格自動跳過
             if (currentTarget[currentInput.length] === ' ') {
                 currentInput += ' ';
             }
@@ -591,7 +591,6 @@
             const listDiv = document.getElementById('leaderboard-list');
             const themeSelect = document.getElementById('theme-select');
             
-            // 抓出文字
             const optionText = themeSelect.options[themeSelect.selectedIndex].text;
             const themeName = optionText.includes('-') ? optionText.split('-')[1].trim() : optionText;
             
@@ -607,10 +606,8 @@
                     let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
                     listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span>${p.score} pts</span></div>`;
                 });
-            }).catch(() => listDiv.innerHTML = "<div style='color:var(--error); text-align:center;'>連線失敗</div>");
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
         }
     </script>
 </body>
 </html>
-
-
