@@ -83,6 +83,10 @@
         .card-5 .game-icon { background: #af7ac5; color: white; }
         .card-5 .play-btn { background: #8e44ad; }
 
+        .card-7:hover { border-color: #3498db; }
+        .card-7 .game-icon { background: #5dade2; color: white; }
+        .card-7 .play-btn { background: #3498db; }
+
         .card-6:hover { border-color: #e67e22; }
         .card-6 .game-icon { background: #f39c12; color: white; }
         .card-6 .play-btn { background: #e67e22; }
@@ -101,7 +105,7 @@
         }
         .game-card:active .play-btn { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
 
-        /* ✨ 週末限定鎖定視窗設計 */
+        /* 週末限定鎖定視窗設計 */
         #weekend-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); z-index: 99999; justify-content: center; align-items: center;
@@ -171,7 +175,15 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
-        <!-- ✨ 遊戲 6：Doge Clicker (WTDD) - 加上倒數計時顯示 ✨ -->
+        <!-- ✨ 遊戲 6：Phonics Express (音波快遞) 放這裡 ✨ -->
+        <a href="phonics.html" class="game-card card-7">
+            <div class="game-icon">📦</div>
+            <h2 class="game-title">Phonics Express</h2>
+            <p class="game-desc">音波快遞公司！<br>聽發音分辨單字，將神秘包裹送到正確的輸送帶上！</p>
+            <div class="play-btn">PLAY NOW</div>
+        </a>
+
+        <!-- ✨ 遊戲 7：Doge Clicker (WTDD) 放最後面壓軸 ✨ -->
         <a href="javascript:void(0)" onclick="checkWeekendAccess(event)" class="game-card card-6">
             <div class="game-icon" style="display: flex; justify-content: center; align-items: center; overflow: hidden; background: white; border: 4px solid #f39c12; padding: 0;">
                 <img src="wtdd.png" alt="WTDD" style="width: 100%; height: 100%; object-fit: cover;">
@@ -207,10 +219,19 @@
     </div>
 
     <script>
+        // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
+        document.addEventListener('contextmenu', event => event.preventDefault()); 
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
+                e.preventDefault(); return false; 
+            }
+        });
+        setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
+
         const bgm = document.getElementById('bgm');
         const soundBtn = document.getElementById('sound-btn');
         let isPlaying = false;
-        let isDogeOpen = false; // 記錄狗狗遊戲是否開放
+        let isDogeOpen = false;
 
         window.onload = function() {
             bgm.volume = 0.5;
@@ -228,7 +249,6 @@
                 });
             }
             
-            // 啟動倒數計時器
             updateCountdown();
             setInterval(updateCountdown, 1000);
         };
@@ -248,13 +268,11 @@
             }
         }
 
-        // ✨ 核心倒數計時系統
         function updateCountdown() {
             const now = new Date();
-            const day = now.getDay(); // 0是週日，1是週一 ... 5是週五，6是週六
+            const day = now.getDay();
             const hours = now.getHours();
 
-            // 判斷是否為開放時間 (週五 17:00 ~ 週日 23:59)
             isDogeOpen = (day === 5 && hours >= 17) || day === 6 || day === 0;
 
             const cardDesc = document.getElementById('doge-card-desc');
@@ -266,28 +284,20 @@
                 return;
             }
 
-            // 如果未開放，計算距離下一個「週五 17:00」還有多久
             let nextOpen = new Date(now);
-            // 計算今天距離週五還有幾天
             let daysToFriday = (5 - day + 7) % 7;
-            
-            // 如果今天是週五，但時間還沒到 17:00，那距離週五就是 0 天 (也就是今天)
-            if (day === 5 && hours < 17) {
-                daysToFriday = 0;
-            }
+            if (day === 5 && hours < 17) { daysToFriday = 0; }
 
             nextOpen.setDate(now.getDate() + daysToFriday);
-            nextOpen.setHours(17, 0, 0, 0); // 設定為下午 17:00:00
+            nextOpen.setHours(17, 0, 0, 0); 
 
             const diff = nextOpen - now;
             
-            // 換算成天、小時、分、秒
             const d = Math.floor(diff / (1000 * 60 * 60 * 24));
             const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
             const m = Math.floor((diff / 1000 / 60) % 60);
             const s = Math.floor((diff / 1000) % 60);
 
-            // 格式化數字 (補零)
             const hStr = h.toString().padStart(2, '0');
             const mStr = m.toString().padStart(2, '0');
             const sStr = s.toString().padStart(2, '0');
@@ -300,15 +310,11 @@
             if(modalTimer) modalTimer.innerHTML = timeStr;
         }
 
-        // 點擊檢查
         function checkWeekendAccess(e) {
             e.preventDefault(); 
-            
             if (isDogeOpen) {
-                // 如果開放，直接進入
                 window.location.href = 'doge.html';
             } else {
-                // 否則彈出帶有倒數計時的休假視窗
                 document.getElementById('weekend-modal').style.display = 'flex';
             }
         }
@@ -320,5 +326,3 @@
     </script>
 </body>
 </html>
-
-
