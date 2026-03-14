@@ -210,101 +210,101 @@
         let userIP = "Unknown";
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        // ✨ 擴充字庫至 50字 (G4) 與 40字 (G5)，加入大量干擾陷阱單字 ✨
+        // ✨ 修正陷阱單字 Bug：嚴格過濾與字本身重複的干擾選項 ✨
         const wordBanks = {
             "ninja-g4-th": [
-                { word: "thin", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "this", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "that", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "these", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "those", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "they", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "them", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "then", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "there", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "thick", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "think", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "thank", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "three", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "throw", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "thumb", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "thief", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "bath", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "math", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "path", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "tooth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "teeth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "mouth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "south", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "north", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "earth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "cloth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "moth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "brother", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "mother", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "father", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "weather", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "feather", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "leather", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "gather", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "breathe", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "bathe", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "fourth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "fifth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "sixth", target: "th", distractors: ["f", "s", "t", "v"] },
-                { word: "fish", target: "f", distractors: ["th", "s", "v", "p"] },
+                { word: "thin", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "this", target: "th", distractors: ["f", "v", "z", "d"] },
+                { word: "that", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "these", target: "th", distractors: ["f", "v", "z", "d"] },
+                { word: "those", target: "th", distractors: ["f", "v", "z", "d"] },
+                { word: "they", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "them", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "then", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "there", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "thick", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "think", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "thank", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "three", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "throw", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "thumb", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "thief", target: "th", distractors: ["s", "v", "z", "d"] },
+                { word: "bath", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "math", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "path", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "tooth", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "teeth", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "mouth", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "south", target: "th", distractors: ["f", "v", "z", "d"] },
+                { word: "north", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "earth", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "cloth", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "moth", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "brother", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "mother", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "father", target: "th", distractors: ["s", "v", "z", "d"] },
+                { word: "weather", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "feather", target: "th", distractors: ["s", "v", "z", "d"] },
+                { word: "leather", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "gather", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "breathe", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "bathe", target: "th", distractors: ["f", "s", "v", "z"] },
+                { word: "fourth", target: "th", distractors: ["s", "v", "z", "d"] },
+                { word: "fifth", target: "th", distractors: ["s", "v", "z", "d"] },
+                { word: "sixth", target: "th", distractors: ["f", "v", "z", "d"] },
+                { word: "fish", target: "f", distractors: ["th", "v", "p", "b"] },
                 { word: "face", target: "f", distractors: ["th", "s", "v", "p"] },
-                { word: "five", target: "f", distractors: ["th", "s", "v", "p"] },
+                { word: "five", target: "f", distractors: ["th", "s", "p", "b"] },
                 { word: "fork", target: "f", distractors: ["th", "s", "v", "p"] },
-                { word: "tree", target: "t", distractors: ["th", "d", "f", "s"] },
-                { word: "ten", target: "t", distractors: ["th", "d", "f", "s"] },
-                { word: "dog", target: "d", distractors: ["th", "t", "z", "v"] },
-                { word: "door", target: "d", distractors: ["th", "t", "z", "v"] },
-                { word: "zoo", target: "z", distractors: ["th", "s", "v", "d"] },
-                { word: "zebra", target: "z", distractors: ["th", "s", "v", "d"] },
-                { word: "vase", target: "v", distractors: ["th", "f", "w", "b"] }
+                { word: "tree", target: "t", distractors: ["d", "f", "s", "th"] },
+                { word: "ten", target: "t", distractors: ["d", "f", "s", "th"] },
+                { word: "dog", target: "d", distractors: ["t", "v", "z", "th"] },
+                { word: "door", target: "d", distractors: ["t", "v", "z", "th"] },
+                { word: "zoo", target: "z", distractors: ["s", "v", "d", "th"] },
+                { word: "zebra", target: "z", distractors: ["s", "v", "d", "th"] },
+                { word: "vase", target: "v", distractors: ["f", "b", "w", "th"] }
             ],
             "ninja-g5-wh-ph": [
-                { word: "whale", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "what", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "when", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "where", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "why", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "who", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "which", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "white", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "wheel", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "wheat", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "whip", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "whisper", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "whistle", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "whisk", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "whiskers", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "phone", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "photo", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "phonics", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "elephant", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "dolphin", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "graph", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "alphabet", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "nephew", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "sphere", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "trophy", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "phantom", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "phrase", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "water", target: "w", distractors: ["wh", "h", "v", "f"] },
-                { word: "window", target: "w", distractors: ["wh", "h", "v", "f"] },
-                { word: "wait", target: "w", distractors: ["wh", "h", "v", "f"] },
-                { word: "walk", target: "w", distractors: ["wh", "h", "v", "f"] },
-                { word: "wash", target: "w", distractors: ["wh", "h", "v", "f"] },
-                { word: "hat", target: "h", distractors: ["wh", "w", "f", "ph"] },
-                { word: "house", target: "h", distractors: ["wh", "w", "f", "ph"] },
-                { word: "horse", target: "h", distractors: ["wh", "w", "f", "ph"] },
-                { word: "fan", target: "f", distractors: ["ph", "v", "wh", "p"] },
-                { word: "foot", target: "f", distractors: ["ph", "v", "wh", "p"] },
-                { word: "frog", target: "f", distractors: ["ph", "v", "wh", "p"] },
-                { word: "pig", target: "p", distractors: ["ph", "b", "f", "wh"] },
-                { word: "pen", target: "p", distractors: ["ph", "b", "f", "wh"] }
+                { word: "whale", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "what", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "when", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "where", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "why", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "who", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "which", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "white", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "wheel", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "wheat", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "whip", target: "wh", distractors: ["f", "v", "th", "m"] },
+                { word: "whisper", target: "wh", distractors: ["f", "v", "th", "m"] },
+                { word: "whistle", target: "wh", distractors: ["ph", "f", "v", "m"] },
+                { word: "whisk", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "whiskers", target: "wh", distractors: ["ph", "f", "v", "th"] },
+                { word: "phone", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "photo", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "phonics", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "elephant", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "dolphin", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "graph", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "alphabet", target: "ph", distractors: ["wh", "f", "v", "m"] },
+                { word: "nephew", target: "ph", distractors: ["f", "v", "th", "m"] },
+                { word: "sphere", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "trophy", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "phantom", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "phrase", target: "ph", distractors: ["wh", "f", "v", "th"] },
+                { word: "water", target: "w", distractors: ["v", "f", "ph", "th"] },
+                { word: "window", target: "w", distractors: ["v", "f", "ph", "th"] },
+                { word: "wait", target: "w", distractors: ["v", "f", "ph", "th"] },
+                { word: "walk", target: "w", distractors: ["v", "f", "ph", "th"] },
+                { word: "wash", target: "w", distractors: ["v", "f", "ph", "th"] },
+                { word: "hat", target: "h", distractors: ["f", "v", "p", "m"] },
+                { word: "house", target: "h", distractors: ["f", "v", "p", "m"] },
+                { word: "horse", target: "h", distractors: ["f", "v", "p", "m"] },
+                { word: "fan", target: "f", distractors: ["v", "p", "th", "wh"] },
+                { word: "foot", target: "f", distractors: ["v", "p", "th", "wh"] },
+                { word: "frog", target: "f", distractors: ["v", "p", "th", "wh"] },
+                { word: "pig", target: "p", distractors: ["b", "f", "th", "wh"] },
+                { word: "pen", target: "p", distractors: ["b", "f", "th", "wh"] }
             ]
         };
 
@@ -335,7 +335,8 @@
         const sfxWrong = document.getElementById('sfx-wrong');
         const sfxBuff = document.getElementById('sfx-buff');
         
-        bgm.volume = 0.5; sfxBlade.volume = 0.8; sfxCombo.volume = 1.0; sfxWrong.volume = 1.0; sfxBuff.volume = 1.0;
+        // ✨ 修改：降低 buff 音效的預設音量 ✨
+        bgm.volume = 0.5; sfxBlade.volume = 0.8; sfxCombo.volume = 1.0; sfxWrong.volume = 1.0; sfxBuff.volume = 0.65;
 
         window.onload = function() { 
             fetchFrontLeaderboard();
@@ -536,7 +537,7 @@
                     if (t.isCorrect) {
                         playAudio(sfxBlade);
                         swipeHitsInCurrentStroke++;
-                        combo++; 
+                        combo++; updateMultiplier();
                         
                         let basePts = 10;
                         if (swipeHitsInCurrentStroke >= 3) {
@@ -548,14 +549,14 @@
                         let earned = basePts * multiplier;
                         score += earned;
                         floatTexts.push(new FloatText(t.x, t.y, `+${earned}`, "#2ecc71"));
-                        updateGameSpeed(); 
+                        updateHUD();
                         
                     } else {
                         playAudio(sfxWrong);
                         breakCombo(true); 
                         lives--;
                         floatTexts.push(new FloatText(t.x, t.y, "WRONG!", "#e74c3c", true));
-                        updateGameSpeed();
+                        updateHUD();
                         if (lives <= 0) endGame();
                     }
                 }
@@ -733,7 +734,8 @@
                     let startLeft = Math.random() > 0.5;
                     let startX = startLeft ? -50 : width + 50;
                     let startY = height * 0.2 + Math.random() * (height * 0.4); 
-                    let rockVx = (startLeft ? 1 : -1) * (width * 0.015 * speedMult); 
+                    // ✨ 微調：減慢ROCK金光字卡的橫向速度 ✨
+                    let rockVx = (startLeft ? 1 : -1) * (width * 0.012 * speedMult); 
                     let rockVy = (Math.random() - 0.5) * 2; 
                     
                     setTimeout(() => {
