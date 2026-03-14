@@ -91,7 +91,7 @@
             }
         }
 
-        /* ✨ 手機版 (含橫屏) 空間極致壓縮優化 ✨ */
+        /* 手機版 (含橫屏) 空間極致壓縮優化 */
         @media screen and (max-width: 900px), screen and (max-height: 500px) {
             .sound-toggle { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); right: 5px; }
             .exit-btn { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); left: 5px; }
@@ -121,6 +121,7 @@
     <audio id="sfx-blade" src="blade.mp3"></audio>
     <audio id="sfx-combo" src="combo.mp3"></audio>
     <audio id="sfx-wrong" src="wrong.mp3"></audio>
+    <!-- Buff 音效無縫循環播放 -->
     <audio id="sfx-buff" src="buff.mp3" loop></audio>
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
@@ -210,7 +211,6 @@
         let userIP = "Unknown";
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        // ✨ 修正陷阱單字 Bug：嚴格過濾與字本身重複的干擾選項 ✨
         const wordBanks = {
             "ninja-g4-th": [
                 { word: "thin", target: "th", distractors: ["f", "s", "v", "z"] },
@@ -315,7 +315,7 @@
         
         let isPlaying = false, isMuted = false;
         let score = 0, lives = 5, combo = 0, multiplier = 1;
-        let isFever = false, feverTimer = 0;
+        let isFever = false;
         let playerName = "Player", currentTheme = "";
         
         let speedMult = 1.0;
@@ -335,7 +335,7 @@
         const sfxWrong = document.getElementById('sfx-wrong');
         const sfxBuff = document.getElementById('sfx-buff');
         
-        // ✨ 修改：降低 buff 音效的預設音量 ✨
+        // 預設音量
         bgm.volume = 0.5; sfxBlade.volume = 0.8; sfxCombo.volume = 1.0; sfxWrong.volume = 1.0; sfxBuff.volume = 0.5;
 
         window.onload = function() { 
@@ -416,8 +416,9 @@
                 this.y += this.vy;
                 
                 if (!this.isRock) {
+                    // ✨ 更激進的滯空判定，隨著倍速加快，滯空時間越短 ✨
                     if (Math.abs(this.vy) < 2.0 * speedMult) {
-                        this.vy += this.gravity * (0.15 * speedMult); 
+                        this.vy += this.gravity * (0.2 * speedMult); 
                     } else {
                         this.vy += this.gravity;
                     }
@@ -549,14 +550,14 @@
                         let earned = basePts * multiplier;
                         score += earned;
                         floatTexts.push(new FloatText(t.x, t.y, `+${earned}`, "#2ecc71"));
-                        updateHUD();
+                        updateGameSpeed(); 
                         
                     } else {
                         playAudio(sfxWrong);
-                        breakCombo(true); 
+                        breakCombo(true); // 砍錯字卡，閃爍紅光
                         lives--;
                         floatTexts.push(new FloatText(t.x, t.y, "WRONG!", "#e74c3c", true));
-                        updateHUD();
+                        updateGameSpeed();
                         if (lives <= 0) endGame();
                     }
                 }
@@ -567,19 +568,23 @@
             for(let i=0; i<15; i++) { particles.push(new Particle(x, y, color)); particles.push(new Particle(x, y, "#ecf0f1")); }
         }
 
+        // ✨ 難度倍率強化：分數達到門檻後，速度更有感 ✨
         function updateGameSpeed() {
-            if (score >= 20000) speedMult = 1.8;
-            else if (score >= 10000) speedMult = 1.6;
-            else if (score >= 5000) speedMult = 1.4;
+            if (score >= 20000) speedMult = 2.2;
+            else if (score >= 10000) speedMult = 1.8;
+            else if (score >= 5000) speedMult = 1.5;
             else if (score >= 2000) speedMult = 1.2;
             else speedMult = 1.0;
 
             updateMultiplier();
         }
 
+        // ✨ Fever 系統重構：無秒數限制，只要 Combo 在就不斷 ✨
         function updateMultiplier() {
-            if (isFever) { multiplier = 20; } 
-            else if (combo >= 10) { triggerFever(); } 
+            if (combo >= 10) { 
+                if (!isFever) triggerFever();
+                multiplier = 20; 
+            } 
             else if (combo >= 6) { multiplier = 3; } 
             else if (combo >= 3) { multiplier = 2; } 
             else { multiplier = 1; }
@@ -587,22 +592,20 @@
         }
 
         function triggerFever() {
-            if (!isFever) {
-                bgm.pause();
-                playAudio(sfxBuff, true);
-            }
+            isFever = true;
+            bgm.pause();
+            playAudio(sfxBuff, true); // Buff 播放，依靠 HTML 屬性達成無縫 loop
             
-            isFever = true; multiplier = 20; feverTimer = 10000; 
             document.getElementById('fever-overlay').classList.add('fever-active');
-            document.getElementById('combo-hud').innerText = "🔥 FEVER x20 🔥";
             document.getElementById('combo-hud').classList.add('combo-active');
         }
 
         function breakCombo(showFlash = true) {
             combo = 0; 
+            multiplier = 1;
             
             if (isFever) {
-                isFever = false; feverTimer = 0;
+                isFever = false;
                 document.getElementById('fever-overlay').classList.remove('fever-active');
                 document.getElementById('combo-hud').classList.remove('combo-active');
                 
@@ -623,8 +626,12 @@
             document.getElementById('score-display').innerText = score;
             let hearts = ""; for(let i=0; i<5; i++) { hearts += (i < lives) ? "❤️" : "🖤"; }
             document.getElementById('lives-display').innerText = hearts;
-            if(!isFever) {
-                const comboEl = document.getElementById('combo-hud');
+            
+            const comboEl = document.getElementById('combo-hud');
+            if(isFever) {
+                comboEl.innerText = `🔥 FEVER x20 (Combo: ${combo}) 🔥`;
+                comboEl.style.color = "#f1c40f";
+            } else {
                 comboEl.innerText = `${multiplier}x 倍率 (Combo: ${combo})`;
                 if(multiplier > 1) comboEl.style.color = "#f1c40f"; else comboEl.style.color = "#3498db";
             }
@@ -657,7 +664,7 @@
             document.getElementById('ui-layer').style.display = 'flex';
             document.getElementById('word-prompt').style.display = 'flex';
             
-            score = 0; lives = 5; combo = 0; multiplier = 1; isFever = false; feverTimer = 0; speedMult = 1.0;
+            score = 0; lives = 5; combo = 0; multiplier = 1; isFever = false; speedMult = 1.0;
             targets = []; particles = []; floatTexts = []; bladePath = [];
             isPlaying = true; isSpawningPhase = false;
 
@@ -696,8 +703,9 @@
             speakWord(currentWordData.word, () => {
                 if(!isPlaying) return;
                 
-                let correctCount = Math.floor(Math.random() * 3) + 3; 
-                let wrongCount = Math.floor(Math.random() * 2) + 2;  
+                // ✨ 隨著速度倍率增加，出現的字卡數量也會變多 ✨
+                let correctCount = Math.floor(Math.random() * 3) + 3 + Math.floor(speedMult); 
+                let wrongCount = Math.floor(Math.random() * 2) + 2 + Math.floor(speedMult / 2);  
 
                 let spawnList = [];
                 for(let i=0; i<correctCount; i++) spawnList.push({ t: currentWordData.target, c: true });
@@ -715,6 +723,12 @@
                 }
                 positions.sort(() => Math.random() - 0.5);
 
+                // 隨著速度倍率，發射間隔大幅縮短
+                let baseInterval = 250;
+                if (speedMult >= 2.0) baseInterval = 100;
+                else if (speedMult >= 1.5) baseInterval = 150;
+                else if (speedMult >= 1.2) baseInterval = 200;
+
                 spawnList.forEach((item, index) => {
                     let startX = positions[index];
                     let startY = height + 50;
@@ -726,16 +740,17 @@
                     
                     setTimeout(() => {
                         if(isPlaying) targets.push(new Target(startX, startY, vx, vy, item.t, item.c));
-                    }, index * (250 / speedMult)); 
+                    }, index * baseInterval); 
                 });
 
-                let eggChance = 0.005 * spawnList.length; 
+                // ✨ ROCK 金色彩蛋機率固定為 0.5% ✨
+                let eggChance = 0.005; 
                 if (Math.random() < eggChance) {
                     let startLeft = Math.random() > 0.5;
                     let startX = startLeft ? -50 : width + 50;
-                    let startY = height * 0.2 + Math.random() * (height * 0.4); 
-                    let rockVx = (startLeft ? 1 : -1) * (width * 0.012 * speedMult); 
-                    let rockVy = (Math.random() - 0.5) * 2; 
+                    let startY = height * 0.2 + Math.random() * (height * 0.3); 
+                    let rockVx = (startLeft ? 1 : -1) * (width * 0.012 * speedMult); // 稍稍降速讓玩家有機會砍中
+                    let rockVy = (Math.random() - 0.5) * 1.5; 
                     
                     setTimeout(() => {
                         if(isPlaying) targets.push(new Target(startX, startY, rockVx, rockVy, "ROCK", true, true));
@@ -754,21 +769,6 @@
 
             ctx.clearRect(0, 0, width, height);
 
-            if (isFever) {
-                feverTimer -= dt;
-                if (feverTimer <= 0) {
-                    isFever = false;
-                    document.getElementById('fever-overlay').classList.remove('fever-active');
-                    document.getElementById('combo-hud').classList.remove('combo-active');
-                    
-                    sfxBuff.pause();
-                    sfxBuff.currentTime = 0;
-                    if (isPlaying && !isMuted) bgm.play().catch(e => {});
-
-                    updateMultiplier();
-                }
-            }
-
             let activeTargets = false;
             for (let i = targets.length - 1; i >= 0; i--) {
                 let t = targets[i];
@@ -776,6 +776,7 @@
                 t.draw(ctx);
                 
                 if (!t.sliced && (t.y > height + 100 || t.x < -100 || t.x > width + 100)) {
+                    // 正確字卡掉出畫面：中斷Combo，但不閃爍紅光
                     if (t.isCorrect && !t.isRock) breakCombo(false);
                     targets.splice(i, 1);
                 } else if (!t.sliced) {
