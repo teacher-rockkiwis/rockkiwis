@@ -104,7 +104,6 @@
             #lives-display { font-size: 16px; letter-spacing: 0; }
             #combo-hud { font-size: 12px; margin-top: 2px; }
 
-            /* ✨ 關鍵修改：把發音提示框縮小，並塞進上方兩個 HUD 中間的空隙！ ✨ */
             #word-prompt {
                 top: max(45px, env(safe-area-inset-top) + 35px); 
                 padding: 5px 15px; font-size: 14px; border-width: 2px;
@@ -122,7 +121,8 @@
     <audio id="sfx-blade" src="blade.mp3"></audio>
     <audio id="sfx-combo" src="combo.mp3"></audio>
     <audio id="sfx-wrong" src="wrong.mp3"></audio>
-    <audio id="sfx-buff" src="buff.mp3"></audio>
+    <!-- ✨ 新增 loop 屬性，讓 Fever 音樂無縫循環播放 ✨ -->
+    <audio id="sfx-buff" src="buff.mp3" loop></audio>
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
     <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
@@ -243,6 +243,9 @@
         let isFever = false, feverTimer = 0;
         let playerName = "Player", currentTheme = "";
         
+        // ✨ 新增：遊戲速度倍率 ✨
+        let speedMult = 1.0;
+        
         let targets = [];
         let particles = [];
         let floatTexts = [];
@@ -308,13 +311,13 @@
         }
 
         class Target {
-            constructor(x, y, vx, vy, text, isCorrect) {
+            constructor(x, y, vx, vy, text, isCorrect, isRock = false) {
                 this.x = x; this.y = y; 
                 this.vx = vx; 
                 this.vy = vy;
                 this.text = text; this.isCorrect = isCorrect;
+                this.isRock = isRock; // ✨ 是否為金色隱藏卡
                 
-                // ✨ 依據螢幕大小動態縮小字卡 ✨
                 let isSmallScreen = window.innerWidth < 768 || window.innerHeight < 500;
                 this.radius = isSmallScreen ? 32 : 45;
                 this.fontSize = isSmallScreen ? 24 : 36;
@@ -322,17 +325,29 @@
                 this.sliced = false;
                 this.rotation = Math.random() * Math.PI * 2;
                 this.rotSpeed = (Math.random() - 0.5) * 0.08;
-                this.gravity = 0.18; 
                 
-                this.color = isCorrect ? "#34495e" : "#8e44ad"; 
-                if(Math.random() > 0.7) this.color = "#d35400"; 
+                if (this.isRock) {
+                    this.gravity = 0.01; // 金色卡片幾乎不受重力影響，呈直線飛過
+                    this.radius += 5; // ROCK 特別大一點
+                    this.color = "#f1c40f";
+                } else {
+                    this.gravity = 0.18 * speedMult; // ✨ 隨著分數加快重力與速度
+                    this.color = isCorrect ? "#34495e" : "#8e44ad"; 
+                    if(Math.random() > 0.7) this.color = "#d35400"; 
+                }
             }
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
                 
-                if (Math.abs(this.vy) < 2.0) {
-                    this.vy += this.gravity * 0.15; 
+                if (!this.isRock) {
+                    // ✨ 隨速度縮短的滯空魔法 ✨
+                    // speedMult 越大，判定滯空的範圍越大，但給予的重力懲罰 (0.15 * speedMult) 也越大 = 滯空時間變短
+                    if (Math.abs(this.vy) < 2.0 * speedMult) {
+                        this.vy += this.gravity * (0.15 * speedMult); 
+                    } else {
+                        this.vy += this.gravity;
+                    }
                 } else {
                     this.vy += this.gravity;
                 }
@@ -345,15 +360,21 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 
+                // ✨ 金色卡片專屬發光外觀 ✨
+                if (this.isRock) {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = "#f1c40f";
+                }
+
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = "#ecf0f1"; 
+                ctx.fillStyle = this.isRock ? "#fff3cd" : "#ecf0f1"; 
                 ctx.fill();
                 ctx.lineWidth = 6;
                 ctx.strokeStyle = this.color;
                 ctx.stroke();
 
-                ctx.fillStyle = "#2c3e50";
+                ctx.fillStyle = this.isRock ? "#e67e22" : "#2c3e50";
                 ctx.font = `bold ${this.fontSize}px Quicksand`;
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
@@ -429,12 +450,24 @@
 
                 if (dist <= t.radius) {
                     t.sliced = true;
-                    createExplosion(t.x, t.y, t.isCorrect ? "#2ecc71" : "#e74c3c");
                     
+                    // ✨ 切中金色傳說彩蛋 ROCK ✨
+                    if (t.isRock) {
+                        createExplosion(t.x, t.y, "#f1c40f");
+                        playAudio(sfxCombo, true);
+                        let earned = 1000 * multiplier; // 超大獎勵
+                        score += earned;
+                        floatTexts.push(new FloatText(t.x, t.y, `+${earned} ROCK!`, "#f1c40f", true));
+                        updateGameSpeed(); // 更新進度與速度
+                        continue; // 不列入一般計分與扣血計算
+                    }
+
+                    // 一般目標判斷
+                    createExplosion(t.x, t.y, t.isCorrect ? "#2ecc71" : "#e74c3c");
                     if (t.isCorrect) {
                         playAudio(sfxBlade);
                         swipeHitsInCurrentStroke++;
-                        combo++; updateMultiplier();
+                        combo++; 
                         
                         let basePts = 10;
                         if (swipeHitsInCurrentStroke >= 3) {
@@ -446,14 +479,14 @@
                         let earned = basePts * multiplier;
                         score += earned;
                         floatTexts.push(new FloatText(t.x, t.y, `+${earned}`, "#2ecc71"));
-                        updateHUD();
+                        updateGameSpeed(); 
                         
                     } else {
                         playAudio(sfxWrong);
-                        breakCombo();
+                        breakCombo(true); // 砍錯字卡，閃爍紅光
                         lives--;
                         floatTexts.push(new FloatText(t.x, t.y, "WRONG!", "#e74c3c", true));
-                        updateHUD();
+                        updateGameSpeed();
                         if (lives <= 0) endGame();
                     }
                 }
@@ -462,6 +495,17 @@
 
         function createExplosion(x, y, color) {
             for(let i=0; i<15; i++) { particles.push(new Particle(x, y, color)); particles.push(new Particle(x, y, "#ecf0f1")); }
+        }
+
+        // ✨ 動態難度升級系統 ✨
+        function updateGameSpeed() {
+            if (score >= 20000) speedMult = 1.8;
+            else if (score >= 10000) speedMult = 1.6;
+            else if (score >= 5000) speedMult = 1.4;
+            else if (score >= 2000) speedMult = 1.2;
+            else speedMult = 1.0;
+
+            updateMultiplier();
         }
 
         function updateMultiplier() {
@@ -474,20 +518,39 @@
         }
 
         function triggerFever() {
+            if (!isFever) {
+                // 初次進入 Fever：暫停 BGM，從頭播放 Buff 音樂
+                bgm.pause();
+                playAudio(sfxBuff, true);
+            }
+            
+            // ✨ 如果已經在 Fever 狀態內再次達到條件，只延長時間不打斷音樂 ✨
             isFever = true; multiplier = 20; feverTimer = 10000; 
             document.getElementById('fever-overlay').classList.add('fever-active');
             document.getElementById('combo-hud').innerText = "🔥 FEVER x20 🔥";
             document.getElementById('combo-hud').classList.add('combo-active');
-            playAudio(sfxBuff);
         }
 
-        function breakCombo() {
-            combo = 0; isFever = false; feverTimer = 0;
-            document.getElementById('fever-overlay').classList.remove('fever-active');
-            document.getElementById('combo-hud').classList.remove('combo-active');
+        function breakCombo(showFlash = true) {
+            combo = 0; 
             
-            document.body.style.backgroundColor = "rgba(231, 76, 60, 0.4)";
-            setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
+            if (isFever) {
+                isFever = false; feverTimer = 0;
+                document.getElementById('fever-overlay').classList.remove('fever-active');
+                document.getElementById('combo-hud').classList.remove('combo-active');
+                
+                // 結束 Fever 模式：停止 Buff 音效，接續播放原本 BGM
+                sfxBuff.pause();
+                sfxBuff.currentTime = 0;
+                if (isPlaying && !isMuted) bgm.play().catch(e => {});
+            }
+            
+            // 只有被設定需要閃紅光時（砍錯）才顯示
+            if (showFlash) {
+                document.body.style.backgroundColor = "rgba(231, 76, 60, 0.4)";
+                setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
+            }
+            
             updateMultiplier();
         }
 
@@ -529,13 +592,17 @@
             document.getElementById('ui-layer').style.display = 'flex';
             document.getElementById('word-prompt').style.display = 'flex';
             
-            score = 0; lives = 5; combo = 0; multiplier = 1; isFever = false; feverTimer = 0;
+            score = 0; lives = 5; combo = 0; multiplier = 1; isFever = false; feverTimer = 0; speedMult = 1.0;
             targets = []; particles = []; floatTexts = []; bladePath = [];
             isPlaying = true; isSpawningPhase = false;
 
             updateHUD();
             document.getElementById('fever-overlay').classList.remove('fever-active');
             document.getElementById('combo-hud').classList.remove('combo-active');
+
+            // 確保重置音效狀態
+            sfxBuff.pause();
+            sfxBuff.currentTime = 0;
 
             bgm.volume = 0.5; playAudio(bgm);
             animationId = requestAnimationFrame(gameLoop);
@@ -588,16 +655,31 @@
                     let startX = positions[index];
                     let startY = height + 50;
                     
-                    // ✨ 稍微調整拋物線高度，確保最高點在視覺最佳打擊區 ✨
-                    let g = 0.18; 
+                    let g = 0.18 * speedMult; 
                     let targetHeight = height * 0.75 + Math.random() * (height * 0.1); 
+                    // ✨ vy 根據動態加強後的重力算出來，確保無論多快都能剛好飛到畫面上方 ✨
                     let vy = -Math.sqrt(2 * g * targetHeight);
-                    let vx = (Math.random() - 0.5) * 0.8; 
+                    let vx = (Math.random() - 0.5) * 0.8 * Math.sqrt(speedMult); 
                     
+                    // ✨ 發射速度間隔也跟著 speedMult 加快 ✨
                     setTimeout(() => {
                         if(isPlaying) targets.push(new Target(startX, startY, vx, vy, item.t, item.c));
-                    }, index * 250); 
+                    }, index * (250 / speedMult)); 
                 });
+
+                // ✨ 0.5% 機率觸發金色 ROCK 彩蛋卡！極速橫向飛越！ ✨
+                let eggChance = 0.005 * spawnList.length; // 依照生成的字卡數等比例換算
+                if (Math.random() < eggChance) {
+                    let startLeft = Math.random() > 0.5;
+                    let startX = startLeft ? -50 : width + 50;
+                    let startY = height * 0.2 + Math.random() * (height * 0.4); // 出現在畫面上半部
+                    let rockVx = (startLeft ? 1 : -1) * (width * 0.015 * speedMult); // 飛得非常快！
+                    let rockVy = (Math.random() - 0.5) * 2; 
+                    
+                    setTimeout(() => {
+                        if(isPlaying) targets.push(new Target(startX, startY, rockVx, rockVy, "ROCK", true, true));
+                    }, Math.random() * 800); 
+                }
                 
                 isSpawningPhase = false;
             });
@@ -617,6 +699,12 @@
                     isFever = false;
                     document.getElementById('fever-overlay').classList.remove('fever-active');
                     document.getElementById('combo-hud').classList.remove('combo-active');
+                    
+                    // Fever 時間結束：停止 Buff 音效，接續播放原本 BGM
+                    sfxBuff.pause();
+                    sfxBuff.currentTime = 0;
+                    if (isPlaying && !isMuted) bgm.play().catch(e => {});
+
                     updateMultiplier();
                 }
             }
@@ -627,8 +715,10 @@
                 t.update();
                 t.draw(ctx);
                 
-                if (!t.sliced && t.y > height + 100) {
-                    if (t.isCorrect) breakCombo();
+                // 判斷是否掉出畫面
+                if (!t.sliced && (t.y > height + 100 || t.x < -100 || t.x > width + 100)) {
+                    // 沒有砍中的正確字卡掉出畫面：中斷Combo，但不閃爍紅光 ( ROCK 彩蛋漏掉不會斷 Combo)
+                    if (t.isCorrect && !t.isRock) breakCombo(false);
                     targets.splice(i, 1);
                 } else if (!t.sliced) {
                     activeTargets = true;
@@ -673,7 +763,8 @@
         }
 
         function endGame() {
-            isPlaying = false; cancelAnimationFrame(animationId); bgm.pause();
+            isPlaying = false; cancelAnimationFrame(animationId); 
+            bgm.pause(); sfxBuff.pause(); // 確保停止所有音樂
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             
             document.getElementById('ui-layer').style.display = 'none';
@@ -696,5 +787,3 @@
     </script>
 </body>
 </html>
-
-
