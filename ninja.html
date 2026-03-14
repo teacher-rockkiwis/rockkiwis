@@ -336,7 +336,7 @@
         const sfxBuff = document.getElementById('sfx-buff');
         
         // ✨ 修改：降低 buff 音效的預設音量 ✨
-        bgm.volume = 0.5; sfxBlade.volume = 0.8; sfxCombo.volume = 1.0; sfxWrong.volume = 1.0; sfxBuff.volume = 0.65;
+        bgm.volume = 0.5; sfxBlade.volume = 0.8; sfxCombo.volume = 1.0; sfxWrong.volume = 1.0; sfxBuff.volume = 0.5;
 
         window.onload = function() { 
             fetchFrontLeaderboard();
@@ -734,7 +734,6 @@
                     let startLeft = Math.random() > 0.5;
                     let startX = startLeft ? -50 : width + 50;
                     let startY = height * 0.2 + Math.random() * (height * 0.4); 
-                    // ✨ 微調：減慢ROCK金光字卡的橫向速度 ✨
                     let rockVx = (startLeft ? 1 : -1) * (width * 0.012 * speedMult); 
                     let rockVy = (Math.random() - 0.5) * 2; 
                     
