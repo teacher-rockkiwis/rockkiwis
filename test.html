@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- ✨ 蘋果手機全螢幕優化標籤 ✨ -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Dr. ROCK - Phonics Ninja</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
     <style>
@@ -11,7 +14,6 @@
             --bg: #2c3e50; --text-light: #ecf0f1; --gold: #f1c40f;
         }
 
-        /* 🥷 終極防護：徹底阻擋手機側邊滑動返回、下拉整理與選取反白 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: none; outline: none; }
         body, html {
             background-color: var(--bg); margin: 0; padding: 0;
@@ -52,7 +54,6 @@
         }
         .replay-btn { background: var(--gold); color: #2d3436; font-size: 14px; padding: 4px 10px; border-radius: 20px; }
 
-        /* Overlays */
         #start-overlay, #end-msg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -73,7 +74,6 @@
         .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; }
         .board-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #dfe6e9; font-size: 16px; font-weight: 700; color: #2d3436;}
 
-        /* 發光特效層 */
         #fever-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             box-shadow: inset 0 0 150px rgba(241, 196, 15, 0); pointer-events: none; z-index: 5; transition: 0.3s;
@@ -81,7 +81,6 @@
         .fever-active { box-shadow: inset 0 0 150px rgba(241, 196, 15, 0.6) !important; animation: pulse 1s infinite alternate; }
         @keyframes pulse { 0% { box-shadow: inset 0 0 100px rgba(241, 196, 15, 0.4); } 100% { box-shadow: inset 0 0 200px rgba(230, 126, 34, 0.8); } }
 
-        /* ✨ 橫屏強制提示 (僅在直立且螢幕小於768px時顯示) ✨ */
         #portrait-warning { display: none; }
         @media screen and (max-width: 768px) and (orientation: portrait) {
             #portrait-warning {
@@ -104,10 +103,10 @@
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
     <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
 
-    <!-- ✨ 橫屏警告牆 ✨ -->
     <div id="portrait-warning">
         <div style="font-size: 80px; margin-bottom: 20px; animation: shake 2s infinite;">📱🔄</div>
-        <div style="line-height: 1.5;">請將手機旋轉至<strong style="color:var(--gold)">橫向</strong><br>以獲得最佳斬擊視野！</div>
+        <div style="line-height: 1.5; margin-bottom: 20px;">請將手機旋轉至<strong style="color:var(--gold)">橫向</strong><br>以獲得最佳斬擊視野！</div>
+        <div style="font-size: 16px; color: #bdc3c7;">💡 iPhone 若無法全螢幕，請點選下方分享<br>並選擇「加入主畫面」</div>
     </div>
 
     <div id="start-overlay">
@@ -138,7 +137,6 @@
         </div>
     </div>
 
-    <!-- UI 顯示層 -->
     <div id="ui-layer">
         <div class="hud-box" style="text-align: left;">
             <div style="font-size: 14px; color: #bdc3c7;">SCORE</div>
@@ -169,7 +167,6 @@
     </div>
 
     <script>
-        // 🛡️ 防護系統與 IP 追蹤
         document.addEventListener('contextmenu', event => event.preventDefault()); 
         document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
@@ -240,7 +237,6 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             
-            // 嚴格攔截螢幕上的滑動事件
             canvas.addEventListener('touchstart', (e) => e.preventDefault(), {passive: false});
             canvas.addEventListener('touchmove', (e) => e.preventDefault(), {passive: false});
             
@@ -283,8 +279,7 @@
             audioEl.play().catch(e => {});
         }
 
-        // --- 核心遊戲引擎 (更新物理引擎) ---
-
+        // ✨ 強化物理引擎：提高重力與初速，增加極致滯空 ✨
         class Target {
             constructor(x, y, vx, vy, text, isCorrect) {
                 this.x = x; this.y = y; 
@@ -295,7 +290,7 @@
                 this.sliced = false;
                 this.rotation = Math.random() * Math.PI * 2;
                 this.rotSpeed = (Math.random() - 0.5) * 0.08;
-                this.gravity = 0.08; // ✨ 減低重力，增加漂浮感
+                this.gravity = 0.18; // 重力大幅增加，掉落更快
                 
                 this.color = isCorrect ? "#34495e" : "#8e44ad"; 
                 if(Math.random() > 0.7) this.color = "#d35400"; 
@@ -304,9 +299,9 @@
                 this.x += this.vx;
                 this.y += this.vy;
                 
-                // ✨ 滯空魔法 (Hang Time)：當垂直速度極小時，給予極大空氣阻力
-                if (Math.abs(this.vy) < 1.5) {
-                    this.vy += this.gravity * 0.3; // 到達頂點時慢動作懸停
+                // ✨ 滯空魔法升級：當垂直速度介於 -2 到 2 之間，重力瞬間變為原來的 15%
+                if (Math.abs(this.vy) < 2.0) {
+                    this.vy += this.gravity * 0.15; // 懸停時間變長
                 } else {
                     this.vy += this.gravity;
                 }
@@ -475,7 +470,6 @@
             }
         }
 
-        // ✨ 支援全螢幕強制橫向的啟動功能 ✨
         function startGame(requestFullscreen) {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("請輸入忍者姓名！"); return; }
@@ -489,6 +483,9 @@
                     }).catch(err => console.log("全螢幕請求失敗"));
                 } else if (elem.webkitRequestFullscreen) { 
                     elem.webkitRequestFullscreen();
+                } else {
+                    // ✨ 針對 iPhone 的特別提示 ✨
+                    alert("蘋果設備(iPhone/iPad) 無法自動進入全螢幕。\n\n請將手機打橫後，用手指輕輕「往上滑動」即可隱藏網址列。\n或者點擊瀏覽器下方的「分享」按鈕，選擇「加入主畫面」獲得最佳體驗！");
                 }
             }
 
@@ -537,8 +534,9 @@
             speakWord(currentWordData.word, () => {
                 if(!isPlaying) return;
                 
-                let correctCount = Math.floor(Math.random() * 3) + 2; 
-                let wrongCount = Math.floor(Math.random() * 2) + 1;  
+                // ✨ 增加字卡數量 ✨ (3~5張正確，2~3張錯誤，總共 5~8 張)
+                let correctCount = Math.floor(Math.random() * 3) + 3; 
+                let wrongCount = Math.floor(Math.random() * 2) + 2;  
 
                 let spawnList = [];
                 for(let i=0; i<correctCount; i++) spawnList.push({ t: currentWordData.target, c: true });
@@ -547,7 +545,6 @@
                     spawnList.push({ t: dist, c: false });
                 }
                 
-                // ✨ 將發射點均勻分配在畫面上，並打亂順序，避免學生預測 ✨
                 let sections = spawnList.length;
                 let positions = [];
                 for(let i=0; i<sections; i++) {
@@ -561,16 +558,16 @@
                     let startX = positions[index];
                     let startY = height + 50;
                     
-                    // ✨ 根據螢幕高度動態計算完美的上拋初速度 ✨
-                    let g = 0.08; 
-                    let targetHeight = height * 0.65 + Math.random() * (height * 0.15); // 目標高度(距離頂部大約剩20%~35%)
+                    // ✨ 配合強大重力的超高初速拋物線 ✨
+                    let g = 0.18; 
+                    let targetHeight = height * 0.7 + Math.random() * (height * 0.1); 
                     let vy = -Math.sqrt(2 * g * targetHeight);
-                    let vx = (Math.random() - 0.5) * 0.8; // 幾乎沒有橫向移動，直上直下
+                    let vx = (Math.random() - 0.5) * 0.8; 
                     
-                    // ✨ 延長字卡彈出的間隔時間 (400ms)，給學生更多反應與判斷時間 ✨
+                    // ✨ 彈出間隔縮短到 250ms，更有連續噴發的爽快感 ✨
                     setTimeout(() => {
                         if(isPlaying) targets.push(new Target(startX, startY, vx, vy, item.t, item.c));
-                    }, index * 400); 
+                    }, index * 250); 
                 });
                 
                 isSpawningPhase = false;
@@ -670,3 +667,5 @@
     </script>
 </body>
 </html>
+
+
