@@ -63,33 +63,18 @@
         .game-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
 
         /* 卡片獨立配色 */
-        .card-1:hover { border-color: #6c5ce7; }
-        .card-1 .game-icon { background: #a29bfe; color: white; }
-        .card-1 .play-btn { background: #6c5ce7; }
-
-        .card-2:hover { border-color: #e84393; }
-        .card-2 .game-icon { background: #fd79a8; color: white; }
-        .card-2 .play-btn { background: #e84393; }
-
-        .card-3:hover { border-color: #00cec9; }
-        .card-3 .game-icon { background: #81ecec; color: white; }
-        .card-3 .play-btn { background: #00cec9; }
-
-        .card-4:hover { border-color: #9b59b6; }
-        .card-4 .game-icon { background: #c39bd3; color: white; }
-        .card-4 .play-btn { background: #9b59b6; }
-
-        .card-5:hover { border-color: #8e44ad; }
-        .card-5 .game-icon { background: #af7ac5; color: white; }
-        .card-5 .play-btn { background: #8e44ad; }
-
-        .card-7:hover { border-color: #00b894; }
-        .card-7 .game-icon { background: #55efc4; color: white; filter: drop-shadow(0 0 10px rgba(0, 184, 148, 0.5)); }
-        .card-7 .play-btn { background: #00b894; }
-
-        .card-6:hover { border-color: #e67e22; }
-        .card-6 .game-icon { background: #f39c12; color: white; }
-        .card-6 .play-btn { background: #e67e22; }
+        .card-1:hover { border-color: #6c5ce7; } .card-1 .game-icon { background: #a29bfe; color: white; } .card-1 .play-btn { background: #6c5ce7; }
+        .card-2:hover { border-color: #e84393; } .card-2 .game-icon { background: #fd79a8; color: white; } .card-2 .play-btn { background: #e84393; }
+        .card-3:hover { border-color: #00cec9; } .card-3 .game-icon { background: #81ecec; color: white; } .card-3 .play-btn { background: #00cec9; }
+        .card-4:hover { border-color: #9b59b6; } .card-4 .game-icon { background: #c39bd3; color: white; } .card-4 .play-btn { background: #9b59b6; }
+        .card-5:hover { border-color: #8e44ad; } .card-5 .game-icon { background: #af7ac5; color: white; } .card-5 .play-btn { background: #8e44ad; }
+        .card-7:hover { border-color: #00b894; } .card-7 .game-icon { background: #55efc4; color: white; filter: drop-shadow(0 0 10px rgba(0, 184, 148, 0.5)); } .card-7 .play-btn { background: #00b894; }
+        .card-6:hover { border-color: #e67e22; } .card-6 .game-icon { background: #f39c12; color: white; } .card-6 .play-btn { background: #e67e22; }
+        
+        /* ✨ 忍者專屬配色 ✨ */
+        .card-8:hover { border-color: #c0392b; } 
+        .card-8 .game-icon { background: #e74c3c; color: white; filter: drop-shadow(0 0 10px rgba(192, 57, 43, 0.5)); } 
+        .card-8 .play-btn { background: #c0392b; }
 
         .game-icon {
             font-size: 60px; width: 120px; height: 120px; line-height: 120px;
@@ -152,6 +137,17 @@
 
     <div class="game-container">
         
+        <!-- ✨ 忍者新遊戲卡片 ✨ -->
+        <a href="javascript:void(0)" onclick="checkNinjaAccess(event)" class="game-card card-8">
+            <div class="game-icon">🥷</div>
+            <h2 class="game-title">Phonics Ninja</h2>
+            <p class="game-desc" id="ninja-card-desc">
+                發音忍者！聽單字，切開正確發音！連擊滿10次進入狂熱模式！<br>
+                <span style="color:#e74c3c;">計算上線時間中...</span>
+            </p>
+            <div class="play-btn">PLAY NOW</div>
+        </a>
+
         <a href="wordhunt.html" class="game-card card-1">
             <div class="game-icon">⚡</div>
             <h2 class="game-title">Word Hunt</h2>
@@ -187,7 +183,6 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
-        <!-- ✨ 更新：Phonics Hyperdrive 卡片 -->
         <a href="phonics.html" class="game-card card-7">
             <div class="game-icon">🚀</div>
             <h2 class="game-title">Phonics Hyperdrive</h2>
@@ -207,6 +202,26 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
+    </div>
+
+    <!-- ✨ 忍者未上線鎖定彈窗 ✨ -->
+    <div id="ninja-modal" class="overlay-modal">
+        <div class="modal-content" style="border-color: #c0392b;">
+            <h2 style="color:#c0392b; font-size:32px; margin-top:0; margin-bottom:10px;">🥷 忍者修練中...</h2>
+            <p style="font-size:18px; font-weight:700; color:#2c3e50; line-height:1.6; margin-bottom: 20px;">
+                全新遊戲《發音忍者》還在進行最後的打磨！<br>
+                將於 <strong style="color:#e74c3c; font-size: 22px;">明天 (3/15) 中午 12:00</strong> 正式上線！
+            </p>
+            
+            <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 20px;">
+                <div style="font-size: 16px; color: #636e72; font-weight: 900; margin-bottom: 5px;">距離道場開門還有：</div>
+                <div id="ninja-timer" style="font-size: 32px; font-weight: 900; color: #c0392b; font-variant-numeric: tabular-nums;">
+                    -- : -- : --
+                </div>
+            </div>
+
+            <button onclick="document.getElementById('ninja-modal').style.display='none'" style="background:#c0392b; color:white; border:none; padding:12px 30px; border-radius:50px; font-size:20px; font-weight:900; cursor:pointer; box-shadow: 0 5px 0 #922b21;">好哦，我明天再來！</button>
+        </div>
     </div>
 
     <!-- 嚴肅警告公告彈窗 -->
@@ -258,9 +273,12 @@
         const soundBtn = document.getElementById('sound-btn');
         let isPlaying = false;
         let isDogeOpen = false;
+        let isNinjaOpen = false;
+
+        // ✨ 設定忍者遊戲上線時間：2026年3月15日 中午 12:00:00 ✨
+        const ninjaLaunchDate = new Date('2026-03-15T12:00:00');
 
         window.onload = function() {
-            // 檢查是否已經顯示過警告彈窗 (SessionStorage)
             if (!sessionStorage.getItem('rockWarningShown')) {
                 document.getElementById('warning-modal').style.display = 'flex';
             }
@@ -281,10 +299,13 @@
             }
             
             updateCountdown();
-            setInterval(updateCountdown, 1000);
+            updateNinjaCountdown();
+            setInterval(() => {
+                updateCountdown();
+                updateNinjaCountdown();
+            }, 1000);
         };
 
-        // 關閉警告視窗並記錄
         function closeWarning() {
             document.getElementById('warning-modal').style.display = 'none';
             sessionStorage.setItem('rockWarningShown', 'true');
@@ -305,6 +326,47 @@
             }
         }
 
+        // ✨ 忍者上線倒數邏輯 ✨
+        function updateNinjaCountdown() {
+            const now = new Date();
+            const diff = ninjaLaunchDate - now;
+
+            const cardDesc = document.getElementById('ninja-card-desc');
+            const modalTimer = document.getElementById('ninja-timer');
+
+            // 時間到了，自動解鎖！
+            if (diff <= 0) {
+                isNinjaOpen = true;
+                cardDesc.innerHTML = "發音忍者！聽單字，切開正確發音！<br><span style='color:#27ae60; font-size:16px;'>🟢 <b>已正式上線！馬上挑戰！</b></span>";
+                if(modalTimer) modalTimer.innerHTML = "<span style='color:#27ae60;'>已上線！請關閉視窗進入</span>";
+                return;
+            }
+
+            isNinjaOpen = false;
+            
+            const h = Math.floor(diff / (1000 * 60 * 60)); // 計算總共剩幾個小時
+            const m = Math.floor((diff / 1000 / 60) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+
+            const hStr = h.toString().padStart(2, '0');
+            const mStr = m.toString().padStart(2, '0');
+            const sStr = s.toString().padStart(2, '0');
+            const timeStr = `${hStr}:${mStr}:${sStr}`;
+
+            cardDesc.innerHTML = `發音忍者！聽單字，切開正確發音！<br>⏳ 上線倒數: <strong style="color:#e74c3c;">${timeStr}</strong>`;
+            if(modalTimer) modalTimer.innerHTML = timeStr;
+        }
+
+        function checkNinjaAccess(e) {
+            e.preventDefault(); 
+            if (isNinjaOpen) {
+                window.location.href = 'ninja.html';
+            } else {
+                document.getElementById('ninja-modal').style.display = 'flex';
+            }
+        }
+
+        // 狗狗週末倒數邏輯
         function updateCountdown() {
             const now = new Date();
             const day = now.getDay();
@@ -316,7 +378,7 @@
             const modalTimer = document.getElementById('modal-timer');
 
             if (isDogeOpen) {
-                cardDesc.innerHTML = "週末限定舒壓小品！<br><span style='color:#27ae60; font-size:18px;'>🟢 <b>大門已解鎖！馬上挑戰！</b></span>";
+                cardDesc.innerHTML = "週末限定舒壓小品！<br><span style='color:#27ae60; font-size:16px;'>🟢 <b>大門已解鎖！馬上挑戰！</b></span>";
                 if(modalTimer) modalTimer.innerHTML = "<span style='color:#27ae60;'>開放中！請關閉視窗進入</span>";
                 return;
             }
@@ -324,13 +386,9 @@
             let nextOpen = new Date(now);
             let daysToFriday = 0;
             
-            if (day === 5 && hours < 17) {
-                daysToFriday = 0; 
-            } else if (day === 0 && hours >= 22) {
-                daysToFriday = 5; 
-            } else {
-                daysToFriday = (5 - day + 7) % 7; 
-            }
+            if (day === 5 && hours < 17) { daysToFriday = 0; } 
+            else if (day === 0 && hours >= 22) { daysToFriday = 5; } 
+            else { daysToFriday = (5 - day + 7) % 7; }
 
             nextOpen.setDate(now.getDate() + daysToFriday);
             nextOpen.setHours(17, 0, 0, 0); 
