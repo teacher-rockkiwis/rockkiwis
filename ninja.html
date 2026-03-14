@@ -104,7 +104,6 @@
             #lives-display { font-size: 16px; letter-spacing: 0; }
             #combo-hud { font-size: 12px; margin-top: 2px; }
 
-            /* ✨ 關鍵修改：把發音提示框縮小，並塞進上方兩個 HUD 中間的空隙！ ✨ */
             #word-prompt {
                 top: max(45px, env(safe-area-inset-top) + 35px); 
                 padding: 5px 15px; font-size: 14px; border-width: 2px;
@@ -314,7 +313,6 @@
                 this.vy = vy;
                 this.text = text; this.isCorrect = isCorrect;
                 
-                // ✨ 依據螢幕大小動態縮小字卡 ✨
                 let isSmallScreen = window.innerWidth < 768 || window.innerHeight < 500;
                 this.radius = isSmallScreen ? 32 : 45;
                 this.fontSize = isSmallScreen ? 24 : 36;
@@ -450,7 +448,7 @@
                         
                     } else {
                         playAudio(sfxWrong);
-                        breakCombo();
+                        breakCombo(true); // 砍錯字卡，閃爍紅光
                         lives--;
                         floatTexts.push(new FloatText(t.x, t.y, "WRONG!", "#e74c3c", true));
                         updateHUD();
@@ -478,16 +476,32 @@
             document.getElementById('fever-overlay').classList.add('fever-active');
             document.getElementById('combo-hud').innerText = "🔥 FEVER x20 🔥";
             document.getElementById('combo-hud').classList.add('combo-active');
+            
+            // 進入 Fever 模式：暫停原本 BGM，播放 Buff 音效
+            bgm.pause();
             playAudio(sfxBuff);
         }
 
-        function breakCombo() {
-            combo = 0; isFever = false; feverTimer = 0;
-            document.getElementById('fever-overlay').classList.remove('fever-active');
-            document.getElementById('combo-hud').classList.remove('combo-active');
+        function breakCombo(showFlash = true) {
+            combo = 0; 
             
-            document.body.style.backgroundColor = "rgba(231, 76, 60, 0.4)";
-            setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
+            if (isFever) {
+                isFever = false; feverTimer = 0;
+                document.getElementById('fever-overlay').classList.remove('fever-active');
+                document.getElementById('combo-hud').classList.remove('combo-active');
+                
+                // 結束 Fever 模式：停止 Buff 音效，接續播放原本 BGM
+                sfxBuff.pause();
+                sfxBuff.currentTime = 0;
+                if (isPlaying && !isMuted) bgm.play().catch(e => {});
+            }
+            
+            // 只有被設定需要閃紅光時（砍錯）才顯示
+            if (showFlash) {
+                document.body.style.backgroundColor = "rgba(231, 76, 60, 0.4)";
+                setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
+            }
+            
             updateMultiplier();
         }
 
@@ -536,6 +550,10 @@
             updateHUD();
             document.getElementById('fever-overlay').classList.remove('fever-active');
             document.getElementById('combo-hud').classList.remove('combo-active');
+
+            // 確保重置音效狀態
+            sfxBuff.pause();
+            sfxBuff.currentTime = 0;
 
             bgm.volume = 0.5; playAudio(bgm);
             animationId = requestAnimationFrame(gameLoop);
@@ -588,7 +606,6 @@
                     let startX = positions[index];
                     let startY = height + 50;
                     
-                    // ✨ 稍微調整拋物線高度，確保最高點在視覺最佳打擊區 ✨
                     let g = 0.18; 
                     let targetHeight = height * 0.75 + Math.random() * (height * 0.1); 
                     let vy = -Math.sqrt(2 * g * targetHeight);
@@ -617,6 +634,12 @@
                     isFever = false;
                     document.getElementById('fever-overlay').classList.remove('fever-active');
                     document.getElementById('combo-hud').classList.remove('combo-active');
+                    
+                    // Fever 時間結束：停止 Buff 音效，接續播放原本 BGM
+                    sfxBuff.pause();
+                    sfxBuff.currentTime = 0;
+                    if (isPlaying && !isMuted) bgm.play().catch(e => {});
+
                     updateMultiplier();
                 }
             }
@@ -628,7 +651,8 @@
                 t.draw(ctx);
                 
                 if (!t.sliced && t.y > height + 100) {
-                    if (t.isCorrect) breakCombo();
+                    // 沒有砍中的字卡掉出畫面：如果是正確字卡則中斷Combo，但不閃爍紅光
+                    if (t.isCorrect) breakCombo(false);
                     targets.splice(i, 1);
                 } else if (!t.sliced) {
                     activeTargets = true;
@@ -673,7 +697,8 @@
         }
 
         function endGame() {
-            isPlaying = false; cancelAnimationFrame(animationId); bgm.pause();
+            isPlaying = false; cancelAnimationFrame(animationId); 
+            bgm.pause(); sfxBuff.pause(); // 確保停止所有音樂
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             
             document.getElementById('ui-layer').style.display = 'none';
