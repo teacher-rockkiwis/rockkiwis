@@ -121,7 +121,6 @@
     <audio id="sfx-blade" src="blade.mp3"></audio>
     <audio id="sfx-combo" src="combo.mp3"></audio>
     <audio id="sfx-wrong" src="wrong.mp3"></audio>
-    <!-- ✨ 新增 loop 屬性，讓 Fever 音樂無縫循環播放 ✨ -->
     <audio id="sfx-buff" src="buff.mp3" loop></audio>
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
@@ -211,25 +210,101 @@
         let userIP = "Unknown";
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
+        // ✨ 擴充字庫至 50字 (G4) 與 40字 (G5)，加入大量干擾陷阱單字 ✨
         const wordBanks = {
             "ninja-g4-th": [
                 { word: "thin", target: "th", distractors: ["f", "s", "t", "v"] },
                 { word: "this", target: "th", distractors: ["z", "v", "d", "f"] },
-                { word: "fish", target: "f", distractors: ["th", "v", "ph", "s"] },
-                { word: "think", target: "th", distractors: ["f", "s", "k", "v"] },
-                { word: "math", target: "th", distractors: ["f", "s", "v", "m"] },
-                { word: "bath", target: "th", distractors: ["f", "s", "v", "b"] },
-                { word: "father", target: "th", distractors: ["f", "v", "d", "z"] },
-                { word: "face", target: "f", distractors: ["th", "v", "p", "s"] }
+                { word: "that", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "these", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "those", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "they", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "them", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "then", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "there", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "thick", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "think", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "thank", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "three", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "throw", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "thumb", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "thief", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "bath", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "math", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "path", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "tooth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "teeth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "mouth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "south", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "north", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "earth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "cloth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "moth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "brother", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "mother", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "father", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "weather", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "feather", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "leather", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "gather", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "breathe", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "bathe", target: "th", distractors: ["z", "v", "d", "f"] },
+                { word: "fourth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "fifth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "sixth", target: "th", distractors: ["f", "s", "t", "v"] },
+                { word: "fish", target: "f", distractors: ["th", "s", "v", "p"] },
+                { word: "face", target: "f", distractors: ["th", "s", "v", "p"] },
+                { word: "five", target: "f", distractors: ["th", "s", "v", "p"] },
+                { word: "fork", target: "f", distractors: ["th", "s", "v", "p"] },
+                { word: "tree", target: "t", distractors: ["th", "d", "f", "s"] },
+                { word: "ten", target: "t", distractors: ["th", "d", "f", "s"] },
+                { word: "dog", target: "d", distractors: ["th", "t", "z", "v"] },
+                { word: "door", target: "d", distractors: ["th", "t", "z", "v"] },
+                { word: "zoo", target: "z", distractors: ["th", "s", "v", "d"] },
+                { word: "zebra", target: "z", distractors: ["th", "s", "v", "d"] },
+                { word: "vase", target: "v", distractors: ["th", "f", "w", "b"] }
             ],
             "ninja-g5-wh-ph": [
                 { word: "whale", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "phone", target: "ph", distractors: ["f", "v", "wh", "p"] },
-                { word: "white", target: "wh", distractors: ["w", "h", "ph", "f"] },
-                { word: "elephant", target: "ph", distractors: ["f", "v", "p", "wh"] },
+                { word: "what", target: "wh", distractors: ["w", "h", "ph", "v"] },
                 { word: "when", target: "wh", distractors: ["w", "h", "ph", "v"] },
-                { word: "photo", target: "ph", distractors: ["f", "p", "wh", "v"] },
-                { word: "dolphin", target: "ph", distractors: ["f", "p", "wh", "v"] }
+                { word: "where", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "why", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "who", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "which", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "white", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "wheel", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "wheat", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "whip", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "whisper", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "whistle", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "whisk", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "whiskers", target: "wh", distractors: ["w", "h", "ph", "v"] },
+                { word: "phone", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "photo", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "phonics", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "elephant", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "dolphin", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "graph", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "alphabet", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "nephew", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "sphere", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "trophy", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "phantom", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "phrase", target: "ph", distractors: ["f", "v", "wh", "p"] },
+                { word: "water", target: "w", distractors: ["wh", "h", "v", "f"] },
+                { word: "window", target: "w", distractors: ["wh", "h", "v", "f"] },
+                { word: "wait", target: "w", distractors: ["wh", "h", "v", "f"] },
+                { word: "walk", target: "w", distractors: ["wh", "h", "v", "f"] },
+                { word: "wash", target: "w", distractors: ["wh", "h", "v", "f"] },
+                { word: "hat", target: "h", distractors: ["wh", "w", "f", "ph"] },
+                { word: "house", target: "h", distractors: ["wh", "w", "f", "ph"] },
+                { word: "horse", target: "h", distractors: ["wh", "w", "f", "ph"] },
+                { word: "fan", target: "f", distractors: ["ph", "v", "wh", "p"] },
+                { word: "foot", target: "f", distractors: ["ph", "v", "wh", "p"] },
+                { word: "frog", target: "f", distractors: ["ph", "v", "wh", "p"] },
+                { word: "pig", target: "p", distractors: ["ph", "b", "f", "wh"] },
+                { word: "pen", target: "p", distractors: ["ph", "b", "f", "wh"] }
             ]
         };
 
@@ -243,7 +318,6 @@
         let isFever = false, feverTimer = 0;
         let playerName = "Player", currentTheme = "";
         
-        // ✨ 新增：遊戲速度倍率 ✨
         let speedMult = 1.0;
         
         let targets = [];
@@ -316,7 +390,7 @@
                 this.vx = vx; 
                 this.vy = vy;
                 this.text = text; this.isCorrect = isCorrect;
-                this.isRock = isRock; // ✨ 是否為金色隱藏卡
+                this.isRock = isRock; 
                 
                 let isSmallScreen = window.innerWidth < 768 || window.innerHeight < 500;
                 this.radius = isSmallScreen ? 32 : 45;
@@ -327,11 +401,11 @@
                 this.rotSpeed = (Math.random() - 0.5) * 0.08;
                 
                 if (this.isRock) {
-                    this.gravity = 0.01; // 金色卡片幾乎不受重力影響，呈直線飛過
-                    this.radius += 5; // ROCK 特別大一點
+                    this.gravity = 0.01; 
+                    this.radius += 5; 
                     this.color = "#f1c40f";
                 } else {
-                    this.gravity = 0.18 * speedMult; // ✨ 隨著分數加快重力與速度
+                    this.gravity = 0.18 * speedMult; 
                     this.color = isCorrect ? "#34495e" : "#8e44ad"; 
                     if(Math.random() > 0.7) this.color = "#d35400"; 
                 }
@@ -341,8 +415,6 @@
                 this.y += this.vy;
                 
                 if (!this.isRock) {
-                    // ✨ 隨速度縮短的滯空魔法 ✨
-                    // speedMult 越大，判定滯空的範圍越大，但給予的重力懲罰 (0.15 * speedMult) 也越大 = 滯空時間變短
                     if (Math.abs(this.vy) < 2.0 * speedMult) {
                         this.vy += this.gravity * (0.15 * speedMult); 
                     } else {
@@ -360,7 +432,6 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 
-                // ✨ 金色卡片專屬發光外觀 ✨
                 if (this.isRock) {
                     ctx.shadowBlur = 20;
                     ctx.shadowColor = "#f1c40f";
@@ -451,18 +522,16 @@
                 if (dist <= t.radius) {
                     t.sliced = true;
                     
-                    // ✨ 切中金色傳說彩蛋 ROCK ✨
                     if (t.isRock) {
                         createExplosion(t.x, t.y, "#f1c40f");
                         playAudio(sfxCombo, true);
-                        let earned = 1000 * multiplier; // 超大獎勵
+                        let earned = 1000 * multiplier; 
                         score += earned;
                         floatTexts.push(new FloatText(t.x, t.y, `+${earned} ROCK!`, "#f1c40f", true));
-                        updateGameSpeed(); // 更新進度與速度
-                        continue; // 不列入一般計分與扣血計算
+                        updateGameSpeed(); 
+                        continue; 
                     }
 
-                    // 一般目標判斷
                     createExplosion(t.x, t.y, t.isCorrect ? "#2ecc71" : "#e74c3c");
                     if (t.isCorrect) {
                         playAudio(sfxBlade);
@@ -483,7 +552,7 @@
                         
                     } else {
                         playAudio(sfxWrong);
-                        breakCombo(true); // 砍錯字卡，閃爍紅光
+                        breakCombo(true); 
                         lives--;
                         floatTexts.push(new FloatText(t.x, t.y, "WRONG!", "#e74c3c", true));
                         updateGameSpeed();
@@ -497,7 +566,6 @@
             for(let i=0; i<15; i++) { particles.push(new Particle(x, y, color)); particles.push(new Particle(x, y, "#ecf0f1")); }
         }
 
-        // ✨ 動態難度升級系統 ✨
         function updateGameSpeed() {
             if (score >= 20000) speedMult = 1.8;
             else if (score >= 10000) speedMult = 1.6;
@@ -519,12 +587,10 @@
 
         function triggerFever() {
             if (!isFever) {
-                // 初次進入 Fever：暫停 BGM，從頭播放 Buff 音樂
                 bgm.pause();
                 playAudio(sfxBuff, true);
             }
             
-            // ✨ 如果已經在 Fever 狀態內再次達到條件，只延長時間不打斷音樂 ✨
             isFever = true; multiplier = 20; feverTimer = 10000; 
             document.getElementById('fever-overlay').classList.add('fever-active');
             document.getElementById('combo-hud').innerText = "🔥 FEVER x20 🔥";
@@ -539,13 +605,11 @@
                 document.getElementById('fever-overlay').classList.remove('fever-active');
                 document.getElementById('combo-hud').classList.remove('combo-active');
                 
-                // 結束 Fever 模式：停止 Buff 音效，接續播放原本 BGM
                 sfxBuff.pause();
                 sfxBuff.currentTime = 0;
                 if (isPlaying && !isMuted) bgm.play().catch(e => {});
             }
             
-            // 只有被設定需要閃紅光時（砍錯）才顯示
             if (showFlash) {
                 document.body.style.backgroundColor = "rgba(231, 76, 60, 0.4)";
                 setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
@@ -600,7 +664,6 @@
             document.getElementById('fever-overlay').classList.remove('fever-active');
             document.getElementById('combo-hud').classList.remove('combo-active');
 
-            // 確保重置音效狀態
             sfxBuff.pause();
             sfxBuff.currentTime = 0;
 
@@ -657,23 +720,20 @@
                     
                     let g = 0.18 * speedMult; 
                     let targetHeight = height * 0.75 + Math.random() * (height * 0.1); 
-                    // ✨ vy 根據動態加強後的重力算出來，確保無論多快都能剛好飛到畫面上方 ✨
                     let vy = -Math.sqrt(2 * g * targetHeight);
                     let vx = (Math.random() - 0.5) * 0.8 * Math.sqrt(speedMult); 
                     
-                    // ✨ 發射速度間隔也跟著 speedMult 加快 ✨
                     setTimeout(() => {
                         if(isPlaying) targets.push(new Target(startX, startY, vx, vy, item.t, item.c));
                     }, index * (250 / speedMult)); 
                 });
 
-                // ✨ 0.5% 機率觸發金色 ROCK 彩蛋卡！極速橫向飛越！ ✨
-                let eggChance = 0.005 * spawnList.length; // 依照生成的字卡數等比例換算
+                let eggChance = 0.005 * spawnList.length; 
                 if (Math.random() < eggChance) {
                     let startLeft = Math.random() > 0.5;
                     let startX = startLeft ? -50 : width + 50;
-                    let startY = height * 0.2 + Math.random() * (height * 0.4); // 出現在畫面上半部
-                    let rockVx = (startLeft ? 1 : -1) * (width * 0.015 * speedMult); // 飛得非常快！
+                    let startY = height * 0.2 + Math.random() * (height * 0.4); 
+                    let rockVx = (startLeft ? 1 : -1) * (width * 0.015 * speedMult); 
                     let rockVy = (Math.random() - 0.5) * 2; 
                     
                     setTimeout(() => {
@@ -700,7 +760,6 @@
                     document.getElementById('fever-overlay').classList.remove('fever-active');
                     document.getElementById('combo-hud').classList.remove('combo-active');
                     
-                    // Fever 時間結束：停止 Buff 音效，接續播放原本 BGM
                     sfxBuff.pause();
                     sfxBuff.currentTime = 0;
                     if (isPlaying && !isMuted) bgm.play().catch(e => {});
@@ -715,9 +774,7 @@
                 t.update();
                 t.draw(ctx);
                 
-                // 判斷是否掉出畫面
                 if (!t.sliced && (t.y > height + 100 || t.x < -100 || t.x > width + 100)) {
-                    // 沒有砍中的正確字卡掉出畫面：中斷Combo，但不閃爍紅光 ( ROCK 彩蛋漏掉不會斷 Combo)
                     if (t.isCorrect && !t.isRock) breakCombo(false);
                     targets.splice(i, 1);
                 } else if (!t.sliced) {
@@ -764,7 +821,7 @@
 
         function endGame() {
             isPlaying = false; cancelAnimationFrame(animationId); 
-            bgm.pause(); sfxBuff.pause(); // 確保停止所有音樂
+            bgm.pause(); sfxBuff.pause(); 
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             
             document.getElementById('ui-layer').style.display = 'none';
