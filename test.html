@@ -61,8 +61,13 @@
         #end-msg { display: none; text-align: center; }
 
         .name-input { font-size: 22px; padding: 12px 20px; border-radius: 15px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 15px; width: 90%; max-width: 350px; outline: none; }
-        .start-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #922b21; margin-bottom: 20px; transition: 0.1s;}
+        .start-btn { background: var(--primary); color: white; border: none; padding: 15px 30px; font-size: 22px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #922b21; transition: 0.1s;}
         .start-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #922b21; }
+        .fs-btn { background: var(--success); box-shadow: 0 6px 0 #1e8449; }
+        .fs-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #1e8449; }
+        
+        .btn-group { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+
         select.theme-select { width: 90%; max-width: 350px; font-size: 16px; padding: 12px; border-radius: 15px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; margin-bottom: 20px; }
 
         .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; }
@@ -76,6 +81,16 @@
         .fever-active { box-shadow: inset 0 0 150px rgba(241, 196, 15, 0.6) !important; animation: pulse 1s infinite alternate; }
         @keyframes pulse { 0% { box-shadow: inset 0 0 100px rgba(241, 196, 15, 0.4); } 100% { box-shadow: inset 0 0 200px rgba(230, 126, 34, 0.8); } }
 
+        /* ✨ 橫屏強制提示 (僅在直立且螢幕小於768px時顯示) ✨ */
+        #portrait-warning { display: none; }
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            #portrait-warning {
+                display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(44, 62, 80, 0.98); z-index: 99999; color: white;
+                flex-direction: column; justify-content: center; align-items: center;
+                font-size: 24px; font-weight: bold; text-align: center; padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -88,6 +103,12 @@
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
     <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
+
+    <!-- ✨ 橫屏警告牆 ✨ -->
+    <div id="portrait-warning">
+        <div style="font-size: 80px; margin-bottom: 20px; animation: shake 2s infinite;">📱🔄</div>
+        <div style="line-height: 1.5;">請將手機旋轉至<strong style="color:var(--gold)">橫向</strong><br>以獲得最佳斬擊視野！</div>
+    </div>
 
     <div id="start-overlay">
         <h1 style="font-size: 50px; color: var(--gold); text-shadow: 0 5px 15px rgba(0,0,0,0.5); text-align: center; margin-bottom: 5px; margin-top: 20px;">🥷 Phonics Ninja</h1>
@@ -106,9 +127,12 @@
             </optgroup>
         </select>
 
-        <button class="start-btn" onclick="startGame()">⚔️ 拔刀出陣！</button>
+        <div class="btn-group">
+            <button class="start-btn" onclick="startGame(false)">⚔️ 一般啟動</button>
+            <button class="start-btn fs-btn" onclick="startGame(true)">📱 全螢幕橫式遊玩</button>
+        </div>
 
-        <div class="result-panel" style="margin-top: 10px; padding: 15px;">
+        <div class="result-panel" style="margin-top: 0px; padding: 15px;">
             <h3 style="margin: 0 0 10px 0; color: var(--primary); text-align: center;">🏆 忍者英雄榜</h3>
             <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取中...</div></div>
         </div>
@@ -162,7 +186,6 @@
         let userIP = "Unknown";
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        // 📝 精準題庫設計 (包含目標發音與混淆發音)
         const wordBanks = {
             "ninja-g4-th": [
                 { word: "thin", target: "th", distractors: ["f", "s", "t", "v"] },
@@ -185,7 +208,6 @@
             ]
         };
 
-        // 遊戲核心變數
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         let width, height;
@@ -200,36 +222,29 @@
         let particles = [];
         let floatTexts = [];
         let bladePath = [];
-        let swipeHitsInCurrentStroke = 0; // 記錄一筆劃切中多少個
+        let swipeHitsInCurrentStroke = 0; 
         
         let currentWordData = null;
         let isSpawningPhase = false;
 
-        // 音效控制
         const bgm = document.getElementById('bgm');
         const sfxBlade = document.getElementById('sfx-blade');
         const sfxCombo = document.getElementById('sfx-combo');
         const sfxWrong = document.getElementById('sfx-wrong');
         const sfxBuff = document.getElementById('sfx-buff');
         
-        // 音量預設
-        bgm.volume = 0.5;
-        sfxBlade.volume = 0.8;
-        sfxCombo.volume = 1.0;
-        sfxWrong.volume = 1.0;
-        sfxBuff.volume = 1.0;
+        bgm.volume = 0.5; sfxBlade.volume = 0.8; sfxCombo.volume = 1.0; sfxWrong.volume = 1.0; sfxBuff.volume = 1.0;
 
         window.onload = function() { 
             fetchFrontLeaderboard();
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             
-            // 防治滑動返回的終極手段
+            // 嚴格攔截螢幕上的滑動事件
             canvas.addEventListener('touchstart', (e) => e.preventDefault(), {passive: false});
             canvas.addEventListener('touchmove', (e) => e.preventDefault(), {passive: false});
             
             setupInputHandling();
-
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
@@ -268,42 +283,50 @@
             audioEl.play().catch(e => {});
         }
 
-        // --- 核心遊戲引擎 ---
+        // --- 核心遊戲引擎 (更新物理引擎) ---
 
         class Target {
             constructor(x, y, vx, vy, text, isCorrect) {
-                this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+                this.x = x; this.y = y; 
+                this.vx = vx; 
+                this.vy = vy;
                 this.text = text; this.isCorrect = isCorrect;
                 this.radius = 45;
                 this.sliced = false;
                 this.rotation = Math.random() * Math.PI * 2;
-                this.rotSpeed = (Math.random() - 0.5) * 0.1;
-                // 外觀顏色
-                this.color = isCorrect ? "#34495e" : "#8e44ad"; // 視覺上故意不給明顯提示，靠發音判斷
-                if(Math.random() > 0.7) this.color = "#d35400"; // 隨機木牌顏色
+                this.rotSpeed = (Math.random() - 0.5) * 0.08;
+                this.gravity = 0.08; // ✨ 減低重力，增加漂浮感
+                
+                this.color = isCorrect ? "#34495e" : "#8e44ad"; 
+                if(Math.random() > 0.7) this.color = "#d35400"; 
             }
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += 0.15; // 模擬重力
+                
+                // ✨ 滯空魔法 (Hang Time)：當垂直速度極小時，給予極大空氣阻力
+                if (Math.abs(this.vy) < 1.5) {
+                    this.vy += this.gravity * 0.3; // 到達頂點時慢動作懸停
+                } else {
+                    this.vy += this.gravity;
+                }
+                
                 this.rotation += this.rotSpeed;
             }
             draw(ctx) {
-                if(this.sliced) return; // 切開的瞬間就會消失變成粒子
+                if(this.sliced) return; 
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 
-                // 畫木牌
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = "#ecf0f1"; // 外框
+                ctx.fillStyle = "#ecf0f1"; 
                 ctx.fill();
                 ctx.lineWidth = 6;
                 ctx.strokeStyle = this.color;
                 ctx.stroke();
 
-                // 畫文字
                 ctx.fillStyle = "#2c3e50";
                 ctx.font = "bold 36px Quicksand";
                 ctx.textAlign = "center";
@@ -323,18 +346,11 @@
                 this.color = color;
                 this.size = Math.random() * 8 + 4;
             }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                this.vy += 0.2; // 重力
-                this.life -= 0.03;
-            }
+            update() { this.x += this.vx; this.y += this.vy; this.vy += 0.2; this.life -= 0.03; }
             draw(ctx) {
                 if (this.life <= 0) return;
-                ctx.globalAlpha = this.life;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.globalAlpha = this.life; ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
                 ctx.globalAlpha = 1.0;
             }
         }
@@ -347,11 +363,9 @@
             update() { this.y += this.vy; this.life -= 0.02; }
             draw(ctx) {
                 if(this.life <= 0) return;
-                ctx.globalAlpha = this.life;
-                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life; ctx.fillStyle = this.color;
                 ctx.font = `bold ${this.isBig ? '40px' : '26px'} Quicksand`;
-                ctx.textAlign = "center";
-                ctx.fillText(this.text, this.x, this.y);
+                ctx.textAlign = "center"; ctx.fillText(this.text, this.x, this.y);
                 ctx.lineWidth = 1; ctx.strokeStyle = "white"; ctx.strokeText(this.text, this.x, this.y);
                 ctx.globalAlpha = 1.0;
             }
@@ -366,20 +380,16 @@
             };
 
             canvas.addEventListener('pointerdown', (e) => {
-                isDown = true;
-                swipeHitsInCurrentStroke = 0; // 重置一筆劃計數
-                addPoint(e.clientX, e.clientY);
+                isDown = true; swipeHitsInCurrentStroke = 0; addPoint(e.clientX, e.clientY);
             });
 
             canvas.addEventListener('pointermove', (e) => {
-                if (!isDown) return;
-                addPoint(e.clientX, e.clientY);
+                if (!isDown) return; addPoint(e.clientX, e.clientY);
             });
 
             window.addEventListener('pointerup', () => { isDown = false; swipeHitsInCurrentStroke = 0; });
         }
 
-        // 碰撞偵測 (點與圓) - 為了效能與簡化，只要滑動軌跡的最新點進入圓內就算切到
         function checkSlice(x, y) {
             if(!isPlaying) return;
 
@@ -397,14 +407,12 @@
                     if (t.isCorrect) {
                         playAudio(sfxBlade);
                         swipeHitsInCurrentStroke++;
-                        combo++;
-                        updateMultiplier();
+                        combo++; updateMultiplier();
                         
                         let basePts = 10;
-                        // 連擊加成
                         if (swipeHitsInCurrentStroke >= 3) {
                             playAudio(sfxCombo, false);
-                            basePts += 20; // 額外獎勵
+                            basePts += 20; 
                             floatTexts.push(new FloatText(t.x, t.y - 30, "COMBO!", "#f1c40f", true));
                         }
                         
@@ -414,7 +422,6 @@
                         updateHUD();
                         
                     } else {
-                        // 切到炸彈(錯誤字根)
                         playAudio(sfxWrong);
                         breakCombo();
                         lives--;
@@ -427,33 +434,20 @@
         }
 
         function createExplosion(x, y, color) {
-            for(let i=0; i<15; i++) {
-                particles.push(new Particle(x, y, color));
-                particles.push(new Particle(x, y, "#ecf0f1"));
-            }
+            for(let i=0; i<15; i++) { particles.push(new Particle(x, y, color)); particles.push(new Particle(x, y, "#ecf0f1")); }
         }
 
         function updateMultiplier() {
-            let oldFever = isFever;
-            
-            if (isFever) {
-                multiplier = 20; // Fever期間固定20倍
-            } else if (combo >= 10) {
-                triggerFever();
-            } else if (combo >= 6) {
-                multiplier = 3;
-            } else if (combo >= 3) {
-                multiplier = 2;
-            } else {
-                multiplier = 1;
-            }
+            if (isFever) { multiplier = 20; } 
+            else if (combo >= 10) { triggerFever(); } 
+            else if (combo >= 6) { multiplier = 3; } 
+            else if (combo >= 3) { multiplier = 2; } 
+            else { multiplier = 1; }
             updateHUD();
         }
 
         function triggerFever() {
-            isFever = true;
-            multiplier = 20;
-            feverTimer = 10000; // 10 秒
+            isFever = true; multiplier = 20; feverTimer = 10000; 
             document.getElementById('fever-overlay').classList.add('fever-active');
             document.getElementById('combo-hud').innerText = "🔥 FEVER x20 🔥";
             document.getElementById('combo-hud').classList.add('combo-active');
@@ -461,16 +455,12 @@
         }
 
         function breakCombo() {
-            combo = 0;
-            isFever = false;
-            feverTimer = 0;
+            combo = 0; isFever = false; feverTimer = 0;
             document.getElementById('fever-overlay').classList.remove('fever-active');
             document.getElementById('combo-hud').classList.remove('combo-active');
             
-            // 畫面震動紅光
             document.body.style.backgroundColor = "rgba(231, 76, 60, 0.4)";
             setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
-            
             updateMultiplier();
         }
 
@@ -485,12 +475,23 @@
             }
         }
 
-        function startGame() {
+        // ✨ 支援全螢幕強制橫向的啟動功能 ✨
+        function startGame(requestFullscreen) {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("請輸入忍者姓名！"); return; }
             if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
             
-            // 啟動語音解鎖
+            if (requestFullscreen) {
+                let elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().then(() => {
+                        if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(e => console.log("旋轉鎖定失敗或不支援"));
+                    }).catch(err => console.log("全螢幕請求失敗"));
+                } else if (elem.webkitRequestFullscreen) { 
+                    elem.webkitRequestFullscreen();
+                }
+            }
+
             if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
 
             playerName = inputName; 
@@ -502,30 +503,23 @@
             
             score = 0; lives = 5; combo = 0; multiplier = 1; isFever = false; feverTimer = 0;
             targets = []; particles = []; floatTexts = []; bladePath = [];
-            isPlaying = true;
-            isSpawningPhase = false;
+            isPlaying = true; isSpawningPhase = false;
 
             updateHUD();
             document.getElementById('fever-overlay').classList.remove('fever-active');
             document.getElementById('combo-hud').classList.remove('combo-active');
 
-            bgm.volume = 0.5;
-            playAudio(bgm);
-            
+            bgm.volume = 0.5; playAudio(bgm);
             animationId = requestAnimationFrame(gameLoop);
         }
 
         function speakWord(word, callback) {
             if ('speechSynthesis' in window && !isMuted) {
-                bgm.volume = 0.2; // 降BGM
+                bgm.volume = 0.2; 
                 const utterance = new SpeechSynthesisUtterance(word); 
                 utterance.lang = 'en-US'; utterance.rate = 0.85;
-                utterance.onend = () => { 
-                    if(isPlaying) bgm.volume = 0.5; 
-                    if(callback) callback();
-                }; 
-                window.speechSynthesis.cancel(); 
-                window.speechSynthesis.speak(utterance);
+                utterance.onend = () => { if(isPlaying) bgm.volume = 0.5; if(callback) callback(); }; 
+                window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance);
             } else {
                 if(callback) setTimeout(callback, 1000);
             }
@@ -541,12 +535,10 @@
             currentWordData = bank[Math.floor(Math.random() * bank.length)];
             
             speakWord(currentWordData.word, () => {
-                // 語音結束後發射字根
                 if(!isPlaying) return;
                 
-                // 決定要發射幾個正確，幾個錯誤
-                let correctCount = Math.floor(Math.random() * 3) + 2; // 2~4個正確
-                let wrongCount = Math.floor(Math.random() * 2) + 1;   // 1~2個錯誤
+                let correctCount = Math.floor(Math.random() * 3) + 2; 
+                let wrongCount = Math.floor(Math.random() * 2) + 1;  
 
                 let spawnList = [];
                 for(let i=0; i<correctCount; i++) spawnList.push({ t: currentWordData.target, c: true });
@@ -555,23 +547,30 @@
                     spawnList.push({ t: dist, c: false });
                 }
                 
-                // 打亂發射順序
-                spawnList.sort(() => Math.random() - 0.5);
+                // ✨ 將發射點均勻分配在畫面上，並打亂順序，避免學生預測 ✨
+                let sections = spawnList.length;
+                let positions = [];
+                for(let i=0; i<sections; i++) {
+                    let sectionWidth = width / sections;
+                    let px = (i * sectionWidth) + (sectionWidth / 2) + (Math.random() - 0.5) * (sectionWidth * 0.6);
+                    positions.push(px);
+                }
+                positions.sort(() => Math.random() - 0.5);
 
                 spawnList.forEach((item, index) => {
-                    // 隨機從下方不同位置往上丟
-                    let startX = width/2 + (Math.random() - 0.5) * (width * 0.8);
+                    let startX = positions[index];
                     let startY = height + 50;
                     
-                    // 往中間集中的拋物線
-                    let targetX = width/2 + (Math.random() - 0.5) * (width * 0.4);
-                    let vx = (targetX - startX) / 60; // 橫向速度
-                    let vy = -12 - Math.random() * 4; // 往上衝的力量
+                    // ✨ 根據螢幕高度動態計算完美的上拋初速度 ✨
+                    let g = 0.08; 
+                    let targetHeight = height * 0.65 + Math.random() * (height * 0.15); // 目標高度(距離頂部大約剩20%~35%)
+                    let vy = -Math.sqrt(2 * g * targetHeight);
+                    let vx = (Math.random() - 0.5) * 0.8; // 幾乎沒有橫向移動，直上直下
                     
-                    // 稍微錯開每顆出現的時間
+                    // ✨ 延長字卡彈出的間隔時間 (400ms)，給學生更多反應與判斷時間 ✨
                     setTimeout(() => {
                         if(isPlaying) targets.push(new Target(startX, startY, vx, vy, item.t, item.c));
-                    }, index * 200);
+                    }, index * 400); 
                 });
                 
                 isSpawningPhase = false;
@@ -586,7 +585,6 @@
 
             ctx.clearRect(0, 0, width, height);
 
-            // Fever 計時
             if (isFever) {
                 feverTimer -= dt;
                 if (feverTimer <= 0) {
@@ -597,7 +595,6 @@
                 }
             }
 
-            // 更新與繪製目標
             let activeTargets = false;
             for (let i = targets.length - 1; i >= 0; i--) {
                 let t = targets[i];
@@ -605,41 +602,28 @@
                 t.draw(ctx);
                 
                 if (!t.sliced && t.y > height + 100) {
-                    // 掉落到底部
-                    if (t.isCorrect) {
-                        // 漏掉正確的，斷 Combo (不扣血)
-                        breakCombo();
-                    }
+                    if (t.isCorrect) breakCombo();
                     targets.splice(i, 1);
                 } else if (!t.sliced) {
                     activeTargets = true;
                 } else if (t.sliced) {
-                    targets.splice(i, 1); // 砍掉的直接移除
+                    targets.splice(i, 1); 
                 }
             }
 
-            // 觸發下一波
-            if (!activeTargets && !isSpawningPhase && targets.length === 0) {
-                launchWave();
-            }
+            if (!activeTargets && !isSpawningPhase && targets.length === 0) launchWave();
 
-            // 繪製粒子
             for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].update();
-                particles[i].draw(ctx);
+                particles[i].update(); particles[i].draw(ctx);
                 if (particles[i].life <= 0) particles.splice(i, 1);
             }
 
-            // 繪製浮動文字
             for (let i = floatTexts.length - 1; i >= 0; i--) {
-                floatTexts[i].update();
-                floatTexts[i].draw(ctx);
+                floatTexts[i].update(); floatTexts[i].draw(ctx);
                 if (floatTexts[i].life <= 0) floatTexts.splice(i, 1);
             }
 
-            // 繪製刀光軌跡
             drawBladePath();
-
             animationId = requestAnimationFrame(gameLoop);
         }
 
@@ -652,29 +636,18 @@
                 ctx.lineTo(bladePath[i].x, bladePath[i].y);
             }
             
-            // 刀光樣式
             ctx.lineWidth = isFever ? 12 : 6;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
             ctx.strokeStyle = isFever ? '#f39c12' : '#ecf0f1';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = isFever ? '#f1c40f' : '#bdc3c7';
-            ctx.stroke();
-            ctx.shadowBlur = 0;
+            ctx.shadowBlur = 15; ctx.shadowColor = isFever ? '#f1c40f' : '#bdc3c7';
+            ctx.stroke(); ctx.shadowBlur = 0;
 
-            // 軌跡老化消失
-            for (let i = 0; i < bladePath.length; i++) {
-                bladePath[i].age++;
-            }
-            while (bladePath.length > 0 && bladePath[0].age > 10) {
-                bladePath.shift();
-            }
+            for (let i = 0; i < bladePath.length; i++) { bladePath[i].age++; }
+            while (bladePath.length > 0 && bladePath[0].age > 10) { bladePath.shift(); }
         }
 
         function endGame() {
-            isPlaying = false;
-            cancelAnimationFrame(animationId);
-            bgm.pause();
+            isPlaying = false; cancelAnimationFrame(animationId); bgm.pause();
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             
             document.getElementById('ui-layer').style.display = 'none';
@@ -684,16 +657,13 @@
             
             const listDiv = document.getElementById('leaderboard-list'); 
             const themeName = document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text;
-            
             listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳忍者戰績...</div>";
             
-            // ✨ IP 傳送與存檔 ✨
             fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=Dead&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
-                listDiv.innerHTML = ""; 
-                if (!board || board.length === 0) return;
+                listDiv.innerHTML = ""; if (!board || board.length === 0) return;
                 board.slice(0,5).forEach((p, i) => { 
                     let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; 
-                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span>${p.score} pts</span></div>`; 
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; 
                 });
             }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
         }
