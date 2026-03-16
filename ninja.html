@@ -324,7 +324,6 @@
         let particles = [];
         let floatTexts = [];
         
-        // ✨ 多點觸控追蹤物件 ✨
         let activeTouches = {};
         let allPaths = [];
         
@@ -337,7 +336,6 @@
         const sfxWrong = document.getElementById('sfx-wrong');
         const sfxBuff = document.getElementById('sfx-buff');
         
-        // 預設音量
         bgm.volume = 0.5; sfxBlade.volume = 0.8; sfxCombo.volume = 1.0; sfxWrong.volume = 1.0; sfxBuff.volume = 0.5;
 
         window.onload = function() { 
@@ -352,11 +350,16 @@
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
+        // ✨ 徹底解決 iOS/iPadOS 全螢幕後尺寸抓取錯誤造成的巨型字卡 Bug ✨
         function resizeCanvas() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
+            let newWidth = canvas.clientWidth || window.innerWidth;
+            let newHeight = canvas.clientHeight || window.innerHeight;
+            if (newWidth > 0 && newHeight > 0 && (canvas.width !== newWidth || canvas.height !== newHeight)) {
+                width = newWidth;
+                height = newHeight;
+                canvas.width = width;
+                canvas.height = height;
+            }
         }
 
         function toggleSound(e) { 
@@ -384,7 +387,8 @@
         function playAudio(audioEl, restart = true) {
             if (isMuted) return;
             if (restart) audioEl.currentTime = 0;
-            audioEl.play().catch(e => {});
+            let p = audioEl.play();
+            if (p !== undefined) p.catch(e => {});
         }
 
         class Target {
@@ -493,7 +497,6 @@
             }
         }
 
-        // ✨ 升級為真多點觸控引擎 ✨
         function setupInputHandling() {
             canvas.addEventListener('pointerdown', (e) => {
                 let path = [{x: e.clientX, y: e.clientY, age: 0}];
@@ -508,16 +511,13 @@
                 checkSlice(e.clientX, e.clientY, e.pointerId);
             });
 
-            const endPointer = (e) => {
-                delete activeTouches[e.pointerId];
-            };
+            const endPointer = (e) => { delete activeTouches[e.pointerId]; };
 
             canvas.addEventListener('pointerup', endPointer);
             canvas.addEventListener('pointercancel', endPointer);
             canvas.addEventListener('pointerout', endPointer);
         }
 
-        // ✨ 支援多點獨立判定的切擊邏輯 ✨
         function checkSlice(x, y, pointerId) {
             if(!isPlaying) return;
             let touchInfo = activeTouches[pointerId];
@@ -546,7 +546,7 @@
                     createExplosion(t.x, t.y, t.isCorrect ? "#2ecc71" : "#e74c3c");
                     if (t.isCorrect) {
                         playAudio(sfxBlade);
-                        touchInfo.hits++; // 每根手指獨立計算一筆劃命中數
+                        touchInfo.hits++;
                         combo++; updateMultiplier();
                         
                         let basePts = 10;
@@ -599,10 +599,11 @@
         }
 
         function triggerFever() {
-            isFever = true;
-            bgm.pause();
-            playAudio(sfxBuff, true); 
-            
+            if (!isFever) {
+                bgm.pause();
+                playAudio(sfxBuff, true); 
+            }
+            isFever = true; multiplier = 20; feverTimer = 10000; 
             document.getElementById('fever-overlay').classList.add('fever-active');
             document.getElementById('combo-hud').classList.add('combo-active');
         }
@@ -673,7 +674,7 @@
             
             score = 0; lives = 5; combo = 0; multiplier = 1; isFever = false; speedMult = 1.0;
             targets = []; particles = []; floatTexts = []; 
-            activeTouches = {}; allPaths = []; // 重置多點觸控
+            activeTouches = {}; allPaths = []; 
             isPlaying = true; isSpawningPhase = false;
 
             updateHUD();
@@ -687,14 +688,35 @@
             animationId = requestAnimationFrame(gameLoop);
         }
 
+        // ✨ 強化 TTS 安全性，即使 iOS 語音引擎當機，遊戲流程也絕不卡死 ✨
         function speakWord(word, callback) {
-            if ('speechSynthesis' in window && !isMuted) {
-                bgm.volume = 0.2; 
-                const utterance = new SpeechSynthesisUtterance(word); 
-                utterance.lang = 'en-US'; utterance.rate = 0.85;
-                utterance.onend = () => { if(isPlaying) bgm.volume = 0.5; if(callback) callback(); }; 
-                window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance);
-            } else {
+            try {
+                if ('speechSynthesis' in window && !isMuted) {
+                    bgm.volume = 0.2; 
+                    const utterance = new SpeechSynthesisUtterance(word); 
+                    utterance.lang = 'en-US'; utterance.rate = 0.85;
+                    
+                    let isFired = false;
+                    const safeCallback = () => {
+                        if (isFired) return;
+                        isFired = true;
+                        if(isPlaying) bgm.volume = 0.5; 
+                        if(callback) callback();
+                    };
+
+                    utterance.onend = safeCallback;
+                    utterance.onerror = (e) => { console.log("TTS錯誤", e); safeCallback(); };
+                    
+                    window.speechSynthesis.cancel(); 
+                    window.speechSynthesis.speak(utterance);
+                    
+                    // 最強保險：如果2.5秒內語音還是沒唸完(或卡死)，強制觸發發射字卡！
+                    setTimeout(safeCallback, 2500); 
+                } else {
+                    if(callback) setTimeout(callback, 1000);
+                }
+            } catch(e) {
+                console.log(e);
                 if(callback) setTimeout(callback, 1000);
             }
         }
@@ -704,6 +726,7 @@
         }
 
         function launchWave() {
+            if (width <= 0 || height <= 0) return; // 安全保護
             isSpawningPhase = true;
             let bank = wordBanks[currentTheme];
             currentWordData = bank[Math.floor(Math.random() * bank.length)];
@@ -711,9 +734,8 @@
             speakWord(currentWordData.word, () => {
                 if(!isPlaying) return;
                 
-                // ✨ 將錯誤字卡數量強制固定為 2 個 ✨
                 let correctCount = Math.floor(Math.random() * 3) + 3 + Math.floor(speedMult); 
-                let wrongCount = 2; // 不隨速度增加，永遠只給2個陷阱，降低混亂感
+                let wrongCount = 2; 
 
                 let spawnList = [];
                 for(let i=0; i<correctCount; i++) spawnList.push({ t: currentWordData.target, c: true });
@@ -770,10 +792,32 @@
         let lastTime = 0;
         function gameLoop(timestamp) {
             if (!isPlaying) return;
+            resizeCanvas(); // ✨ 每一幀強制更新並鎖定真實解析度，徹底杜絕畫面縮放破圖 ✨
+            
             let dt = timestamp - lastTime;
             lastTime = timestamp;
+            
+            if (width <= 0 || height <= 0) {
+                animationId = requestAnimationFrame(gameLoop);
+                return;
+            }
 
             ctx.clearRect(0, 0, width, height);
+
+            if (isFever) {
+                feverTimer -= dt;
+                if (feverTimer <= 0) {
+                    isFever = false;
+                    document.getElementById('fever-overlay').classList.remove('fever-active');
+                    document.getElementById('combo-hud').classList.remove('combo-active');
+                    
+                    sfxBuff.pause();
+                    sfxBuff.currentTime = 0;
+                    if (isPlaying && !isMuted) bgm.play().catch(e => {});
+
+                    updateMultiplier();
+                }
+            }
 
             let activeTargets = false;
             for (let i = targets.length - 1; i >= 0; i--) {
@@ -807,7 +851,6 @@
             animationId = requestAnimationFrame(gameLoop);
         }
 
-        // ✨ 繪製所有多點觸控的獨立刀光軌跡 ✨
         function drawBladePath() {
             for (let i = allPaths.length - 1; i >= 0; i--) {
                 let path = allPaths[i];
@@ -825,12 +868,9 @@
                     ctx.stroke(); ctx.shadowBlur = 0;
                 }
 
-                // 老化所有點
                 for (let j = 0; j < path.length; j++) { path[j].age++; }
-                // 移除過老的點，創造尾巴消失的效果
                 while (path.length > 0 && path[0].age > 10) { path.shift(); }
 
-                // 若該軌跡已清空且不再被手指按住，則徹底移除
                 if (path.length === 0) {
                     let stillActive = false;
                     for (let key in activeTouches) {
