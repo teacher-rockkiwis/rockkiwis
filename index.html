@@ -70,11 +70,7 @@
         .card-5:hover { border-color: #8e44ad; } .card-5 .game-icon { background: #af7ac5; color: white; } .card-5 .play-btn { background: #8e44ad; }
         .card-7:hover { border-color: #00b894; } .card-7 .game-icon { background: #55efc4; color: white; filter: drop-shadow(0 0 10px rgba(0, 184, 148, 0.5)); } .card-7 .play-btn { background: #00b894; }
         .card-6:hover { border-color: #e67e22; } .card-6 .game-icon { background: #f39c12; color: white; } .card-6 .play-btn { background: #e67e22; }
-        
-        /* ✨ 忍者專屬配色 ✨ */
-        .card-8:hover { border-color: #c0392b; } 
-        .card-8 .game-icon { background: #e74c3c; color: white; filter: drop-shadow(0 0 10px rgba(192, 57, 43, 0.5)); } 
-        .card-8 .play-btn { background: #c0392b; }
+        .card-8:hover { border-color: #c0392b; } .card-8 .game-icon { background: #e74c3c; color: white; filter: drop-shadow(0 0 10px rgba(192, 57, 43, 0.5)); } .card-8 .play-btn { background: #c0392b; }
 
         .game-icon {
             font-size: 60px; width: 120px; height: 120px; line-height: 120px;
@@ -83,6 +79,9 @@
 
         .game-title { font-size: 28px; font-weight: 900; margin: 0 0 10px 0; }
         .game-desc { font-size: 16px; color: #636e72; font-weight: 700; margin-bottom: 25px; line-height: 1.5; flex-grow: 1; }
+        
+        /* 特別標示新關卡上線的樣式 */
+        .new-update-text { color: #e74c3c; font-weight: 900; display: block; margin-top: 5px; }
 
         .play-btn {
             color: white; padding: 12px 40px; font-size: 22px; border-radius: 50px;
@@ -90,7 +89,6 @@
         }
         .game-card:active .play-btn { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
 
-        /* 週末限定鎖定與警告視窗共用背景 */
         .overlay-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); z-index: 99999; justify-content: center; align-items: center;
@@ -101,10 +99,7 @@
             box-shadow: 0 15px 30px rgba(0,0,0,0.5); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
-        /* 嚴肅警告視窗特殊樣式 */
-        .warning-content {
-            border-color: #e74c3c;
-        }
+        .warning-content { border-color: #e74c3c; }
         .warning-btn {
             background: #e74c3c; color: white; border: none; padding: 12px 30px; border-radius: 50px;
             font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 0 #c0392b; transition: 0.1s; margin-top: 10px;
@@ -137,7 +132,7 @@
 
     <div class="game-container">
         
-        <!-- ✨ 忍者新遊戲卡片 ✨ -->
+        <!-- 忍者新遊戲卡片 -->
         <a href="javascript:void(0)" onclick="checkNinjaAccess(event)" class="game-card card-8">
             <div class="game-icon">🥷</div>
             <h2 class="game-title">Phonics Ninja</h2>
@@ -148,10 +143,14 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
+        <!-- ✨ 更新了 Word Hunt 卡片的說明文字 ✨ -->
         <a href="wordhunt.html" class="game-card card-1">
             <div class="game-icon">⚡</div>
             <h2 class="game-title">Word Hunt</h2>
-            <p class="game-desc">極速單字尋寶！<br>在眼花撩亂的字母牆中找出目標單字，速度越快加成越高！</p>
+            <p class="game-desc">
+                極速單字尋寶！<br>在眼花撩亂的字母牆中找出目標單字。<br>
+                <span class="new-update-text">🔥 Unit 2 單字上線，歡迎同學踴躍挑戰！</span>
+            </p>
             <div class="play-btn">PLAY NOW</div>
         </a>
 
@@ -204,7 +203,6 @@
 
     </div>
 
-    <!-- ✨ 忍者未上線鎖定彈窗 ✨ -->
     <div id="ninja-modal" class="overlay-modal">
         <div class="modal-content" style="border-color: #c0392b;">
             <h2 style="color:#c0392b; font-size:32px; margin-top:0; margin-bottom:10px;">🥷 忍者修練中...</h2>
@@ -275,7 +273,6 @@
         let isDogeOpen = false;
         let isNinjaOpen = false;
 
-        // ✨ 設定忍者遊戲上線時間：2026年3月15日 中午 12:00:00 ✨
         const ninjaLaunchDate = new Date('2026-03-15T12:00:00');
 
         window.onload = function() {
@@ -326,7 +323,6 @@
             }
         }
 
-        // ✨ 忍者上線倒數邏輯 ✨
         function updateNinjaCountdown() {
             const now = new Date();
             const diff = ninjaLaunchDate - now;
@@ -334,7 +330,6 @@
             const cardDesc = document.getElementById('ninja-card-desc');
             const modalTimer = document.getElementById('ninja-timer');
 
-            // 時間到了，自動解鎖！
             if (diff <= 0) {
                 isNinjaOpen = true;
                 cardDesc.innerHTML = "發音忍者！聽單字，切開正確發音！<br><span style='color:#27ae60; font-size:16px;'>🟢 <b>已正式上線！馬上挑戰！</b></span>";
@@ -344,7 +339,7 @@
 
             isNinjaOpen = false;
             
-            const h = Math.floor(diff / (1000 * 60 * 60)); // 計算總共剩幾個小時
+            const h = Math.floor(diff / (1000 * 60 * 60)); 
             const m = Math.floor((diff / 1000 / 60) % 60);
             const s = Math.floor((diff / 1000) % 60);
 
@@ -366,7 +361,6 @@
             }
         }
 
-        // 狗狗週末倒數邏輯
         function updateCountdown() {
             const now = new Date();
             const day = now.getDay();
