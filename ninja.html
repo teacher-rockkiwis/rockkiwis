@@ -315,7 +315,7 @@
         
         let isPlaying = false, isMuted = false;
         let score = 0, lives = 5, combo = 0, multiplier = 1;
-        let isFever = false;
+        let isFever = false, feverTimer = 0;
         let playerName = "Player", currentTheme = "";
         
         let speedMult = 1.0;
@@ -323,8 +323,10 @@
         let targets = [];
         let particles = [];
         let floatTexts = [];
-        let bladePath = [];
-        let swipeHitsInCurrentStroke = 0; 
+        
+        // ✨ 多點觸控追蹤物件 ✨
+        let activeTouches = {};
+        let allPaths = [];
         
         let currentWordData = null;
         let isSpawningPhase = false;
@@ -416,7 +418,6 @@
                 this.y += this.vy;
                 
                 if (!this.isRock) {
-                    // ✨ 更激進的滯空判定，隨著倍速加快，滯空時間越短 ✨
                     if (Math.abs(this.vy) < 2.0 * speedMult) {
                         this.vy += this.gravity * (0.2 * speedMult); 
                     } else {
@@ -492,27 +493,35 @@
             }
         }
 
+        // ✨ 升級為真多點觸控引擎 ✨
         function setupInputHandling() {
-            let isDown = false;
-
-            const addPoint = (x, y) => {
-                bladePath.push({x, y, age: 0});
-                checkSlice(x, y);
-            };
-
             canvas.addEventListener('pointerdown', (e) => {
-                isDown = true; swipeHitsInCurrentStroke = 0; addPoint(e.clientX, e.clientY);
+                let path = [{x: e.clientX, y: e.clientY, age: 0}];
+                activeTouches[e.pointerId] = { path: path, hits: 0 };
+                allPaths.push(path);
+                checkSlice(e.clientX, e.clientY, e.pointerId);
             });
 
             canvas.addEventListener('pointermove', (e) => {
-                if (!isDown) return; addPoint(e.clientX, e.clientY);
+                if (!activeTouches[e.pointerId]) return;
+                activeTouches[e.pointerId].path.push({x: e.clientX, y: e.clientY, age: 0});
+                checkSlice(e.clientX, e.clientY, e.pointerId);
             });
 
-            window.addEventListener('pointerup', () => { isDown = false; swipeHitsInCurrentStroke = 0; });
+            const endPointer = (e) => {
+                delete activeTouches[e.pointerId];
+            };
+
+            canvas.addEventListener('pointerup', endPointer);
+            canvas.addEventListener('pointercancel', endPointer);
+            canvas.addEventListener('pointerout', endPointer);
         }
 
-        function checkSlice(x, y) {
+        // ✨ 支援多點獨立判定的切擊邏輯 ✨
+        function checkSlice(x, y, pointerId) {
             if(!isPlaying) return;
+            let touchInfo = activeTouches[pointerId];
+            if (!touchInfo) return;
 
             for (let i = 0; i < targets.length; i++) {
                 let t = targets[i];
@@ -537,11 +546,11 @@
                     createExplosion(t.x, t.y, t.isCorrect ? "#2ecc71" : "#e74c3c");
                     if (t.isCorrect) {
                         playAudio(sfxBlade);
-                        swipeHitsInCurrentStroke++;
+                        touchInfo.hits++; // 每根手指獨立計算一筆劃命中數
                         combo++; updateMultiplier();
                         
                         let basePts = 10;
-                        if (swipeHitsInCurrentStroke >= 3) {
+                        if (touchInfo.hits >= 3) {
                             playAudio(sfxCombo, false);
                             basePts += 20; 
                             floatTexts.push(new FloatText(t.x, t.y - 30, "COMBO!", "#f1c40f", true));
@@ -554,7 +563,7 @@
                         
                     } else {
                         playAudio(sfxWrong);
-                        breakCombo(true); // 砍錯字卡，閃爍紅光
+                        breakCombo(true); 
                         lives--;
                         floatTexts.push(new FloatText(t.x, t.y, "WRONG!", "#e74c3c", true));
                         updateGameSpeed();
@@ -568,7 +577,6 @@
             for(let i=0; i<15; i++) { particles.push(new Particle(x, y, color)); particles.push(new Particle(x, y, "#ecf0f1")); }
         }
 
-        // ✨ 難度倍率強化：分數達到門檻後，速度更有感 ✨
         function updateGameSpeed() {
             if (score >= 20000) speedMult = 2.2;
             else if (score >= 10000) speedMult = 1.8;
@@ -579,7 +587,6 @@
             updateMultiplier();
         }
 
-        // ✨ Fever 系統重構：無秒數限制，只要 Combo 在就不斷 ✨
         function updateMultiplier() {
             if (combo >= 10) { 
                 if (!isFever) triggerFever();
@@ -594,7 +601,7 @@
         function triggerFever() {
             isFever = true;
             bgm.pause();
-            playAudio(sfxBuff, true); // Buff 播放，依靠 HTML 屬性達成無縫 loop
+            playAudio(sfxBuff, true); 
             
             document.getElementById('fever-overlay').classList.add('fever-active');
             document.getElementById('combo-hud').classList.add('combo-active');
@@ -665,7 +672,8 @@
             document.getElementById('word-prompt').style.display = 'flex';
             
             score = 0; lives = 5; combo = 0; multiplier = 1; isFever = false; speedMult = 1.0;
-            targets = []; particles = []; floatTexts = []; bladePath = [];
+            targets = []; particles = []; floatTexts = []; 
+            activeTouches = {}; allPaths = []; // 重置多點觸控
             isPlaying = true; isSpawningPhase = false;
 
             updateHUD();
@@ -703,9 +711,9 @@
             speakWord(currentWordData.word, () => {
                 if(!isPlaying) return;
                 
-                // ✨ 隨著速度倍率增加，出現的字卡數量也會變多 ✨
+                // ✨ 將錯誤字卡數量強制固定為 2 個 ✨
                 let correctCount = Math.floor(Math.random() * 3) + 3 + Math.floor(speedMult); 
-                let wrongCount = Math.floor(Math.random() * 2) + 2 + Math.floor(speedMult / 2);  
+                let wrongCount = 2; // 不隨速度增加，永遠只給2個陷阱，降低混亂感
 
                 let spawnList = [];
                 for(let i=0; i<correctCount; i++) spawnList.push({ t: currentWordData.target, c: true });
@@ -723,7 +731,6 @@
                 }
                 positions.sort(() => Math.random() - 0.5);
 
-                // 隨著速度倍率，發射間隔大幅縮短
                 let baseInterval = 250;
                 if (speedMult >= 2.0) baseInterval = 100;
                 else if (speedMult >= 1.5) baseInterval = 150;
@@ -743,13 +750,12 @@
                     }, index * baseInterval); 
                 });
 
-                // ✨ ROCK 金色彩蛋機率固定為 0.5% ✨
                 let eggChance = 0.005; 
                 if (Math.random() < eggChance) {
                     let startLeft = Math.random() > 0.5;
                     let startX = startLeft ? -50 : width + 50;
                     let startY = height * 0.2 + Math.random() * (height * 0.3); 
-                    let rockVx = (startLeft ? 1 : -1) * (width * 0.012 * speedMult); // 稍稍降速讓玩家有機會砍中
+                    let rockVx = (startLeft ? 1 : -1) * (width * 0.012 * speedMult); 
                     let rockVy = (Math.random() - 0.5) * 1.5; 
                     
                     setTimeout(() => {
@@ -776,7 +782,6 @@
                 t.draw(ctx);
                 
                 if (!t.sliced && (t.y > height + 100 || t.x < -100 || t.x > width + 100)) {
-                    // 正確字卡掉出畫面：中斷Combo，但不閃爍紅光
                     if (t.isCorrect && !t.isRock) breakCombo(false);
                     targets.splice(i, 1);
                 } else if (!t.sliced) {
@@ -802,23 +807,40 @@
             animationId = requestAnimationFrame(gameLoop);
         }
 
+        // ✨ 繪製所有多點觸控的獨立刀光軌跡 ✨
         function drawBladePath() {
-            if (bladePath.length < 2) return;
-            
-            ctx.beginPath();
-            ctx.moveTo(bladePath[0].x, bladePath[0].y);
-            for (let i = 1; i < bladePath.length; i++) {
-                ctx.lineTo(bladePath[i].x, bladePath[i].y);
-            }
-            
-            ctx.lineWidth = isFever ? 12 : 6;
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            ctx.strokeStyle = isFever ? '#f39c12' : '#ecf0f1';
-            ctx.shadowBlur = 15; ctx.shadowColor = isFever ? '#f1c40f' : '#bdc3c7';
-            ctx.stroke(); ctx.shadowBlur = 0;
+            for (let i = allPaths.length - 1; i >= 0; i--) {
+                let path = allPaths[i];
+                
+                if (path.length >= 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(path[0].x, path[0].y);
+                    for (let j = 1; j < path.length; j++) {
+                        ctx.lineTo(path[j].x, path[j].y);
+                    }
+                    ctx.lineWidth = isFever ? 12 : 6;
+                    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                    ctx.strokeStyle = isFever ? '#f39c12' : '#ecf0f1';
+                    ctx.shadowBlur = 15; ctx.shadowColor = isFever ? '#f1c40f' : '#bdc3c7';
+                    ctx.stroke(); ctx.shadowBlur = 0;
+                }
 
-            for (let i = 0; i < bladePath.length; i++) { bladePath[i].age++; }
-            while (bladePath.length > 0 && bladePath[0].age > 10) { bladePath.shift(); }
+                // 老化所有點
+                for (let j = 0; j < path.length; j++) { path[j].age++; }
+                // 移除過老的點，創造尾巴消失的效果
+                while (path.length > 0 && path[0].age > 10) { path.shift(); }
+
+                // 若該軌跡已清空且不再被手指按住，則徹底移除
+                if (path.length === 0) {
+                    let stillActive = false;
+                    for (let key in activeTouches) {
+                        if (activeTouches[key].path === path) { stillActive = true; break; }
+                    }
+                    if (!stillActive) {
+                        allPaths.splice(i, 1);
+                    }
+                }
+            }
         }
 
         function endGame() {
