@@ -65,9 +65,15 @@
         <input type="text" id="player-name" class="name-input" placeholder="輸入玩家姓名..." autocomplete="off" maxlength="12">
         
         <select id="theme-select" onchange="fetchFrontLeaderboard()" style="font-size: 20px; padding: 10px 20px; margin-bottom: 15px; border-radius: 15px; border:none; outline:none; font-family: 'Quicksand'; font-weight: 700;">
-            <option value="body">🦴 五年級 - Body Parts</option>
-            <option value="home">🏠 四年級 - Home Space</option>
-            <option value="numbers">🔢 四年級進階 - Home & Numbers</option>
+            <optgroup label="四年級 (Grade 4)">
+                <option value="home">🏠 四年級 - Home Space</option>
+                <option value="actions">🏃 四年級 - Actions</option>
+                <option value="numbers">🔢 四年級進階 - Home & Numbers</option>
+            </optgroup>
+            <optgroup label="五年級 (Grade 5)">
+                <option value="body">🦴 五年級 - Body Parts</option>
+                <option value="sickness">🤒 五年級 - Sickness</option>
+            </optgroup>
         </select>
         <button class="start-btn" onclick="startGame()">START</button>
     </div>
@@ -115,33 +121,24 @@
         const themes = {
             body: ["eye", "eyes", "ear", "ears", "head", "heads", "nose", "noses", "mouth", "mouths", "arm", "arms", "hand", "hands", "shoulder", "shoulders", "foot", "feet", "leg", "legs", "hurt"],
             home: ["bathroom", "bedroom", "kitchen", "diningroom", "livingroom", "balcony", "basement", "garage", "tv", "light", "tap", "fan"],
-            numbers: ["bathroom", "bedroom", "kitchen", "diningroom", "livingroom", "balcony", "basement", "garage", "tv", "light", "tap", "fan", "sixty", "seventy", "eighty", "ninety", "onehundred"]
+            numbers: ["bathroom", "bedroom", "kitchen", "diningroom", "livingroom", "balcony", "basement", "garage", "tv", "light", "tap", "fan", "sixty", "seventy", "eighty", "ninety", "onehundred"],
+            actions: ["cooking", "eating", "reading", "sleeping", "writing", "running", "listeningtomusic", "painting", "studying", "watchingtv", "doing"],
+            sickness: ["cold", "fever", "runnynose", "sorethroat", "headache", "toothache", "stomachache", "backache", "cough", "diarrhea", "have", "has"]
         };
 
         const badWords = [
-            // 英文髒話與不雅詞彙 (已避開會誤擋 Chloe, Cassie 等英文名字的短詞)
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            
-            // 國罵、三字經、諧音
             "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-            
-            // 智力、精神疾病、身心障礙歧視 (國中小最愛罵)
             "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
-            
-            // 咒罵死亡、家人、孤兒 (惡意攻擊)
             "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
-            
-            // 性別特質、性傾向歧視、蕩婦羞辱
             "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
-            
-            // 排泄物、器官、一般羞辱
             "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
         ];
 
         let currentVocab = [], score = 0, foundCount = 0, seconds = 0, interval;
         let playerName = "Player"; 
         let isMuted = false; 
-        let userIP = "Unknown"; // ✨ 新增：IP 追蹤變數
+        let userIP = "Unknown"; 
         
         const bgm = document.getElementById('bgm');
         const secretBgm = document.getElementById('secret-bgm');
@@ -150,7 +147,6 @@
         window.onload = function() { 
             fetchFrontLeaderboard(); 
             
-            // ✨ 新增：網頁載入時偷偷抓取 IP ✨
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => { userIP = data.ip; })
@@ -197,7 +193,25 @@
 
         function initBoard() {
             const bank = document.getElementById('word-bank'); bank.innerHTML = "";
-            currentVocab.sort().forEach(w => { const div = document.createElement('div'); div.className = 'bank-item'; div.id = 'bank-' + w; div.textContent = w === "tv" ? "TV" : w.replace('room', ' room').replace('onehundred', 'one hundred'); bank.appendChild(div); });
+            currentVocab.sort().forEach(w => { 
+                const div = document.createElement('div'); 
+                div.className = 'bank-item'; 
+                div.id = 'bank-' + w; 
+                
+                // ✨ 自動將合併的連字還原為帶有空格的顯示格式 ✨
+                let displayText = w;
+                if (w === "tv") displayText = "TV";
+                else if (w === "listeningtomusic") displayText = "listening to music";
+                else if (w === "watchingtv") displayText = "watching TV";
+                else if (w === "runnynose") displayText = "runny nose";
+                else if (w === "sorethroat") displayText = "sore throat";
+                else {
+                    displayText = w.replace('room', ' room').replace('onehundred', 'one hundred');
+                }
+                
+                div.textContent = displayText; 
+                bank.appendChild(div); 
+            });
             generatePerfectScatteredWall();
         }
 
@@ -252,7 +266,6 @@
             const listDiv = document.getElementById('leaderboard-list'), themeSelect = document.getElementById('theme-select'), currentTheme = themeSelect.value, themeName = themeSelect.options[themeSelect.selectedIndex].text;
             document.getElementById('end-board-title').innerText = `🌍 ${themeName} 英雄榜`; listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 正在上傳成績到世界排行榜...</div>";
             
-            // ✨ 更新：在網址最後面加上 &ip=${userIP} ✨
             fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${finalScore}&time=${encodeURIComponent(timeStr)}&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
                 listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px;'>目前還沒有紀錄，你就是第一名！</div>"; return; }
                 board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name} (${p.time})</span><span>${p.score} pts</span></div>`; });
