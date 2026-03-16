@@ -350,7 +350,6 @@
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
-        // ✨ 徹底解決 iOS/iPadOS 全螢幕後尺寸抓取錯誤造成的巨型字卡 Bug ✨
         function resizeCanvas() {
             let newWidth = canvas.clientWidth || window.innerWidth;
             let newHeight = canvas.clientHeight || window.innerHeight;
@@ -688,7 +687,6 @@
             animationId = requestAnimationFrame(gameLoop);
         }
 
-        // ✨ 強化 TTS 安全性，即使 iOS 語音引擎當機，遊戲流程也絕不卡死 ✨
         function speakWord(word, callback) {
             try {
                 if ('speechSynthesis' in window && !isMuted) {
@@ -710,7 +708,6 @@
                     window.speechSynthesis.cancel(); 
                     window.speechSynthesis.speak(utterance);
                     
-                    // 最強保險：如果2.5秒內語音還是沒唸完(或卡死)，強制觸發發射字卡！
                     setTimeout(safeCallback, 2500); 
                 } else {
                     if(callback) setTimeout(callback, 1000);
@@ -726,7 +723,7 @@
         }
 
         function launchWave() {
-            if (width <= 0 || height <= 0) return; // 安全保護
+            if (width <= 0 || height <= 0) return; 
             isSpawningPhase = true;
             let bank = wordBanks[currentTheme];
             currentWordData = bank[Math.floor(Math.random() * bank.length)];
@@ -735,7 +732,8 @@
                 if(!isPlaying) return;
                 
                 let correctCount = Math.floor(Math.random() * 3) + 3 + Math.floor(speedMult); 
-                let wrongCount = 2; 
+                // ✨ 將錯誤字卡的數量改回隨機，並且隨速度倍數增加 ✨
+                let wrongCount = Math.floor(Math.random() * 2) + 2 + Math.floor(speedMult / 2);  
 
                 let spawnList = [];
                 for(let i=0; i<correctCount; i++) spawnList.push({ t: currentWordData.target, c: true });
@@ -792,7 +790,7 @@
         let lastTime = 0;
         function gameLoop(timestamp) {
             if (!isPlaying) return;
-            resizeCanvas(); // ✨ 每一幀強制更新並鎖定真實解析度，徹底杜絕畫面縮放破圖 ✨
+            resizeCanvas(); 
             
             let dt = timestamp - lastTime;
             lastTime = timestamp;
