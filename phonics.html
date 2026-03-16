@@ -150,9 +150,20 @@
         let mainTimer;
         let eggBuffer = "";
         let currentThemeValue = "";
-        let userIP = "Unknown"; // ✨ IP 追蹤
+        let userIP = "Unknown"; 
 
-        const bgm = document.getElementById('bgm'); const sfxBingo = document.getElementById('sfx-bingo'); const sfxFail = document.getElementById('sfx-fail'); const sfxVictory = document.getElementById('sfx-victory'); const secretBgm = document.getElementById('secret-bgm'); const gameContainer = document.getElementById('game-container'); const trainEl = document.getElementById('train'); const missionEl = document.getElementById('mission-board');
+        const bgm = document.getElementById('bgm'); 
+        const sfxBingo = document.getElementById('sfx-bingo'); 
+        const sfxFail = document.getElementById('sfx-fail'); 
+        const sfxVictory = document.getElementById('sfx-victory'); 
+        const secretBgm = document.getElementById('secret-bgm'); 
+        const gameContainer = document.getElementById('game-container'); 
+        const trainEl = document.getElementById('train'); 
+        const missionEl = document.getElementById('mission-board');
+        
+        // ✨ 精準調整提示音效大小至 40% ✨
+        sfxBingo.volume = 0.4;
+        sfxFail.volume = 0.4;
         
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
@@ -160,7 +171,7 @@
             fetchFrontLeaderboard(); 
             document.addEventListener('keydown', (e) => { if(!isPlaying) return; if(/^[a-zA-Z]$/.test(e.key)) { eggBuffer += e.key.toUpperCase(); if (eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4); if (eggBuffer === "ROCK") triggerEasterEgg(); } });
             gameContainer.addEventListener('mousedown', handleTap); gameContainer.addEventListener('touchstart', handleTap, {passive: false});
-            // ✨ 偷抓 IP ✨
+            
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
@@ -232,13 +243,13 @@
                 baseDropSpeed = Math.max(1.2, baseDropSpeed - 0.08); const rect = block.getBoundingClientRect(); showBurst(rect.left + rect.width/2 - 20, rect.top, `+${10*multiplier}`, "#00b894");
                 setTimeout(() => { row.remove(); startNextRound(); }, 150);
             } else {
-                block.classList.add('block-wrong-hit'); breakCombo(); setTimeout(() => { row.remove(); startNextRound(); }, 300);
+                block.classList.add('block-wrong-hit'); breakCombo(); playSfx('fail'); setTimeout(() => { row.remove(); startNextRound(); }, 300);
             }
             updateHUD();
         }
 
         function updateCombo() { const comboEl = document.getElementById('combo-display'); if (combo >= 15) { multiplier = 5; activateFever(); } else if (combo >= 10) { multiplier = 3; deactivateFever(); comboEl.className = 'combo-active'; comboEl.style.color = '#0984e3'; } else if (combo >= 5) { multiplier = 2; deactivateFever(); comboEl.className = 'combo-active'; comboEl.style.color = '#00b894'; } else { multiplier = 1; deactivateFever(); comboEl.className = ''; } }
-        function breakCombo() { combo = 0; updateCombo(); playSfx('fail'); document.body.style.backgroundColor = "rgba(214, 48, 49, 0.3)"; setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150); gameContainer.style.animation = "shake 0.3s"; setTimeout(() => gameContainer.style.animation = "none", 300); baseDropSpeed = Math.min(4.0, baseDropSpeed + 0.2); }
+        function breakCombo() { combo = 0; updateCombo(); document.body.style.backgroundColor = "rgba(214, 48, 49, 0.3)"; setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150); gameContainer.style.animation = "shake 0.3s"; setTimeout(() => gameContainer.style.animation = "none", 300); baseDropSpeed = Math.min(4.0, baseDropSpeed + 0.2); }
         function activateFever() { if (isFever) return; isFever = true; document.body.classList.add('fever-mode'); document.getElementById('combo-display').className = 'combo-active'; playSfx('fever'); trainEl.innerText = "🔥"; }
         function deactivateFever() { isFever = false; document.body.classList.remove('fever-mode'); trainEl.innerText = "🚂"; }
         function updateHUD() { document.getElementById('score').innerText = score; document.getElementById('timer').innerText = timeLeft; document.getElementById('combo-display').innerText = `${multiplier}x`; }
@@ -251,7 +262,6 @@
             document.getElementById('final-total-display').textContent = score; document.getElementById('end-msg').style.display = "flex";
             const listDiv = document.getElementById('leaderboard-list'); listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:18px;'>📡 紀錄上傳中...</div>";
             
-            // ✨ 加入 &ip=${userIP} 傳送給後端 ✨
             const url = `${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=60s&theme=${currentThemeValue}&ip=${userIP}`;
 
             fetch(url).then(r => r.json()).then(board => {
@@ -262,3 +272,5 @@
     </script>
 </body>
 </html>
+
+
