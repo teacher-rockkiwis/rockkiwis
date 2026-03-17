@@ -21,7 +21,7 @@
             overscroll-behavior-x: none; overscroll-behavior-y: none;
         }
 
-        #game-canvas { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
+        #game-canvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 10; }
 
         .sound-toggle {
             position: fixed; top: max(15px, env(safe-area-inset-top)); right: 15px; background: rgba(255,255,255,0.9);
@@ -42,7 +42,7 @@
         #score-display { font-size: 30px; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
         #lives-display { font-size: 24px; letter-spacing: 2px; }
         #combo-hud { font-size: 20px; font-weight: 900; color: #3498db; margin-top: 5px; transition: 0.2s; }
-        .combo-active { color: var(--gold) !important; text-shadow: 0 0 15px var(--gold); transform: scale(1.2); }
+        .combo-active { color: var(--gold) !important; text-shadow: 0 0 15px var(--gold); transform: scale(1.2); display: inline-block;}
 
         #word-prompt {
             position: absolute; top: max(160px, env(safe-area-inset-top) + 150px); left: 50%; transform: translateX(-50%);
@@ -91,27 +91,26 @@
             }
         }
 
-        /* 手機版 (含橫屏) 空間極致壓縮優化 */
-        @media screen and (max-width: 900px), screen and (max-height: 500px) {
+        @media screen and (max-width: 900px), screen and (max-height: 600px) {
             .sound-toggle { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); right: 5px; }
             .exit-btn { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); left: 5px; }
-            
             #ui-layer { top: max(45px, env(safe-area-inset-top) + 35px); padding: 0 10px; }
             .hud-box { padding: 5px 10px; border-radius: 10px; border-width: 2px; }
-            
             .hud-box > div:first-child { font-size: 10px !important; }
             #score-display { font-size: 20px; }
             #lives-display { font-size: 16px; letter-spacing: 0; }
             #combo-hud { font-size: 12px; margin-top: 2px; }
-
-            #word-prompt {
-                top: max(45px, env(safe-area-inset-top) + 35px); 
-                padding: 5px 15px; font-size: 14px; border-width: 2px;
-            }
+            #word-prompt { top: max(45px, env(safe-area-inset-top) + 35px); padding: 5px 15px; font-size: 14px; border-width: 2px; }
             .replay-btn { font-size: 11px; padding: 2px 8px; }
+            #start-overlay h1 { font-size: 36px; margin-bottom: 5px; margin-top: 10px; }
+            .start-btn { font-size: 18px; padding: 12px 20px; margin-bottom: 10px;}
             
-            #start-overlay h1 { font-size: 36px; }
-            .start-btn { font-size: 18px; padding: 12px 20px; }
+            #end-msg h1 { font-size: 30px !important; margin-top: 5px !important; }
+            .result-panel { padding: 10px !important; margin: 5px 0 !important; width: 95%; }
+            #final-total-display { font-size: 32px !important; }
+            #leaderboard-list { max-height: 100px !important; }
+            .board-row { padding: 4px 5px !important; font-size: 14px !important; }
+            #end-msg button { padding: 8px 30px !important; font-size: 18px !important; margin-bottom: 5px !important; }
         }
     </style>
 </head>
@@ -121,7 +120,6 @@
     <audio id="sfx-blade" src="blade.mp3"></audio>
     <audio id="sfx-combo" src="combo.mp3"></audio>
     <audio id="sfx-wrong" src="wrong.mp3"></audio>
-    <!-- Buff 音效無縫循環播放 -->
     <audio id="sfx-buff" src="buff.mp3" loop></audio>
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
@@ -202,10 +200,7 @@
         const badWords = [
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
             "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
-            "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
-            "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
-            "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
+            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商"
         ];
 
         let userIP = "Unknown";
@@ -350,12 +345,11 @@
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
+        // ✨ 終極修復：強制鎖定 window.innerWidth 避免 iPad 畫布縮放 Bug ✨
         function resizeCanvas() {
-            let newWidth = canvas.clientWidth || window.innerWidth;
-            let newHeight = canvas.clientHeight || window.innerHeight;
-            if (newWidth > 0 && newHeight > 0 && (canvas.width !== newWidth || canvas.height !== newHeight)) {
-                width = newWidth;
-                height = newHeight;
+            width = window.innerWidth;
+            height = window.innerHeight;
+            if (canvas.width !== width || canvas.height !== height) {
                 canvas.width = width;
                 canvas.height = height;
             }
@@ -732,7 +726,6 @@
                 if(!isPlaying) return;
                 
                 let correctCount = Math.floor(Math.random() * 3) + 3 + Math.floor(speedMult); 
-                // ✨ 將錯誤字卡的數量改回隨機，並且隨速度倍數增加 ✨
                 let wrongCount = Math.floor(Math.random() * 2) + 2 + Math.floor(speedMult / 2);  
 
                 let spawnList = [];
