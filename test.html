@@ -316,7 +316,8 @@
                 this.text = text;
                 this.isCorrect = isCorrect;
                 this.radius = window.innerHeight < 500 ? 30 : 40;
-                this.speed = (Math.random() * 0.8 + 1.0) * speedMult;
+                // ✨ 怪物基礎移動速度大幅加快 ✨
+                this.speed = (Math.random() * 1.5 + 2.5) * speedMult; 
                 this.emoji = ["👹", "👺", "👽", "👾", "👻"][Math.floor(Math.random() * 5)];
                 this.markedForDeath = false;
             }
@@ -350,7 +351,8 @@
                 this.x = startX;
                 this.y = startY;
                 this.target = target;
-                this.speed = 15;
+                // ✨ 配合怪物速度，魔法飛彈也稍微調快 ✨
+                this.speed = 20; 
                 this.radius = 8;
                 this.markedForDeath = false;
             }
@@ -480,10 +482,10 @@
         function spawnWave() {
             if (!isPlaying) return;
             
-            // Speed scaling
-            if (score >= 2000) speedMult = 2.0;
-            else if (score >= 1000) speedMult = 1.5;
-            else if (score >= 500) speedMult = 1.2;
+            // ✨ 讓後期速度加成的幅度更高更明顯 ✨
+            if (score >= 2000) speedMult = 2.5;
+            else if (score >= 1000) speedMult = 1.8;
+            else if (score >= 500) speedMult = 1.4;
             else speedMult = 1.0;
 
             let q = currentQuestions[Math.floor(Math.random() * currentQuestions.length)];
@@ -670,4 +672,3 @@
     </script>
 </body>
 </html>
-
