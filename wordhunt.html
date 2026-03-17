@@ -112,7 +112,11 @@
         // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
         document.addEventListener('contextmenu', event => event.preventDefault()); 
         document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
+            // ✨ 新增：阻擋 Ctrl+F 與 Cmd+F 的搜尋快捷鍵 ✨
+            if (e.keyCode === 123 || 
+               (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
+               (e.ctrlKey && e.keyCode === 85) ||
+               ((e.ctrlKey || e.metaKey) && e.keyCode === 70)) { 
                 e.preventDefault(); return false; 
             }
         });
@@ -228,7 +232,12 @@
             renderWords.forEach(w => {
                 let variance = Math.floor(baseGarbagePerWord * 0.3), currentGarbage = baseGarbagePerWord + (Math.floor(Math.random() * (variance * 2)) - variance);
                 if (currentGarbage < 0) currentGarbage = 0; area.appendChild(document.createTextNode(getGarbage(currentGarbage)));
-                const s = document.createElement('span'); s.className = 'target'; s.textContent = w; s.setAttribute('data-word', w); area.appendChild(s);
+                
+                const s = document.createElement('span'); s.className = 'target'; 
+                // ✨ 終極防作弊：插入「零寬空格 (\u200B)」打斷瀏覽器的文字搜尋機制！ ✨
+                s.textContent = w.split('').join('\u200B'); 
+                s.setAttribute('data-word', w); 
+                area.appendChild(s);
             });
             let safety = 0; while (area.scrollHeight <= area.clientHeight && safety < 800) { area.appendChild(document.createTextNode(getGarbage(10))); safety++; }
             if (area.scrollHeight > area.clientHeight) { let lastNode = area.lastChild; if (lastNode && lastNode.nodeType === 3) { let text = lastNode.textContent; while (area.scrollHeight > area.clientHeight && text.length > 0) { text = text.slice(0, -1); lastNode.textContent = text; } } }
