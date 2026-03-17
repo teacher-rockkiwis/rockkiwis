@@ -41,8 +41,8 @@
         .hud-box { background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 15px; border: 2px solid var(--primary); color: white; text-align: center; }
         #score-display { font-size: 26px; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
         #lives-display { font-size: 20px; letter-spacing: 2px; }
+        #level-hud { font-size: 18px; font-weight: 900; color: #e74c3c; margin-top: 5px; }
         #combo-hud { font-size: 18px; font-weight: 900; color: #3498db; margin-top: 5px; transition: 0.2s; }
-        .combo-active { color: var(--gold) !important; text-shadow: 0 0 15px var(--gold); transform: scale(1.1); display: inline-block;}
 
         #question-board {
             position: absolute; top: max(130px, env(safe-area-inset-top) + 120px); left: 50%; transform: translateX(-50%);
@@ -60,6 +60,8 @@
             z-index: 60000; overflow-y: auto; padding: 20px; background: rgba(44, 62, 80, 0.95);
         }
         #end-msg { display: none; text-align: center; }
+
+        #error-msg { display: none; color: #ffcccc; font-weight: 900; margin-bottom: 15px; background: rgba(255, 71, 87, 0.9); padding: 10px 20px; border-radius: 20px; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
         .name-input { font-size: 22px; padding: 12px 20px; border-radius: 15px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 15px; width: 90%; max-width: 350px; outline: none; }
         .start-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #6c3483; transition: 0.1s; margin-bottom: 20px;}
@@ -97,6 +99,8 @@
     <audio id="sfx-hit" src="hit.mp3"></audio>
     <audio id="sfx-wrong" src="wrong.mp3"></audio>
     <audio id="sfx-damage" src="damage.mp3"></audio>
+    <!-- ROCK彩蛋自動攻擊時的專屬音樂 -->
+    <audio id="sfx-rock" src="67.mp3"></audio>
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
     <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
@@ -112,6 +116,8 @@
             城堡保衛戰！閱讀上方文法題目，<br>點擊發射飛彈，擊敗身上帶有「正確答案」的怪物！
         </p>
         
+        <div id="error-msg"></div>
+
         <input type="text" id="player-name" class="name-input" placeholder="輸入法師姓名..." autocomplete="off" maxlength="12">
         
         <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
@@ -142,6 +148,7 @@
         <div class="hud-box" style="text-align: right;">
             <div style="font-size: 12px; color: #bdc3c7;">CASTLE HP</div>
             <div id="lives-display">❤️❤️❤️</div>
+            <div id="level-hud">Level 1</div>
         </div>
     </div>
 
@@ -153,7 +160,8 @@
         <h1 style="font-size: 45px; color: var(--error); margin: 0; margin-top: 10px;">城堡陷落！💀</h1>
         <div class="result-panel">
             <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: #2d3436; text-align: center;">
-                防守積分：<br><span id="final-total-display" style="color:var(--primary); font-size:45px;">0</span> pts
+                防守總分：<br><span id="final-total-display" style="color:var(--primary); font-size:45px;">0</span> pts<br>
+                <span style="font-size: 16px; color: #e74c3c;" id="final-level-display"></span>
             </div>
             <h2 class="board-row" style="color: var(--primary); justify-content: center; border-top: 2px dashed #ddd; padding-top: 15px;">🌍 防衛英雄榜</h2>
             <div id="leaderboard-list" style="max-height: 150px; overflow-y: auto;"></div>
@@ -169,8 +177,7 @@
 
         const badWords = [
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商"
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭"
         ];
 
         let userIP = "Unknown";
@@ -236,9 +243,15 @@
         
         let isPlaying = false, isMuted = false;
         let score = 0, lives = 3, combo = 0, multiplier = 1;
+        let currentLevel = 1;
         let playerName = "Player", currentTheme = "";
         let currentQuestions = [];
         let currentQuestionObj = null;
+        
+        // ✨ ROCK 彩蛋專屬變數 ✨
+        let rockModeTimer = 0;
+        let autoShootTimer = 0;
+        
         let speedMult = 1.0;
         
         // Game Objects
@@ -246,16 +259,17 @@
         let projectiles = [];
         let particles = [];
         let floatTexts = [];
-        let playerObj = { x: 50, y: 0 }; // Will be centered vertically
-        let castleX = 120; // Defense line
+        let playerObj = { x: 50, y: 0 }; 
+        let castleX = 120; 
 
         const bgm = document.getElementById('bgm');
         const sfxShoot = document.getElementById('sfx-shoot');
         const sfxHit = document.getElementById('sfx-hit');
         const sfxWrong = document.getElementById('sfx-wrong');
         const sfxDamage = document.getElementById('sfx-damage');
+        const sfxRock = document.getElementById('sfx-rock');
         
-        bgm.volume = 0.5; sfxShoot.volume = 0.6; sfxHit.volume = 0.8; sfxWrong.volume = 0.8; sfxDamage.volume = 0.8;
+        bgm.volume = 0.5; sfxShoot.volume = 0.6; sfxHit.volume = 0.8; sfxWrong.volume = 0.8; sfxDamage.volume = 0.8; sfxRock.volume = 0.6;
 
         window.onload = function() { 
             fetchFrontLeaderboard();
@@ -282,10 +296,10 @@
             const btn = document.getElementById('sound-btn'); 
             if (isMuted) { 
                 btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; 
-                bgm.muted = true; sfxShoot.muted = true; sfxHit.muted = true; sfxWrong.muted = true; sfxDamage.muted = true;
+                bgm.muted = true; sfxShoot.muted = true; sfxHit.muted = true; sfxWrong.muted = true; sfxDamage.muted = true; sfxRock.muted = true;
             } else { 
                 btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; 
-                bgm.muted = false; sfxShoot.muted = false; sfxHit.muted = false; sfxWrong.muted = false; sfxDamage.muted = false;
+                bgm.muted = false; sfxShoot.muted = false; sfxHit.muted = false; sfxWrong.muted = false; sfxDamage.muted = false; sfxRock.muted = false;
             } 
         }
 
@@ -310,15 +324,22 @@
 
         // --- Game Classes ---
         class Monster {
-            constructor(x, y, text, isCorrect) {
+            constructor(x, y, text, isCorrect, isRock = false) {
                 this.x = x;
                 this.y = y;
                 this.text = text;
                 this.isCorrect = isCorrect;
+                this.isRock = isRock;
                 this.radius = window.innerHeight < 500 ? 30 : 40;
-                // ✨ 怪物基礎移動速度大幅加快 ✨
-                this.speed = (Math.random() * 1.5 + 2.5) * speedMult; 
-                this.emoji = ["👹", "👺", "👽", "👾", "👻"][Math.floor(Math.random() * 5)];
+                
+                // ✨ 基礎速度大幅飆升 (原 1.0~1.8 -> 現 3.0~5.0) ✨
+                if (this.isRock) {
+                    this.speed = 6.0 * speedMult; // 彩蛋飛超快
+                    this.emoji = "💪";
+                } else {
+                    this.speed = (Math.random() * 2.0 + 3.0) * speedMult;
+                    this.emoji = ["👹", "👺", "👽", "👾", "👻", "🧟‍♂️"][Math.floor(Math.random() * 6)];
+                }
                 this.markedForDeath = false;
             }
             update() {
@@ -326,11 +347,17 @@
             }
             draw(ctx) {
                 // Draw Word Bubble
-                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                ctx.fillStyle = this.isRock ? "rgba(241, 196, 15, 0.95)" : "rgba(255, 255, 255, 0.9)";
+                if (this.isRock) {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = "#f1c40f";
+                }
                 ctx.beginPath();
-                ctx.roundRect(this.x - 40, this.y - this.radius - 35, 80, 30, 8);
+                ctx.roundRect(this.x - 45, this.y - this.radius - 35, 90, 30, 8);
                 ctx.fill();
-                ctx.strokeStyle = "#34495e";
+                ctx.shadowBlur = 0;
+
+                ctx.strokeStyle = this.isRock ? "#e67e22" : "#34495e";
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
@@ -351,14 +378,14 @@
                 this.x = startX;
                 this.y = startY;
                 this.target = target;
-                // ✨ 配合怪物速度，魔法飛彈也稍微調快 ✨
-                this.speed = 20; 
+                // ✨ 配合怪獸速度，飛彈速度也大幅加快 ✨
+                this.speed = 25 * speedMult; 
                 this.radius = 8;
                 this.markedForDeath = false;
             }
             update() {
                 if(this.target.markedForDeath) {
-                    this.markedForDeath = true; return; // Target already dead
+                    this.markedForDeath = true; return; 
                 }
                 let dx = this.target.x - this.x;
                 let dy = this.target.y - this.y;
@@ -377,6 +404,23 @@
                 this.markedForDeath = true;
                 this.target.markedForDeath = true;
                 
+                // ✨ 擊中 ROCK 彩蛋的處理 ✨
+                if (this.target.isRock) {
+                    safePlayAudio(sfxHit);
+                    createExplosion(this.target.x, this.target.y, "#f1c40f");
+                    
+                    rockModeTimer = 8000; // 8秒自動攻擊
+                    bgm.pause();
+                    safePlayAudio(sfxRock);
+                    
+                    floatTexts.push(new FloatText(width/2, height/2, "ROCK MODE ACTIVATED!", "#f1c40f", true));
+                    
+                    // 擊中彩蛋直接殺死畫面上所有怪物換下一波
+                    monsters.forEach(m => { m.markedForDeath = true; createExplosion(m.x, m.y, "#bdc3c7"); });
+                    setTimeout(spawnWave, 500);
+                    return;
+                }
+
                 if (this.target.isCorrect) {
                     safePlayAudio(sfxHit);
                     createExplosion(this.target.x, this.target.y, "#2ecc71");
@@ -387,9 +431,8 @@
                     let pts = 10 * multiplier;
                     score += pts;
                     floatTexts.push(new FloatText(this.target.x, this.target.y - 20, `+${pts}`, "#2ecc71"));
-                    updateHUD();
+                    checkLevelUp(); // ✨ 檢查是否突破 500 升級 ✨
                     
-                    // Kill remaining monsters and spawn next wave
                     monsters.forEach(m => {
                         if (m !== this.target) {
                             m.markedForDeath = true;
@@ -407,11 +450,11 @@
                 }
             }
             draw(ctx) {
-                ctx.fillStyle = "#f1c40f";
+                ctx.fillStyle = rockModeTimer > 0 ? "#e74c3c" : "#f1c40f";
                 ctx.shadowBlur = 10;
-                ctx.shadowColor = "#f39c12";
+                ctx.shadowColor = rockModeTimer > 0 ? "#c0392b" : "#f39c12";
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.radius + (rockModeTimer > 0 ? 4 : 0), 0, Math.PI * 2);
                 ctx.fill();
                 ctx.shadowBlur = 0;
             }
@@ -420,8 +463,8 @@
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y;
-                this.vx = (Math.random() - 0.5) * 10;
-                this.vy = (Math.random() - 0.5) * 10;
+                this.vx = (Math.random() - 0.5) * 15;
+                this.vy = (Math.random() - 0.5) * 15;
                 this.life = 1.0;
                 this.color = color;
                 this.size = Math.random() * 5 + 3;
@@ -436,17 +479,17 @@
         }
 
         class FloatText {
-            constructor(x, y, text, color) {
+            constructor(x, y, text, color, isGiant = false) {
                 this.x = x; this.y = y; this.text = text; this.color = color;
-                this.life = 1.0; this.vy = -2;
+                this.life = 1.0; this.vy = isGiant ? -1 : -3; this.isGiant = isGiant;
             }
-            update() { this.y += this.vy; this.life -= 0.03; }
+            update() { this.y += this.vy; this.life -= (this.isGiant ? 0.015 : 0.03); }
             draw(ctx) {
                 if(this.life <= 0) return;
                 ctx.globalAlpha = this.life; ctx.fillStyle = this.color;
-                ctx.font = `bold 24px Quicksand`;
+                ctx.font = this.isGiant ? `bold 80px Quicksand` : `bold 24px Quicksand`;
                 ctx.textAlign = "center"; ctx.fillText(this.text, this.x, this.y);
-                ctx.lineWidth = 1; ctx.strokeStyle = "white"; ctx.strokeText(this.text, this.x, this.y);
+                ctx.lineWidth = this.isGiant ? 4 : 1; ctx.strokeStyle = "white"; ctx.strokeText(this.text, this.x, this.y);
                 ctx.globalAlpha = 1.0;
             }
         }
@@ -458,35 +501,42 @@
         function setupInput() {
             canvas.addEventListener('pointerdown', (e) => {
                 if (!isPlaying) return;
+                
+                // 如果在 ROCK 模式下，手動點擊也是可以的，只是系統會幫你打
                 let clickX = e.clientX;
                 let clickY = e.clientY;
                 
-                // Find clicked monster
                 for (let i = 0; i < monsters.length; i++) {
                     let m = monsters[i];
                     if (m.markedForDeath) continue;
                     
-                    // AABB/Radius check
                     let dx = clickX - m.x;
                     let dy = clickY - m.y;
-                    if (Math.sqrt(dx*dx + dy*dy) < m.radius + 30) { // generous hitbox
-                        // Shoot!
+                    if (Math.sqrt(dx*dx + dy*dy) < m.radius + 40) { 
                         safePlayAudio(sfxShoot);
-                        projectiles.push(new Projectile(playerObj.x, playerObj.y, m));
-                        break; // Only shoot one per click
+                        let startY = rockModeTimer > 0 ? playerObj.y - 80 : playerObj.y;
+                        projectiles.push(new Projectile(playerObj.x, startY, m));
+                        break; 
                     }
                 }
             });
         }
 
+        // ✨ 檢查是否達到 500 分倍數升級 ✨
+        function checkLevelUp() {
+            let newLevel = 1 + Math.floor(score / 500);
+            if (newLevel > currentLevel) {
+                currentLevel = newLevel;
+                // 升級速度加成 (+30%)
+                speedMult = 1.0 + (currentLevel - 1) * 0.3; 
+                document.getElementById('level-hud').innerText = `Level ${currentLevel}`;
+                floatTexts.push(new FloatText(width/2, height/2, `LEVEL ${currentLevel} !`, "#e74c3c", true));
+            }
+            updateHUD();
+        }
+
         function spawnWave() {
             if (!isPlaying) return;
-            
-            // ✨ 讓後期速度加成的幅度更高更明顯 ✨
-            if (score >= 2000) speedMult = 2.5;
-            else if (score >= 1000) speedMult = 1.8;
-            else if (score >= 500) speedMult = 1.4;
-            else speedMult = 1.0;
 
             let q = currentQuestions[Math.floor(Math.random() * currentQuestions.length)];
             currentQuestionObj = q;
@@ -495,22 +545,33 @@
             let html = parts[0] + "<span class='blank-space'></span>" + (parts[1] || "");
             document.getElementById('question-board').innerHTML = html;
 
-            let opts = [
-                { text: q.a, isCorrect: true },
-                { text: q.w[0], isCorrect: false },
-                { text: q.w[1], isCorrect: false }
-            ];
+            // ✨ 隨著 Level 增加干擾選項的數量 ✨
+            let wrongCount = 2 + Math.floor((currentLevel - 1) / 2); // 每過兩關多一隻干擾怪
+            if (wrongCount > 6) wrongCount = 6; // 畫面極限差不多7隻
+            
+            let opts = [ { text: q.a, isCorrect: true } ];
+            for(let i = 0; i < wrongCount; i++) {
+                // 循環取用錯誤選項
+                opts.push({ text: q.w[i % q.w.length], isCorrect: false });
+            }
             opts.sort(() => Math.random() - 0.5);
 
-            // Calculate Y positions (top, mid, bottom)
-            let startY = height * 0.35;
-            let spacing = (height * 0.5) / 2;
+            let startY = height * 0.2;
+            let availableHeight = height * 0.7;
+            let spacing = availableHeight / opts.length;
             
             opts.forEach((opt, index) => {
-                let y = startY + (index * spacing);
-                let x = width + 50 + (Math.random() * 50); // slight stagger
+                let y = startY + (index * spacing) + (spacing/2);
+                let x = width + 50 + (Math.random() * 100); 
                 monsters.push(new Monster(x, y, opt.text, opt.isCorrect));
             });
+
+            // ✨ 10% 機率產生 ROCK 金色傳說彩蛋 ✨
+            if (Math.random() < 0.10) {
+                let rockY = startY + (Math.random() * availableHeight);
+                let rockX = width + 150 + (Math.random() * 100);
+                monsters.push(new Monster(rockX, rockY, "ROCK", true, true));
+            }
         }
 
         function takeDamage() {
@@ -546,29 +607,48 @@
         }
 
         function startGame() {
-            const inputName = document.getElementById('player-name').value.trim();
-            if(inputName === "") { alert("請輸入法師姓名！"); return; }
-            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
-            
-            playerName = inputName; 
-            currentTheme = document.getElementById('theme-select').value;
-            currentQuestions = grammarBanks[currentTheme];
-            
-            document.getElementById('start-overlay').style.display = 'none';
-            document.getElementById('ui-layer').style.display = 'flex';
-            document.getElementById('question-board').style.display = 'block';
-            
-            score = 0; lives = 3; combo = 0; multiplier = 1; speedMult = 1.0;
-            monsters = []; projectiles = []; particles = []; floatTexts = [];
-            
-            isPlaying = true;
-            updateHUD();
+            try {
+                const inputName = document.getElementById('player-name').value.trim();
+                const errorMsg = document.getElementById('error-msg');
+                errorMsg.style.display = "none";
+                
+                if(inputName === "") { 
+                    errorMsg.innerText = "⚠️ 請輸入法師姓名！";
+                    errorMsg.style.display = "block";
+                    return; 
+                }
+                if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { 
+                    errorMsg.innerText = "⚠️ 請保持禮貌喔！😇";
+                    errorMsg.style.display = "block";
+                    return; 
+                }
+                
+                playerName = inputName; 
+                currentTheme = document.getElementById('theme-select').value;
+                currentQuestions = grammarBanks[currentTheme];
+                
+                document.getElementById('start-overlay').style.display = 'none';
+                document.getElementById('ui-layer').style.display = 'flex';
+                document.getElementById('question-board').style.display = 'block';
+                
+                score = 0; lives = 3; combo = 0; multiplier = 1; 
+                currentLevel = 1; speedMult = 1.0;
+                rockModeTimer = 0; autoShootTimer = 0;
+                document.getElementById('level-hud').innerText = `Level ${currentLevel}`;
 
-            bgm.volume = 0.5; safePlayAudio(bgm);
-            
-            spawnWave();
-            lastTime = performance.now();
-            animationId = requestAnimationFrame(gameLoop);
+                monsters = []; projectiles = []; particles = []; floatTexts = [];
+                
+                isPlaying = true;
+                updateHUD();
+
+                bgm.volume = 0.5; safePlayAudio(bgm);
+                
+                spawnWave();
+                lastTime = performance.now();
+                animationId = requestAnimationFrame(gameLoop);
+            } catch(e) {
+                console.log("Start error", e);
+            }
         }
 
         let lastTime = 0;
@@ -586,18 +666,60 @@
 
             ctx.clearRect(0, 0, width, height);
 
+            // ✨ ROCK 彩蛋自動攻擊邏輯 ✨
+            if (rockModeTimer > 0) {
+                rockModeTimer -= dt;
+                autoShootTimer -= dt;
+                
+                if (autoShootTimer <= 0) {
+                    autoShootTimer = 300; // 每 0.3 秒連發一次
+                    // 尋找場上正確的怪獸自動發射
+                    let target = monsters.find(m => m.isCorrect && !m.markedForDeath && !m.isRock);
+                    if (target) {
+                        safePlayAudio(sfxShoot);
+                        projectiles.push(new Projectile(playerObj.x, playerObj.y - 80, target));
+                    }
+                }
+
+                if (rockModeTimer <= 0) {
+                    // ROCK 模式結束，接續 BGM
+                    sfxRock.pause(); sfxRock.currentTime = 0;
+                    if(!isMuted) bgm.play().catch(e=>{});
+                }
+            }
+
             // Draw Castle/Defense Line
             ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
             ctx.fillRect(0, 0, castleX, height);
-            ctx.strokeStyle = "rgba(231, 76, 60, 0.5)";
+            ctx.strokeStyle = rockModeTimer > 0 ? "#f1c40f" : "rgba(231, 76, 60, 0.5)";
             ctx.lineWidth = 4;
             ctx.beginPath(); ctx.moveTo(castleX, 0); ctx.lineTo(castleX, height); ctx.stroke();
 
-            // Draw Player (Wizard)
-            ctx.font = "60px Arial";
+            // ✨ Draw Player (Wizard or ROCK) ✨
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText("🧙‍♂️", playerObj.x, playerObj.y);
+            
+            if (rockModeTimer > 0) {
+                // ROCK 降臨模式
+                ctx.font = "80px Arial";
+                ctx.fillText("👨‍🏫", playerObj.x, playerObj.y - 80);
+                
+                ctx.font = "60px Arial";
+                // 右手
+                ctx.fillText("💪", playerObj.x + 55, playerObj.y - 70);
+                
+                // 左手 (CSS 鏡像翻轉)
+                ctx.save();
+                ctx.translate(playerObj.x - 55, playerObj.y - 70);
+                ctx.scale(-1, 1);
+                ctx.fillText("💪", 0, 0); 
+                ctx.restore();
+                
+            } else {
+                // 一般法師
+                ctx.font = "60px Arial";
+                ctx.fillText("🧙‍♂️", playerObj.x, playerObj.y);
+            }
 
             // Update & Draw Monsters
             let waveFailed = false;
@@ -613,7 +735,12 @@
 
                 // Reached Castle
                 if (m.x - m.radius < castleX) {
-                    waveFailed = true;
+                    // 如果是彩蛋沒切到，不算失敗直接略過
+                    if (m.isRock) {
+                        m.markedForDeath = true;
+                    } else {
+                        waveFailed = true;
+                    }
                 }
             }
 
@@ -650,22 +777,23 @@
 
         function endGame() {
             isPlaying = false; cancelAnimationFrame(animationId); 
-            bgm.pause(); 
+            bgm.pause(); sfxRock.pause();
             
             document.getElementById('ui-layer').style.display = 'none';
             document.getElementById('question-board').style.display = 'none';
             document.getElementById('final-total-display').textContent = score; 
+            document.getElementById('final-level-display').textContent = `突破至 Level ${currentLevel} !`; 
             document.getElementById('end-msg').style.display = "flex";
             
             const listDiv = document.getElementById('leaderboard-list'); 
             const themeName = document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text.split(':')[0].substring(3);
             listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳防守成績...</div>";
             
-            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=Defeated&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=Lv.${currentLevel}&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
                 listDiv.innerHTML = ""; if (!board || board.length === 0) return;
                 board.slice(0,5).forEach((p, i) => { 
                     let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; 
-                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; 
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name} (${p.time})</span><span style="color:var(--primary);">${p.score} pts</span></div>`; 
                 });
             }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
         }
