@@ -695,32 +695,6 @@
             ctx.lineWidth = 4;
             ctx.beginPath(); ctx.moveTo(castleX, 0); ctx.lineTo(castleX, height); ctx.stroke();
 
-            // ✨ Draw Player (Wizard or ROCK) ✨
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            
-            if (rockModeTimer > 0) {
-                // ROCK 降臨模式
-                ctx.font = "80px Arial";
-                ctx.fillText("👨‍🏫", playerObj.x, playerObj.y - 80);
-                
-                ctx.font = "60px Arial";
-                // 右手
-                ctx.fillText("💪", playerObj.x + 55, playerObj.y - 70);
-                
-                // 左手 (CSS 鏡像翻轉)
-                ctx.save();
-                ctx.translate(playerObj.x - 55, playerObj.y - 70);
-                ctx.scale(-1, 1);
-                ctx.fillText("💪", 0, 0); 
-                ctx.restore();
-                
-            } else {
-                // 一般法師
-                ctx.font = "60px Arial";
-                ctx.fillText("🧙‍♂️", playerObj.x, playerObj.y);
-            }
-
             // Update & Draw Monsters
             let waveFailed = false;
             for (let i = monsters.length - 1; i >= 0; i--) {
@@ -767,6 +741,41 @@
                 particles[i].update(); particles[i].draw(ctx);
                 if (particles[i].life <= 0) particles.splice(i, 1);
             }
+
+            // ✨ Draw Player (Wizard or ROCK) 移到最後面繪製，確保在所有特效與遮罩的「最上層」 ✨
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            
+            if (rockModeTimer > 0) {
+                // ROCK 降臨模式
+                ctx.font = "80px Arial";
+                ctx.fillText("👨‍🏫", playerObj.x, playerObj.y - 80);
+                
+                ctx.font = "60px Arial";
+                // 左手 (正常方向)
+                ctx.fillText("💪", playerObj.x - 45, playerObj.y - 70);
+                
+                // 右手 (左右翻轉 180 度)
+                ctx.save();
+                ctx.translate(playerObj.x + 45, playerObj.y - 70);
+                ctx.scale(-1, 1);
+                ctx.fillText("💪", 0, 0); 
+                ctx.restore();
+
+                // 倒數計時顯示
+                ctx.font = "bold 24px Quicksand";
+                ctx.fillStyle = "#f1c40f";
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = "rgba(0,0,0,0.8)";
+                ctx.fillText((rockModeTimer / 1000).toFixed(1) + "s", playerObj.x, playerObj.y - 20);
+                ctx.shadowBlur = 0;
+                
+            } else {
+                // 一般法師
+                ctx.font = "60px Arial";
+                ctx.fillText("🧙‍♂️", playerObj.x, playerObj.y);
+            }
+
             for (let i = floatTexts.length - 1; i >= 0; i--) {
                 floatTexts[i].update(); floatTexts[i].draw(ctx);
                 if (floatTexts[i].life <= 0) floatTexts.splice(i, 1);
