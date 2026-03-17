@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Dr. ROCK - Grammar Runner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498db; --secondary: #2980b9; --success: #2ecc71; --error: #e74c3c;
+            --bg: #1e272e; --text-light: #ecf0f1; --gold: #f1c40f;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body, html {
+            background-color: var(--bg); margin: 0; padding: 0;
+            height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif;
+            overflow: hidden; user-select: none; -webkit-user-select: none;
+            touch-action: none; overscroll-behavior: none;
+        }
+
+        #game-canvas { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
+
+        .sound-toggle {
+            position: fixed; top: max(15px, env(safe-area-inset-top)); right: 15px; background: rgba(255,255,255,0.9);
+            border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px;
+            font-size: 16px; font-weight: 900; cursor: pointer; color: #2d3436; z-index: 50000; transition: 0.2s;
+        }
+        .exit-btn {
+            position: fixed; top: max(15px, env(safe-area-inset-top)); left: 15px; background: rgba(231,76,60,0.9);
+            color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900;
+            font-size: 16px; cursor: pointer; z-index: 50000; box-shadow: 0 4px 0 #c0392b;
+        }
+
+        #ui-layer {
+            position: absolute; top: max(60px, env(safe-area-inset-top) + 50px); left: 0; width: 100%; padding: 0 20px;
+            display: flex; justify-content: space-between; z-index: 20; pointer-events: none;
+        }
+        .hud-box { background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 15px; border: 2px solid var(--primary); color: white; text-align: center; }
+        #score-display { font-size: 26px; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+        #lives-display { font-size: 20px; letter-spacing: 2px; }
+        #combo-hud { font-size: 18px; font-weight: 900; color: #3498db; margin-top: 5px; transition: 0.2s; }
+        .combo-active { color: var(--gold) !important; text-shadow: 0 0 15px var(--gold); transform: scale(1.1); display: inline-block;}
+
+        #question-board {
+            position: absolute; top: max(140px, env(safe-area-inset-top) + 130px); left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.95); color: #2d3436; padding: 15px 30px;
+            border-radius: 20px; font-size: 28px; font-weight: 900; z-index: 20;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 4px solid var(--primary);
+            display: none; text-align: center; white-space: nowrap; pointer-events: none;
+        }
+        .blank-space { color: var(--error); border-bottom: 3px solid var(--error); padding: 0 10px; display: inline-block; min-width: 60px; }
+
+        /* Overlays */
+        #start-overlay, #end-msg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 60000; overflow-y: auto; padding: 20px; background: rgba(30, 39, 46, 0.95);
+        }
+        #end-msg { display: none; text-align: center; }
+
+        .name-input { font-size: 22px; padding: 12px 20px; border-radius: 15px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 15px; width: 90%; max-width: 350px; outline: none; }
+        .start-btn { background: var(--success); color: white; border: none; padding: 15px 40px; font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #219150; transition: 0.1s; margin-bottom: 20px;}
+        .start-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #219150; }
+        
+        select.theme-select { width: 90%; max-width: 350px; font-size: 16px; padding: 12px; border-radius: 15px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; margin-bottom: 20px; }
+
+        .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; }
+        .board-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #dfe6e9; font-size: 16px; font-weight: 700; color: #2d3436;}
+
+        #fever-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            box-shadow: inset 0 0 150px rgba(241, 196, 15, 0); pointer-events: none; z-index: 5; transition: 0.3s;
+        }
+        .fever-active { box-shadow: inset 0 0 150px rgba(241, 196, 15, 0.5) !important; animation: pulse 0.5s infinite alternate; }
+        @keyframes pulse { 0% { box-shadow: inset 0 0 100px rgba(52, 152, 219, 0.4); } 100% { box-shadow: inset 0 0 250px rgba(241, 196, 15, 0.6); } }
+
+        /* Error Flash */
+        #error-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(231, 76, 60, 0.5); z-index: 55000; pointer-events: none; opacity: 0; transition: opacity 0.1s; }
+
+        @media screen and (max-width: 768px) {
+            .sound-toggle { font-size: 12px; padding: 6px 12px; }
+            .exit-btn { font-size: 12px; padding: 6px 12px; }
+            #question-board { font-size: 18px; padding: 10px 20px; width: 95%; white-space: normal; top: max(110px, env(safe-area-inset-top) + 100px); }
+            #start-overlay h1 { font-size: 36px; }
+            .start-btn { font-size: 20px; padding: 12px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" src="arcade.mp3" loop></audio>
+    <audio id="sfx-smash" src="blade.mp3"></audio> <!-- 借用切割音效當撞破玻璃的聲音 -->
+    <audio id="sfx-wrong" src="fail.mp3"></audio>
+    <audio id="sfx-fever" src="buff.mp3" loop></audio>
+
+    <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
+    <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
+
+    <div id="start-overlay">
+        <h1 style="font-size: 50px; color: var(--primary); text-shadow: 0 5px 15px rgba(0,0,0,0.5); text-align: center; margin-bottom: 5px; margin-top: 20px;">🏃‍♂️ Grammar Runner</h1>
+        <p style="color: #bdc3c7; font-size: 16px; margin-bottom: 20px; text-align: center; line-height: 1.5;">
+            文法跑酷冒險！看題目，撞破正確的單字閘門！<br>左右滑動切換跑道，滿 10 Combo 進入無敵衝刺！
+        </p>
+        
+        <input type="text" id="player-name" class="name-input" placeholder="輸入跑者姓名..." autocomplete="off" maxlength="12">
+        
+        <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
+            <optgroup label="四年級 (Grade 4)">
+                <option value="runner-g4-l1">📍 L1: Where are you? (be動詞)</option>
+                <option value="runner-g4-l2">🏃‍♂️ L2: What are you doing? (Ving)</option>
+            </optgroup>
+            <optgroup label="五年級 (Grade 5)">
+                <option value="runner-g5-l1">🤕 L1: hurt vs hurts (身體部位)</option>
+                <option value="runner-g5-l2">🤒 L2: Do/Does have a fever?</option>
+            </optgroup>
+        </select>
+
+        <button class="start-btn" onclick="startGame()">開始衝刺！</button>
+
+        <div class="result-panel" style="margin-top: 0px; padding: 15px;">
+            <h3 style="margin: 0 0 10px 0; color: var(--primary); text-align: center;">🏆 跑酷英雄榜</h3>
+            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取中...</div></div>
+        </div>
+    </div>
+
+    <div id="ui-layer">
+        <div class="hud-box" style="text-align: left;">
+            <div style="font-size: 12px; color: #bdc3c7;">SCORE</div>
+            <div id="score-display">0</div>
+            <div id="combo-hud">1x 倍率</div>
+        </div>
+        <div class="hud-box" style="text-align: right;">
+            <div style="font-size: 12px; color: #bdc3c7;">LIVES</div>
+            <div id="lives-display">❤️❤️❤️</div>
+        </div>
+    </div>
+
+    <div id="question-board">Loading...</div>
+
+    <div id="fever-overlay"></div>
+    <div id="error-flash"></div>
+    <canvas id="game-canvas"></canvas>
+
+    <div id="end-msg">
+        <h1 style="font-size: 45px; color: var(--error); margin: 0; margin-top: 10px;">撞牆倒下！💀</h1>
+        <div class="result-panel">
+            <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: #2d3436; text-align: center;">
+                跑酷總分：<br><span id="final-total-display" style="color:var(--primary); font-size:45px;">0</span> pts
+            </div>
+            <h2 class="board-row" style="color: var(--primary); justify-content: center; border-top: 2px dashed #ddd; padding-top: 15px;">🌍 跑酷英雄榜</h2>
+            <div id="leaderboard-list" style="max-height: 150px; overflow-y: auto;"></div>
+        </div>
+        <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:50px; font-weight:900; cursor:pointer; margin-bottom: 10px;">再跑一次</button>
+    </div>
+
+    <script>
+        // 🛡️ 防外掛與防作弊系統
+        document.addEventListener('contextmenu', event => event.preventDefault()); 
+        document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
+        setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
+
+        const badWords = [
+            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭"
+        ];
+
+        let userIP = "Unknown";
+        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
+
+        // ✨ 文法題庫 ✨
+        const grammarBanks = {
+            "runner-g4-l1": [
+                { q: "Where ____ you?", a: "are", w: ["is", "am"] },
+                { q: "Where ____ he?", a: "is", w: ["are", "am"] },
+                { q: "I ____ in the bedroom.", a: "am", w: ["is", "are"] },
+                { q: "They ____ in the kitchen.", a: "are", w: ["is", "am"] },
+                { q: "She ____ in the dining room.", a: "is", w: ["are", "am"] },
+                { q: "Where ____ they?", a: "are", w: ["is", "am"] },
+                { q: "Where ____ she?", a: "is", w: ["are", "am"] },
+                { q: "He ____ in the yard.", a: "is", w: ["are", "am"] },
+                { q: "We ____ in the living room.", a: "are", w: ["is", "am"] },
+                { q: "The dog ____ in the house.", a: "is", w: ["are", "am"] }
+            ],
+            "runner-g4-l2": [
+                { q: "What ____ you doing?", a: "are", w: ["is", "am"] },
+                { q: "What is he ____?", a: "doing", w: ["do", "does"] },
+                { q: "I am ____.", a: "running", w: ["run", "runs"] },
+                { q: "She is ____ a book.", a: "reading", w: ["read", "reads"] },
+                { q: "They are ____ TV.", a: "watching", w: ["watch", "watches"] },
+                { q: "Where ____ you going?", a: "are", w: ["is", "am"] },
+                { q: "Where is she ____?", a: "going", w: ["go", "goes"] },
+                { q: "I am going ____ the park.", a: "to", w: ["in", "on"] },
+                { q: "We ____ going to the shop.", a: "are", w: ["is", "am"] },
+                { q: "He is going to ____.", a: "sleep", w: ["sleeping", "sleeps"] }
+            ],
+            "runner-g5-l1": [
+                { q: "What's ____?", a: "wrong", w: ["matter", "bad"] },
+                { q: "My head ____.", a: "hurts", w: ["hurt", "hurting"] },
+                { q: "My eyes ____.", a: "hurt", w: ["hurts", "hurting"] },
+                { q: "His leg ____.", a: "hurts", w: ["hurt", "hurting"] },
+                { q: "Her ears ____.", "a": "hurt", w: ["hurts", "hurting"] },
+                { q: "My tooth ____.", a: "hurts", w: ["hurt", "hurting"] },
+                { q: "Your hands ____.", a: "hurt", w: ["hurts", "hurting"] },
+                { q: "His shoulder ____.", a: "hurts", w: ["hurt", "hurting"] },
+                { q: "Her feet ____.", a: "hurt", w: ["hurts", "hurting"] },
+                { q: "My back ____.", a: "hurts", w: ["hurt", "hurting"] }
+            ],
+            "runner-g5-l2": [
+                { q: "____ you have a fever?", a: "Do", w: ["Does", "Are"] },
+                { q: "Yes, I ____.", a: "do", w: ["does", "am"] },
+                { q: "No, I ____.", "a": "don't", w: ["doesn't", "not"] },
+                { q: "I ____ a runny nose.", a: "have", w: ["has", "having"] },
+                { q: "____ he have a headache?", a: "Does", w: ["Do", "Is"] },
+                { q: "Yes, he ____.", a: "does", w: ["do", "is"] },
+                { q: "No, she ____.", a: "doesn't", w: ["don't", "isn't"] },
+                { q: "He ____ a sore throat.", a: "has", w: ["have", "having"] },
+                { q: "She ____ a stomachache.", a: "has", w: ["have", "having"] },
+                { q: "____ they have a cold?", a: "Do", w: ["Does", "Are"] }
+            ]
+        };
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let animationId;
+        
+        let isPlaying = false, isMuted = false;
+        let score = 0, lives = 3, combo = 0, multiplier = 1;
+        let isFever = false;
+        let playerName = "Player", currentTheme = "";
+        let currentQuestions = [];
+        let currentQuestionObj = null;
+        
+        // Runner variables
+        let lanes = 3;
+        let laneWidth;
+        let playerLane = 1; // 0: Left, 1: Center, 2: Right
+        let playerX = 0; 
+        let playerY = 0;
+        let baseSpeed = 5;
+        let currentSpeed = baseSpeed;
+        
+        let gates = [];
+        let particles = [];
+        let floatTexts = [];
+        
+        let distanceTravelled = 0;
+        let gateSpawnDistance = 300;
+
+        const bgm = document.getElementById('bgm');
+        const sfxSmash = document.getElementById('sfx-smash');
+        const sfxWrong = document.getElementById('sfx-wrong');
+        const sfxFever = document.getElementById('sfx-fever');
+        
+        bgm.volume = 0.5; sfxSmash.volume = 0.8; sfxWrong.volume = 0.8; sfxFever.volume = 0.5;
+
+        // Swipe detection variables
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        window.onload = function() { 
+            fetchFrontLeaderboard();
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            setupInput();
+            fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
+        };
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            laneWidth = width / lanes;
+            playerY = height - 120;
+            if(!isPlaying) playerX = (1 * laneWidth) + (laneWidth / 2);
+        }
+
+        function toggleSound(e) { 
+            if (e) e.stopPropagation(); isMuted = !isMuted; 
+            const btn = document.getElementById('sound-btn'); 
+            if (isMuted) { 
+                btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; 
+                bgm.muted = true; sfxSmash.muted = true; sfxWrong.muted = true; sfxFever.muted = true;
+            } else { 
+                btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; 
+                bgm.muted = false; sfxSmash.muted = false; sfxWrong.muted = false; sfxFever.muted = false;
+            } 
+        }
+
+        function fetchFrontLeaderboard() {
+            const listDiv = document.getElementById('front-leaderboard-list'); 
+            const themeSelect = document.getElementById('theme-select');
+            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            fetch(`${GOOGLE_API_URL}?action=get&theme=${themeSelect.value}`).then(response => response.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='padding:5px; font-size:14px;'>目前無紀錄，搶下首殺！</div>"; return; }
+                board.slice(0, 5).forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗 😢</div>");
+        }
+
+        function playAudio(audioEl, restart = true) {
+            if (isMuted) return;
+            if (restart) audioEl.currentTime = 0;
+            let p = audioEl.play();
+            if (p !== undefined) p.catch(e => {});
+        }
+
+        function setupInput() {
+            window.addEventListener('keydown', (e) => {
+                if(!isPlaying) return;
+                if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    movePlayer(-1);
+                } else if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    movePlayer(1);
+                }
+            });
+
+            canvas.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: false});
+
+            canvas.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: false});
+        }
+
+        function handleSwipe() {
+            if (!isPlaying) return;
+            let threshold = 30; // Minimum swipe distance
+            if (touchEndX < touchStartX - threshold) {
+                movePlayer(-1); // Swipe left
+            } else if (touchEndX > touchStartX + threshold) {
+                movePlayer(1);  // Swipe right
+            }
+        }
+
+        function movePlayer(dir) {
+            playerLane += dir;
+            if(playerLane < 0) playerLane = 0;
+            if(playerLane > 2) playerLane = 2;
+        }
+
+        class GateRow {
+            constructor(y, qObj) {
+                this.y = y;
+                this.height = 60;
+                this.passed = false;
+                this.qObj = qObj;
+                
+                // Shuffle options
+                this.options = [
+                    { text: qObj.a, isCorrect: true },
+                    { text: qObj.w[0], isCorrect: false },
+                    { text: qObj.w[1], isCorrect: false }
+                ];
+                this.options.sort(() => Math.random() - 0.5);
+                this.brokenLanes = [false, false, false];
+            }
+
+            update(speed) {
+                this.y += speed;
+            }
+
+            draw(ctx) {
+                for(let i=0; i<3; i++) {
+                    if(this.brokenLanes[i]) continue;
+                    
+                    let x = i * laneWidth;
+                    let padding = 10;
+                    let drawX = x + padding;
+                    let drawW = laneWidth - (padding * 2);
+                    
+                    // Glass panel look
+                    ctx.fillStyle = "rgba(52, 152, 219, 0.4)";
+                    if (isFever) {
+                        ctx.fillStyle = "rgba(241, 196, 15, 0.6)"; // Golden in fever
+                    }
+                    ctx.beginPath();
+                    ctx.roundRect(drawX, this.y, drawW, this.height, 10);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = isFever ? "#f1c40f" : "#3498db";
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // Text
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 24px Quicksand";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    
+                    // In fever mode, show correct answer on all panels if you want, or just let them smash anything.
+                    // Let's show the real text, but they can smash anything safely.
+                    let displayText = isFever ? this.qObj.a : this.options[i].text;
+                    ctx.fillText(displayText, x + laneWidth/2, this.y + this.height/2);
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y;
+                this.vx = (Math.random() - 0.5) * 15;
+                this.vy = (Math.random() - 0.5) * 15;
+                this.life = 1.0;
+                this.color = color;
+                this.size = Math.random() * 6 + 3;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.vy += 0.5; /* gravity */ this.life -= 0.05; }
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.globalAlpha = this.life; ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        class FloatText {
+            constructor(x, y, text, color) {
+                this.x = x; this.y = y; this.text = text; this.color = color;
+                this.life = 1.0; this.vy = -3;
+            }
+            update() { this.y += this.vy; this.life -= 0.03; }
+            draw(ctx) {
+                if(this.life <= 0) return;
+                ctx.globalAlpha = this.life; ctx.fillStyle = this.color;
+                ctx.font = `bold 30px Quicksand`;
+                ctx.textAlign = "center"; ctx.fillText(this.text, this.x, this.y);
+                ctx.lineWidth = 1; ctx.strokeStyle = "white"; ctx.strokeText(this.text, this.x, this.y);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function createShatter(x, y, color) {
+            for(let i=0; i<20; i++) { particles.push(new Particle(x, y, color)); particles.push(new Particle(x, y, "#ffffff")); }
+        }
+
+        function spawnGate() {
+            let q = currentQuestions[Math.floor(Math.random() * currentQuestions.length)];
+            gates.push(new GateRow(-100, q));
+            
+            // Only update question board if it's the next one the player faces
+            if(gates.length === 1 || (gates.length > 0 && gates[0].passed)) {
+                 updateQuestionBoard(q);
+            }
+        }
+
+        function updateQuestionBoard(qObj) {
+            currentQuestionObj = qObj;
+            let parts = qObj.q.split('____');
+            let html = parts[0] + "<span class='blank-space'></span>" + (parts[1] || "");
+            document.getElementById('question-board').innerHTML = html;
+        }
+
+        function flashError() {
+            const flash = document.getElementById('error-flash');
+            flash.style.opacity = '1';
+            setTimeout(() => flash.style.opacity = '0', 150);
+        }
+
+        function updateHUD() {
+            document.getElementById('score-display').innerText = score;
+            let hearts = ""; for(let i=0; i<3; i++) { hearts += (i < lives) ? "❤️" : "🖤"; }
+            document.getElementById('lives-display').innerText = hearts;
+            
+            const comboEl = document.getElementById('combo-hud');
+            if(isFever) {
+                comboEl.innerText = `🔥 FEVER (Combo: ${combo}) 🔥`;
+            } else {
+                comboEl.innerText = `${multiplier}x 倍率 (Combo: ${combo})`;
+                if(multiplier > 1) comboEl.style.color = "#f1c40f"; else comboEl.style.color = "#3498db";
+            }
+        }
+
+        function breakCombo() {
+            combo = 0; multiplier = 1;
+            if (isFever) {
+                isFever = false;
+                document.getElementById('fever-overlay').classList.remove('fever-active');
+                document.getElementById('combo-hud').classList.remove('combo-active');
+                sfxFever.pause(); sfxFever.currentTime = 0;
+                if(isPlaying && !isMuted) bgm.play().catch(e=>{});
+            }
+            currentSpeed = baseSpeed; // reset speed
+            updateHUD();
+        }
+
+        function triggerFever() {
+            if (!isFever) {
+                bgm.pause();
+                playAudio(sfxFever, true); 
+            }
+            isFever = true; multiplier = 5; 
+            document.getElementById('fever-overlay').classList.add('fever-active');
+            document.getElementById('combo-hud').classList.add('combo-active');
+        }
+
+        function startGame() {
+            const inputName = document.getElementById('player-name').value.trim();
+            if(inputName === "") { alert("請輸入跑者姓名！"); return; }
+            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
+            
+            playerName = inputName; 
+            currentTheme = document.getElementById('theme-select').value;
+            currentQuestions = grammarBanks[currentTheme];
+            
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('ui-layer').style.display = 'flex';
+            document.getElementById('question-board').style.display = 'block';
+            
+            score = 0; lives = 3; combo = 0; multiplier = 1; isFever = false; 
+            baseSpeed = 5 + (window.innerHeight < 700 ? -1 : 0); // adjust for small screens
+            currentSpeed = baseSpeed;
+            playerLane = 1; distanceTravelled = 0; gateSpawnDistance = 300;
+            gates = []; particles = []; floatTexts = [];
+            
+            isPlaying = true;
+            updateHUD();
+            document.getElementById('fever-overlay').classList.remove('fever-active');
+            document.getElementById('combo-hud').classList.remove('combo-active');
+
+            sfxFever.pause(); sfxFever.currentTime = 0;
+            bgm.volume = 0.4; playAudio(bgm);
+            
+            spawnGate();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            if (!isPlaying) return;
+            resizeCanvas(); 
+            
+            let dt = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            if (width <= 0 || height <= 0) {
+                animationId = requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw track lines
+            ctx.strokeStyle = "rgba(255,255,255,0.1)";
+            ctx.lineWidth = 4;
+            ctx.setLineDash([20, 20]);
+            ctx.beginPath();
+            ctx.moveTo(laneWidth, 0); ctx.lineTo(laneWidth, height);
+            ctx.moveTo(laneWidth*2, 0); ctx.lineTo(laneWidth*2, height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Distance & Speed logic
+            distanceTravelled += currentSpeed;
+            if (distanceTravelled > gateSpawnDistance) {
+                distanceTravelled = 0;
+                spawnGate();
+            }
+
+            // Smooth player movement
+            let targetX = (playerLane * laneWidth) + (laneWidth / 2);
+            playerX += (targetX - playerX) * 0.25;
+
+            // Update & Draw Gates
+            for (let i = gates.length - 1; i >= 0; i--) {
+                let g = gates[i];
+                g.update(currentSpeed);
+                
+                // Collision Detection
+                if (!g.passed && g.y + g.height > playerY - 30 && g.y < playerY + 30) {
+                    g.passed = true;
+                    
+                    let hitLane = playerLane;
+                    g.brokenLanes[hitLane] = true; // break the glass visually
+                    
+                    let isCorrect = g.options[hitLane].isCorrect || isFever;
+                    
+                    let cx = (hitLane * laneWidth) + (laneWidth / 2);
+                    let cy = g.y + (g.height/2);
+
+                    if (isCorrect) {
+                        playAudio(sfxSmash);
+                        createShatter(cx, cy, "#3498db");
+                        
+                        combo++;
+                        if (combo >= 10) triggerFever();
+                        else if (combo >= 6) multiplier = 3;
+                        else if (combo >= 3) multiplier = 2;
+                        
+                        let pts = 10 * multiplier;
+                        score += pts;
+                        floatTexts.push(new FloatText(cx, cy, `+${pts}`, "#2ecc71"));
+                        
+                        // Speed up slightly
+                        currentSpeed = Math.min(15, currentSpeed + 0.2);
+                        gateSpawnDistance = Math.max(200, 300 - (currentSpeed * 5));
+                        
+                        updateHUD();
+                        
+                    } else {
+                        playAudio(sfxWrong);
+                        flashError();
+                        createShatter(cx, cy, "#e74c3c");
+                        floatTexts.push(new FloatText(cx, cy, "WRONG!", "#e74c3c"));
+                        
+                        lives--;
+                        breakCombo();
+                        
+                        if (lives <= 0) {
+                            endGame();
+                            return; // Stop processing loop
+                        }
+                    }
+                    
+                    // Update next question board
+                    let nextGate = gates.find(gate => !gate.passed);
+                    if (nextGate) {
+                        updateQuestionBoard(nextGate.qObj);
+                    }
+                }
+                
+                g.draw(ctx);
+                
+                if (g.y > height + 100) {
+                    gates.splice(i, 1);
+                }
+            }
+
+            // Draw Player (Kiwi / Runner)
+            ctx.font = "60px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🏃‍♂️", playerX, playerY);
+            
+            if (isFever) {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = "#f1c40f";
+                ctx.fillText("🏃‍♂️", playerX, playerY);
+                ctx.shadowBlur = 0;
+            }
+
+            // Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update(); particles[i].draw(ctx);
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+
+            // Float Texts
+            for (let i = floatTexts.length - 1; i >= 0; i--) {
+                floatTexts[i].update(); floatTexts[i].draw(ctx);
+                if (floatTexts[i].life <= 0) floatTexts.splice(i, 1);
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            isPlaying = false; cancelAnimationFrame(animationId); 
+            bgm.pause(); sfxFever.pause(); 
+            
+            document.getElementById('ui-layer').style.display = 'none';
+            document.getElementById('question-board').style.display = 'none';
+            document.getElementById('final-total-display').textContent = score; 
+            document.getElementById('end-msg').style.display = "flex";
+            
+            const listDiv = document.getElementById('leaderboard-list'); 
+            const themeName = document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text.split(':')[0].substring(3);
+            listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳跑酷成績...</div>";
+            
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=Dead&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) return;
+                board.slice(0,5).forEach((p, i) => { 
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; 
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; 
+                });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
+        }
+    </script>
+</body>
+</html>
