@@ -21,7 +21,6 @@
             overscroll-behavior: none;
         }
 
-        /* ✨ 修正 1：鎖定 Canvas 為 100vw/100vh，防止 iOS 放大縮小 Bug ✨ */
         #game-canvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 10; }
 
         .sound-toggle {
@@ -83,7 +82,6 @@
             }
         }
 
-        /* ✨ 修正 2：手機橫向結算畫面防爆壓縮 ✨ */
         @media screen and (max-width: 900px), screen and (max-height: 600px) {
             .sound-toggle { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); right: 5px; }
             .exit-btn { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); left: 5px; }
@@ -92,7 +90,6 @@
             #start-overlay h1 { font-size: 36px; margin-top: 10px;}
             .start-btn { font-size: 20px; padding: 12px 30px; }
 
-            /* 結算畫面壓縮 */
             #end-msg h1 { font-size: 32px !important; margin-top: 5px !important; }
             .result-panel { padding: 10px !important; margin: 5px 0 !important; width: 95%; }
             .result-panel > div:first-child { padding: 10px !important; margin-bottom: 5px !important; font-size: 16px !important; }
@@ -112,7 +109,6 @@
     <audio id="sfx-hit" src="hit.mp3"></audio>
     <audio id="sfx-wrong" src="wrong.mp3"></audio>
     <audio id="sfx-damage" src="damage.mp3"></audio>
-    <!-- ROCK彩蛋自動攻擊時的專屬音樂 -->
     <audio id="sfx-rock" src="67.mp3"></audio>
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
@@ -183,21 +179,18 @@
     </div>
 
     <script>
-        // 🛡️ 防外掛系統
         document.addEventListener('contextmenu', event => event.preventDefault()); 
         document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
         const badWords = [
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商"
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭"
         ];
 
         let userIP = "Unknown";
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        // ✨ 文法題庫 ✨
         const grammarBanks = {
             "defend-g4-l1": [
                 { q: "Where ____ you?", a: "are", w: ["is", "am"] },
@@ -253,7 +246,6 @@
         const ctx = canvas.getContext('2d');
         let width, height;
         let animationId;
-        let audioCtx = null;
         
         let isPlaying = false, isMuted = false;
         let score = 0, lives = 3, combo = 0, multiplier = 1;
@@ -262,13 +254,10 @@
         let currentQuestions = [];
         let currentQuestionObj = null;
         
-        // ✨ ROCK 彩蛋專屬變數 ✨
         let rockModeTimer = 0;
         let autoShootTimer = 0;
-        
         let speedMult = 1.0;
         
-        // Game Objects
         let monsters = [];
         let projectiles = [];
         let particles = [];
@@ -288,22 +277,19 @@
         window.onload = function() { 
             fetchFrontLeaderboard();
             resizeCanvas();
+            // ✨ 優化 1：綁定 resize 與 orientationchange 事件來計算尺寸，避免每一幀都計算 ✨
             window.addEventListener('resize', resizeCanvas);
+            window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
             setupInput();
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
-        // ✨ iOS Safari 防破圖縮放強制校正 ✨
         function resizeCanvas() {
-            let newWidth = window.innerWidth;
-            let newHeight = window.innerHeight;
-            if (canvas.width !== newWidth || canvas.height !== newHeight) {
-                width = newWidth;
-                height = newHeight;
-                canvas.width = width;
-                canvas.height = height;
-                playerObj.y = height / 2;
-            }
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            playerObj.y = height / 2;
         }
 
         function toggleSound(e) { 
@@ -337,7 +323,6 @@
             } catch (e) {}
         }
 
-        // --- Game Classes ---
         class Monster {
             constructor(x, y, text, isCorrect, isRock = false) {
                 this.x = x;
@@ -360,16 +345,18 @@
                 this.x -= this.speed;
             }
             draw(ctx) {
-                // Draw Word Bubble
-                ctx.fillStyle = this.isRock ? "rgba(241, 196, 15, 0.95)" : "rgba(255, 255, 255, 0.9)";
+                // ✨ 優化 2：移除所有 ctx.shadowBlur，改用半透明圖層疊加達成發光效果 ✨
                 if (this.isRock) {
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = "#f1c40f";
+                    ctx.fillStyle = "rgba(241, 196, 15, 0.4)";
+                    ctx.beginPath();
+                    ctx.roundRect(this.x - 55, this.y - this.radius - 45, 110, 50, 12);
+                    ctx.fill();
                 }
+
+                ctx.fillStyle = this.isRock ? "rgba(241, 196, 15, 0.95)" : "rgba(255, 255, 255, 0.9)";
                 ctx.beginPath();
                 ctx.roundRect(this.x - 45, this.y - this.radius - 35, 90, 30, 8);
                 ctx.fill();
-                ctx.shadowBlur = 0;
 
                 ctx.strokeStyle = this.isRock ? "#e67e22" : "#34495e";
                 ctx.lineWidth = 2;
@@ -381,7 +368,6 @@
                 ctx.textBaseline = "middle";
                 ctx.fillText(this.text, this.x, this.y - this.radius - 20);
 
-                // Draw Monster Emoji
                 ctx.font = `${this.radius * 1.5}px Arial`;
                 ctx.fillText(this.emoji, this.x, this.y);
             }
@@ -461,13 +447,16 @@
                 }
             }
             draw(ctx) {
+                // ✨ 移除 shadowBlur，改用底層放大圓圈疊加達成發光感 ✨
+                ctx.fillStyle = rockModeTimer > 0 ? "rgba(231, 76, 60, 0.4)" : "rgba(241, 196, 15, 0.4)";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius + 8, 0, Math.PI * 2);
+                ctx.fill();
+
                 ctx.fillStyle = rockModeTimer > 0 ? "#e74c3c" : "#f1c40f";
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = rockModeTimer > 0 ? "#c0392b" : "#f39c12";
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius + (rockModeTimer > 0 ? 4 : 0), 0, Math.PI * 2);
                 ctx.fill();
-                ctx.shadowBlur = 0;
             }
         }
 
@@ -505,8 +494,9 @@
             }
         }
 
+        // ✨ 優化 3：降低粒子數量，減輕處理器負擔 ✨
         function createExplosion(x, y, color) {
-            for(let i=0; i<15; i++) { particles.push(new Particle(x, y, color)); particles.push(new Particle(x, y, "#ffffff")); }
+            for(let i=0; i<8; i++) { particles.push(new Particle(x, y, color)); particles.push(new Particle(x, y, "#ffffff")); }
         }
 
         function setupInput() {
@@ -659,7 +649,6 @@
         let lastTime = 0;
         function gameLoop(timestamp) {
             if (!isPlaying) return;
-            resizeCanvas(); 
             
             let dt = timestamp - lastTime;
             lastTime = timestamp;
@@ -754,12 +743,10 @@
                 ctx.fillText("💪", 0, 0); 
                 ctx.restore();
 
+                // ✨ 移除 ROCK 模式的文字發光 shadowBlur，提升效能 ✨
                 ctx.font = "bold 24px Quicksand";
                 ctx.fillStyle = "#f1c40f";
-                ctx.shadowBlur = 4;
-                ctx.shadowColor = "rgba(0,0,0,0.8)";
                 ctx.fillText((rockModeTimer / 1000).toFixed(1) + "s", playerObj.x, playerObj.y - 20);
-                ctx.shadowBlur = 0;
                 
             } else {
                 ctx.font = "60px Arial";
@@ -799,3 +786,5 @@
     </script>
 </body>
 </html>
+
+
