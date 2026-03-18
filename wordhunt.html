@@ -31,6 +31,20 @@
         #front-leaderboard-list { max-height: 180px; overflow-y: auto; padding-right: 5px; } #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
         .front-board-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
         .name-input { font-size: 24px; padding: 12px 25px; border-radius: 20px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 300px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); outline: none; }
+        
+        /* ✨ 終極修正：強制指定顏色與外觀，解決 iOS Safari 白底白字的問題 ✨ */
+        select.theme-select { 
+            width: 100%; font-size: 16px; padding: 12px 15px; border-radius: 10px; 
+            border: none; outline: none; font-family: 'Quicksand'; font-weight: 700;
+            color: #2c3e50; background-color: #ffffff; appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px; margin-bottom: 20px;
+        }
+        select.theme-select option, select.theme-select optgroup { color: #2c3e50; background-color: #ffffff; }
+
+        /* ✨ 新增錯誤提示訊息樣式 ✨ */
+        #error-msg { display: none; color: #ffcccc; font-weight: 900; margin-bottom: 15px; background: rgba(255, 71, 87, 0.9); padding: 10px 20px; border-radius: 20px; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
         .start-btn { background: var(--success); color: white; border: none; padding: 15px 50px; font-size: 35px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #219150; transition: 0.1s; margin-bottom: 30px; }
         .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 450px; max-width: 100%; margin: 10px 0 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: left; }
         .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; color: #2d3436; font-weight: 700; }
@@ -41,7 +55,7 @@
         .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 120px; z-index: 30000; text-shadow: 6px 6px 0px white, -6px -6px 0px white; animation: burst 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
         @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-50px); opacity: 1; } 100% { transform: scale(1.2) translateY(-250px); opacity: 0; } }
         .shake { animation: shake 0.3s linear; } @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
-        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay { padding-top: 10px; } #start-overlay h1 { font-size: 40px !important; margin-bottom: 5px; } #start-overlay p { font-size: 16px !important; margin-bottom: 10px !important; } .front-leaderboard { width: 95%; padding: 10px; margin-bottom: 10px; } .name-input { width: 85%; font-size: 20px; padding: 10px; margin-bottom: 10px; } #theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 10px !important; } .start-btn { font-size: 28px; padding: 10px 40px; margin-bottom: 10px; } .bank-item { font-size: 14px; padding: 5px 8px; } #game-area { font-size: 22px !important; letter-spacing: 2px !important; padding: 10px !important; line-height: 1.15 !important; } .float-num { font-size: 70px !important; } #end-title { font-size: 36px !important; } .result-panel { width: 95%; padding: 15px; } .score-breakdown { font-size: 16px; padding: 10px; } .final-score-display { font-size: 28px; } .board-row { font-size: 14px; padding: 6px; } }
+        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay { padding-top: 10px; } #start-overlay h1 { font-size: 40px !important; margin-bottom: 5px; } #start-overlay p { font-size: 16px !important; margin-bottom: 10px !important; } .front-leaderboard { width: 95%; padding: 10px; margin-bottom: 10px; } .name-input { width: 85%; font-size: 20px; padding: 10px; margin-bottom: 10px; } select.theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 10px !important; } .start-btn { font-size: 28px; padding: 10px 40px; margin-bottom: 10px; } .bank-item { font-size: 14px; padding: 5px 8px; } #game-area { font-size: 22px !important; letter-spacing: 2px !important; padding: 10px !important; line-height: 1.15 !important; } .float-num { font-size: 70px !important; } #end-title { font-size: 36px !important; } .result-panel { width: 95%; padding: 15px; } .score-breakdown { font-size: 16px; padding: 10px; } .final-score-display { font-size: 28px; } .board-row { font-size: 14px; padding: 6px; } }
     </style>
 </head>
 <body onclick="handleTap(event)">
@@ -58,13 +72,16 @@
         <div class="front-leaderboard">
             <h3 id="front-board-title">🏆 賽季英雄榜</h3>
             <div id="front-leaderboard-list">
-                <div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取排行榜中...</div>
+                <div style="text-align:center; font-size:14px; color:#636e72;">請先選擇上方關卡，以查看英雄榜！</div>
             </div>
         </div>
         
+        <div id="error-msg"></div>
+
         <input type="text" id="player-name" class="name-input" placeholder="輸入玩家姓名..." autocomplete="off" maxlength="12">
         
-        <select id="theme-select" onchange="fetchFrontLeaderboard()" style="font-size: 20px; padding: 10px 20px; margin-bottom: 15px; border-radius: 15px; border:none; outline:none; font-family: 'Quicksand'; font-weight: 700;">
+        <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
+            <option value="" disabled selected hidden>▼ 請先選擇挑戰關卡...</option>
             <optgroup label="四年級 (Grade 4)">
                 <option value="home">🏠 四年級 - Home Space</option>
                 <option value="actions">🏃 四年級 - Actions</option>
@@ -109,10 +126,8 @@
     </div>
 
     <script>
-        // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
         document.addEventListener('contextmenu', event => event.preventDefault()); 
         document.addEventListener('keydown', function(e) {
-            // ✨ 新增：阻擋 Ctrl+F 與 Cmd+F 的搜尋快捷鍵 ✨
             if (e.keyCode === 123 || 
                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
                (e.ctrlKey && e.keyCode === 85) ||
@@ -132,11 +147,7 @@
 
         const badWords = [
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
-            "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
-            "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
-            "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭"
         ];
 
         let currentVocab = [], score = 0, foundCount = 0, seconds = 0, interval;
@@ -150,11 +161,7 @@
 
         window.onload = function() { 
             fetchFrontLeaderboard(); 
-            
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => { userIP = data.ip; })
-                .catch(err => console.log("無法獲取 IP"));
+            fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
         function toggleSound(e) {
@@ -165,6 +172,12 @@
 
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list'), themeSelect = document.getElementById('theme-select');
+            
+            if (themeSelect.value === "") {
+                listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72; padding:10px;'>請先選擇上方關卡，以查看英雄榜！</div>";
+                return;
+            }
+
             const currentTheme = themeSelect.value, themeName = themeSelect.options[themeSelect.selectedIndex].text;
             document.getElementById('front-board-title').innerText = `🏆 ${themeName} 英雄榜`;
             listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取排行榜中...</div>";
@@ -185,36 +198,34 @@
 
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
-            if(inputName === "") { alert("請輸入玩家姓名喔！"); return; }
+            const errorMsg = document.getElementById('error-msg');
+            const themeSelect = document.getElementById('theme-select');
+            
+            errorMsg.style.display = "none";
+            if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入尋寶家姓名喔！"; errorMsg.style.display = "block"; return; }
             const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
-            if(badWords.some(bad => cleanName.includes(bad))) { alert("請使用有禮貌的名字喔！😇"); return; }
+            if(badWords.some(bad => cleanName.includes(bad))) { errorMsg.innerText = "⚠️ 請使用有禮貌的名字喔！😇"; errorMsg.style.display = "block"; return; }
+            if(themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
+
             playerName = inputName; document.getElementById('display-name').innerText = playerName;
             bgm.volume = 0.4; bgm.play().catch(e => console.log("BGM Error")); secretBgm.onended = function() { bgm.play(); };
             document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('word-bank').style.visibility = 'visible';
-            currentVocab = themes[document.getElementById('theme-select').value];
+            currentVocab = themes[themeSelect.value];
             initBoard(); seconds = 0; interval = setInterval(countUp, 1000);
         }
 
         function initBoard() {
             const bank = document.getElementById('word-bank'); bank.innerHTML = "";
             currentVocab.sort().forEach(w => { 
-                const div = document.createElement('div'); 
-                div.className = 'bank-item'; 
-                div.id = 'bank-' + w; 
-                
-                // ✨ 自動將合併的連字還原為帶有空格的顯示格式 ✨
+                const div = document.createElement('div'); div.className = 'bank-item'; div.id = 'bank-' + w; 
                 let displayText = w;
                 if (w === "tv") displayText = "TV";
                 else if (w === "listeningtomusic") displayText = "listening to music";
                 else if (w === "watchingtv") displayText = "watching TV";
                 else if (w === "runnynose") displayText = "runny nose";
                 else if (w === "sorethroat") displayText = "sore throat";
-                else {
-                    displayText = w.replace('room', ' room').replace('onehundred', 'one hundred');
-                }
-                
-                div.textContent = displayText; 
-                bank.appendChild(div); 
+                else { displayText = w.replace('room', ' room').replace('onehundred', 'one hundred'); }
+                div.textContent = displayText; bank.appendChild(div); 
             });
             generatePerfectScatteredWall();
         }
@@ -232,12 +243,8 @@
             renderWords.forEach(w => {
                 let variance = Math.floor(baseGarbagePerWord * 0.3), currentGarbage = baseGarbagePerWord + (Math.floor(Math.random() * (variance * 2)) - variance);
                 if (currentGarbage < 0) currentGarbage = 0; area.appendChild(document.createTextNode(getGarbage(currentGarbage)));
-                
                 const s = document.createElement('span'); s.className = 'target'; 
-                // ✨ 終極防作弊：插入「零寬空格 (\u200B)」打斷瀏覽器的文字搜尋機制！ ✨
-                s.textContent = w.split('').join('\u200B'); 
-                s.setAttribute('data-word', w); 
-                area.appendChild(s);
+                s.textContent = w.split('').join('\u200B'); s.setAttribute('data-word', w); area.appendChild(s);
             });
             let safety = 0; while (area.scrollHeight <= area.clientHeight && safety < 800) { area.appendChild(document.createTextNode(getGarbage(10))); safety++; }
             if (area.scrollHeight > area.clientHeight) { let lastNode = area.lastChild; if (lastNode && lastNode.nodeType === 3) { let text = lastNode.textContent; while (area.scrollHeight > area.clientHeight && text.length > 0) { text = text.slice(0, -1); lastNode.textContent = text; } } }
