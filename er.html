@@ -15,18 +15,18 @@
         .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; color: #2d3436; }
         .exit-btn { background: #ff7675; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #d63031; }
         .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #d63031; }
-        #hospital-ward { flex-grow: 1; padding: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; visibility: hidden; }
-        .bed { background: var(--bed-bg); border-radius: 20px; border: 4px solid #b2bec3; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px; position: relative; box-shadow: 0 8px 0 #b2bec3; transition: 0.1s; }
+        #hospital-ward { flex-grow: 1; padding: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; visibility: hidden; max-width: 1000px; margin: 0 auto; width: 100%; align-content: center;}
+        .bed { background: var(--bed-bg); border-radius: 20px; border: 4px solid #b2bec3; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px; position: relative; box-shadow: 0 8px 0 #b2bec3; transition: 0.1s; height: 100%; min-height: 180px;}
         .bed.active { border-color: var(--primary); box-shadow: 0 8px 0 var(--primary); transform: translateY(-3px); }
         .bed.error { border-color: var(--error); box-shadow: 0 8px 0 var(--error); animation: shake 0.3s; }
         .patient-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; opacity: 0; transition: 0.2s; pointer-events: none; }
         .bed.active .patient-area { opacity: 1; pointer-events: auto; }
-        .bubble { background: #ffeaa7; padding: 8px 12px; border-radius: 15px; font-size: 20px; font-weight: 900; color: #2d3436; text-align: center; margin-bottom: 5px; position: relative; border: 2px solid #fdcb6e; width: 100%; }
+        .bubble { background: #ffeaa7; padding: 8px 12px; border-radius: 15px; font-size: 20px; font-weight: 900; color: #2d3436; text-align: center; margin-bottom: 5px; position: relative; border: 2px solid #fdcb6e; width: 100%; word-break: break-word;}
         .bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: #fdcb6e transparent transparent transparent; }
-        .emoji { font-size: 50px; margin-bottom: 10px; }
+        .emoji { font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));}
         .action-btns { display: flex; gap: 10px; width: 100%; opacity: 0; pointer-events: none; }
         .bed.active .action-btns { opacity: 1; pointer-events: auto; }
-        .btn-cure { flex: 1; padding: 10px 0; font-size: 22px; font-weight: 900; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.1s; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
+        .btn-cure { flex: 1; padding: 10px 0; font-size: 20px; font-weight: 900; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.1s; box-shadow: 0 5px 0 rgba(0,0,0,0.2); font-family: 'Quicksand';}
         .btn-cure:active { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
         .btn-hurt { background: #00cec9; } .btn-hurts { background: #fd79a8; } .btn-rock { background: #f1c40f; color: #2d3436; flex: 100%; font-size: 26px; } 
         #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 30px 10px; }
@@ -35,18 +35,36 @@
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
         #front-leaderboard-list { max-height: 150px; overflow-y: auto; padding-right: 5px; } #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
         .front-board-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
+        
+        /* ✨ 終極修正：強制指定顏色與外觀，解決 iOS Safari 白底白字的問題 ✨ */
+        select.theme-select { 
+            width: 100%; font-size: 16px; padding: 12px 15px; border-radius: 15px; 
+            border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; margin-bottom: 20px;
+            color: #2c3e50; background-color: #ffffff; appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px;
+        }
+        select.theme-select option, select.theme-select optgroup { color: #2c3e50; background-color: #ffffff; }
+
+        /* ✨ 新增錯誤提示訊息樣式 ✨ */
+        #error-msg { display: none; color: #ffcccc; font-weight: 900; margin-bottom: 15px; background: rgba(255, 71, 87, 0.9); padding: 10px 20px; border-radius: 20px; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .grade-group { background: rgba(0,0,0,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; width: 90%; max-width: 350px; text-align: left; }
+        .grade-title { font-size: 18px; font-weight: 900; margin: 0 0 10px 0; color: #ffeaa7; text-align: left; }
+
         .name-input { font-size: 24px; padding: 12px 25px; border-radius: 20px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 300px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); outline: none; }
-        .start-btn { background: var(--success); color: white; border: none; padding: 15px 50px; font-size: 30px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #219150; margin-bottom: 30px; }
+        .start-btn { background: var(--success); color: white; border: none; padding: 15px 50px; font-size: 30px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #219150; margin-bottom: 30px; transition: 0.1s;}
+        .start-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #219150; }
         .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 450px; max-width: 100%; margin: 10px 0 20px 0; text-align: left; }
-        .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; }
+        .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; text-align: center;}
         .final-score-display { font-size: 36px; color: var(--error); text-align: center; font-weight: 900; margin-top: 10px; }
+        .leaderboard-title { font-size: 20px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center; border-top: 2px dashed #ddd; padding-top: 15px; }
         #leaderboard-list { max-height: 200px; overflow-y: auto; padding-right: 5px; } #leaderboard-list::-webkit-scrollbar { width: 6px; } #leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #leaderboard-list::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
-        .board-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #dfe6e9; font-size: 18px; font-weight: 700; }
+        .board-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #dfe6e9; font-size: 18px; font-weight: 700; color: #2d3436; } .board-row:last-child { border-bottom: none;}
         #secret-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); color: white; padding: 30px 40px; border-radius: 20px; z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f; width: 85%; max-width: 450px; }
-        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 80px; z-index: 30000; text-shadow: 4px 4px 0px white, -4px -4px 0px white; animation: burst 0.8s forwards; }
+        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 60px; z-index: 30000; text-shadow: 3px 3px 0px white, -3px -3px 0px white; animation: burst 0.8s forwards; }
         @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-30px); opacity: 1; } 100% { transform: scale(1.2) translateY(-150px); opacity: 0; } }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
-        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #hospital-ward { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; } .bubble { font-size: 16px; padding: 5px; } .emoji { font-size: 40px; } .btn-cure { font-size: 18px; padding: 8px 0; } #start-overlay h1 { font-size: 40px !important; } .name-input { font-size: 20px; padding: 10px; } .start-btn { font-size: 24px; padding: 10px 40px; } .float-num { font-size: 60px; } }
+        @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #hospital-ward { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; } .bubble { font-size: 16px; padding: 5px; } .emoji { font-size: 40px; } .btn-cure { font-size: 16px; padding: 8px 0; } #start-overlay h1 { font-size: 40px !important; } .name-input { font-size: 20px; padding: 10px; } .start-btn { font-size: 24px; padding: 10px 40px; } .float-num { font-size: 50px; } }
     </style>
 </head>
 <body>
@@ -58,50 +76,60 @@
 
     <div id="start-overlay">
         <h1 style="font-size: 50px; margin-bottom: 5px; text-shadow: 0 5px 15px rgba(0,0,0,0.3);">🏥 Dr. ROCK's ER</h1>
-        <div style="background: rgba(255,255,255,0.2); border: 2px solid white; padding: 5px 20px; border-radius: 50px; font-weight: 900; font-size: 18px; margin-bottom: 10px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">📘 五年級 Unit 1</div>
-        <p style="font-size: 16px; margin-bottom: 15px;">What's wrong? 趕快拯救病患！</p>
+        <p style="font-size: 16px; margin-bottom: 15px;">拯救病患！快速判斷單複數動詞！</p>
+        
         <div class="front-leaderboard">
             <h3 id="front-board-title">🏆 急診室英雄榜</h3>
-            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取中...</div></div>
+            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">請先選擇下方關卡，以查看英雄榜！</div></div>
         </div>
-        <input type="text" id="player-name" class="name-input" placeholder="輸入玩家姓名..." autocomplete="off" maxlength="12">
-        <select id="theme-select" onchange="fetchFrontLeaderboard()" style="font-size: 18px; padding: 8px 15px; margin-bottom: 15px; border-radius: 15px; border:none; outline:none; font-family: 'Quicksand'; font-weight: 700;">
-            <option value="er-level1">💉 Level 1 (基礎部位)</option>
-            <option value="er-level2">💊 Level 2 (進階不規則變化)</option>
-            <option value="er-level3">🚑 Level 3 (瘋狂急診室)</option>
-        </select>
+
+        <div id="error-msg"></div>
+
+        <input type="text" id="player-name" class="name-input" placeholder="輸入醫生姓名..." autocomplete="off" maxlength="12">
+        
+        <div class="grade-group">
+            <div class="grade-title">📘 選擇挑戰關卡：</div>
+            <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
+                <option value="" disabled selected hidden>▼ 請先選擇挑戰關卡...</option>
+                <optgroup label="五年級 (Grade 5)">
+                    <option value="er-g5-l1">🤕 L1: hurt / hurts (身體部位)</option>
+                    <option value="er-g5-l2">🤒 L2: have / has (生病)</option>
+                </optgroup>
+            </select>
+        </div>
+
         <button class="start-btn" onclick="startGame()">開始看診！</button>
     </div>
 
     <div id="header">
         <div class="stat-pill">👤 <span id="display-name">Dr. Player</span></div>
-        <div class="stat-pill">💖 治癒: <span id="cured-val" style="color:var(--success);">0</span>/20</div>
-        <div class="stat-pill">🏆 <span id="score-val" style="color:var(--primary);">0</span></div>
-        <div class="stat-pill">⏱️ <span id="timer-val">00m 00s</span></div>
+        <div class="stat-pill">🏆 <span id="score-val" style="color:#f39c12;">0</span></div>
+        <div class="stat-pill">⏱️ <span id="timer" style="color:var(--error);">60</span>s</div>
         <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
     </div>
+    
     <div id="hospital-ward"></div>
+    
     <div id="secret-modal">
         <h2 style="margin:0 0 10px 0; color:#f1c40f; font-size:36px;">😎 隱藏彩蛋！</h2>
-        <p style="font-size:22px; margin:0; line-height: 1.5;">你治癒了 ROCK 老師！<br>獲得額外 <strong style="font-size: 30px;">+100</strong> 分！<br><span style="color:#fdcb6e; font-size:18px;">(這是我們的秘密，請勿聲張🤫)</span></p>
+        <p style="font-size:22px; margin:0; line-height: 1.5;">ROCK 院長親自出馬！<br>獲得額外 <strong style="font-size: 30px;">+100</strong> 分！</p>
     </div>
+    
     <div id="end-msg">
         <h1 id="end-title" style="font-size: 45px; color: var(--primary); margin: 0; margin-top: 10px;">下班囉！🎉</h1>
         <div class="result-panel">
             <div class="score-breakdown">
-                <div>🎯 基礎得分： <span id="base-score-display"></span> pts</div>
-                <div>⏱️ 搶救時間： <span id="time-taken-display"></span></div>
-                <div>⚡ 速度加成： <span id="multiplier-display" style="color:var(--success)"></span></div>
-                <div class="final-score-display">最終總分： <span id="final-total-display"></span></div>
+                <div class="final-score-display">最終總分： <span id="final-total-display"></span> pts</div>
             </div>
             <h2 class="leaderboard-title" id="end-board-title">🌍 急診室英雄榜</h2>
             <div id="leaderboard-list"></div>
         </div>
-        <button onclick="location.href='index.html'" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">回大廳</button>
+        <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 10px;">再看一次診</button>
+        <button onclick="location.href='index.html'" style="padding:12px 40px; font-size:20px; background:#ff7675; color:white; border:none; border-radius:20px; font-weight:900; cursor:pointer; margin-bottom: 20px;">回大廳</button>
     </div>
 
     <script>
-        // 🛡️ 防外掛與防作弊系統 (Anti-Cheat System)
+        // 🛡️ 防外掛與防作弊系統
         document.addEventListener('contextmenu', event => event.preventDefault()); 
         document.addEventListener('keydown', function(e) {
             if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
@@ -111,38 +139,32 @@
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
         const badWords = [
-            // 英文髒話與不雅詞彙 (已避開會誤擋 Chloe, Cassie 等英文名字的短詞)
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            
-            // 國罵、三字經、諧音
             "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-            
-            // 智力、精神疾病、身心障礙歧視 (國中小最愛罵)
             "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
-            
-            // 咒罵死亡、家人、孤兒 (惡意攻擊)
             "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
-            
-            // 性別特質、性傾向歧視、蕩婦羞辱
             "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
-            
-            // 排泄物、器官、一般羞辱
             "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
         ];
         
+        // ✨ 全新文法題庫 (Unit 1 & Unit 2) ✨
         const grammarData = {
-            "er-level1": { "hurt": ["eyes", "ears", "hands", "feet", "legs"], "hurts": ["eye", "ear", "hand", "foot", "leg", "head", "nose", "mouth"] },
-            "er-level2": { "hurt": ["eyes", "ears", "arms", "hands", "shoulders", "feet", "legs", "teeth"], "hurts": ["eye", "ear", "arm", "hand", "shoulder", "foot", "leg", "head", "nose", "mouth", "back", "neck", "tooth"] },
-            "er-level3": { "hurt": ["eyes", "ears", "arms", "hands", "shoulders", "feet", "legs", "teeth"], "hurts": ["eye", "ear", "arm", "hand", "shoulder", "foot", "leg", "head", "nose", "mouth", "back", "neck", "tooth"] }
+            "er-g5-l1": {
+                "hurt": [ { text: "My eyes ____", icon: "👀" }, { text: "My ears ____", icon: "👂" }, { text: "My hands ____", icon: "👐" }, { text: "My arms ____", icon: "💪" }, { text: "My legs ____", icon: "🦵" }, { text: "My feet ____", icon: "🦶" }, { text: "My shoulders ____", icon: "🤷" }, { text: "My teeth ____", icon: "🦷" } ],
+                "hurts": [ { text: "My eye ____", icon: "👁️" }, { text: "My ear ____", icon: "👂" }, { text: "My head ____", icon: "🤕" }, { text: "My nose ____", icon: "👃" }, { text: "My mouth ____", icon: "👄" }, { text: "My hand ____", icon: "🖐️" }, { text: "My arm ____", icon: "💪" }, { text: "My leg ____", icon: "🦵" }, { text: "My foot ____", icon: "🦶" }, { text: "My shoulder ____", icon: "🤷" }, { text: "My back ____", icon: "😫" }, { text: "My neck ____", icon: "🦒" }, { text: "My tooth ____", icon: "🦷" } ]
+            },
+            "er-g5-l2": {
+                "have": [ { text: "I ____ a fever.", icon: "🤒" }, { text: "You ____ a cold.", icon: "🤧" }, { text: "They ____ a headache.", icon: "🤕" }, { text: "We ____ a backache.", icon: "😫" }, { text: "I ____ a runny nose.", icon: "💧" } ],
+                "has": [ { text: "He ____ a runny nose.", icon: "💧" }, { text: "She ____ a sore throat.", icon: "🗣️" }, { text: "Tom ____ a toothache.", icon: "🦷" }, { text: "Mary ____ a stomachache.", icon: "🤢" }, { text: "He ____ a cough.", icon: "😷" } ]
+            }
         };
-        const emojis = ["🤕", "🤒", "🤧", "😵", "😷", "🥴"];
 
-        let score = 0, curedCount = 0, targetCures = 20, seconds = 0;
-        let playerName = "Player", currentTheme = "er-level1";
+        let score = 0, seconds = 60;
+        let playerName = "Player", currentTheme = "";
         let timerInterval, spawnInterval;
         let activeBeds = [false, false, false, false, false, false]; 
-        let isMuted = false; 
-        let userIP = "Unknown"; // ✨ 新增：IP 追蹤變數
+        let isMuted = false, eggBuffer = "";
+        let userIP = "Unknown"; 
 
         const bgm = document.getElementById('bgm');
         const secretBgm = document.getElementById('secret-bgm');
@@ -152,11 +174,17 @@
             fetchFrontLeaderboard(); 
             initBeds(); 
             
-            // ✨ 新增：網頁載入時偷偷抓取 IP ✨
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => { userIP = data.ip; })
-                .catch(err => console.log("無法獲取 IP"));
+            document.addEventListener('keydown', (e) => { 
+                if(document.getElementById('hospital-ward').style.visibility === 'visible') { 
+                    if(/^[a-zA-Z]$/.test(e.key)) { 
+                        eggBuffer += e.key.toUpperCase(); 
+                        if(eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4); 
+                        if(eggBuffer === "ROCK") triggerEasterEgg(); 
+                    }
+                } 
+            });
+            
+            fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
         function toggleSound(e) {
@@ -168,14 +196,25 @@
         function initBeds() {
             const ward = document.getElementById('hospital-ward'); ward.innerHTML = "";
             for(let i=0; i<6; i++) {
-                ward.innerHTML += `<div class="bed" id="bed-${i}"><div class="patient-area"><div class="bubble" id="bubble-${i}">My ...</div><div class="emoji" id="emoji-${i}">🤕</div></div><div class="action-btns" id="btns-${i}"></div></div>`;
+                ward.innerHTML += `<div class="bed" id="bed-${i}"><div class="patient-area"><div class="bubble" id="bubble-${i}">Loading...</div><div class="emoji" id="emoji-${i}">🤕</div></div><div class="action-btns" id="btns-${i}"></div></div>`;
             }
         }
 
         function fetchFrontLeaderboard() {
-            const listDiv = document.getElementById('front-leaderboard-list'); const themeSelect = document.getElementById('theme-select');
-            currentTheme = themeSelect.value; document.getElementById('front-board-title').innerText = `🏆 ${themeSelect.options[themeSelect.selectedIndex].text} 英雄榜`;
+            const listDiv = document.getElementById('front-leaderboard-list'); 
+            const themeSelect = document.getElementById('theme-select');
+            
+            // ✨ 防呆提示 ✨
+            if (themeSelect.value === "") {
+                listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px; color:#636e72;'>請先選擇上方關卡，以查看英雄榜！</div>";
+                return;
+            }
+            
+            currentTheme = themeSelect.value; 
+            const themeName = themeSelect.options[themeSelect.selectedIndex].text.includes(':') ? themeSelect.options[themeSelect.selectedIndex].text.split(':')[0].substring(3).trim() : themeSelect.options[themeSelect.selectedIndex].text;
+            document.getElementById('front-board-title').innerText = `🏆 ${themeName} 榜`;
             listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            
             fetch(`${GOOGLE_API_URL}?action=get&theme=${currentTheme}`).then(response => response.json()).then(board => {
                 listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px;'>目前無紀錄，快來搶下首殺！</div>"; return; }
                 board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='front-board-row'><span>${rankStr} ${p.name}</span><span>${p.score} pts</span></div>`; });
@@ -192,75 +231,119 @@
 
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
-            if(inputName === "") { alert("請輸入醫生姓名喔！"); return; }
+            const errorMsg = document.getElementById('error-msg');
+            const themeSelect = document.getElementById('theme-select');
+            
+            errorMsg.style.display = "none";
+            if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入醫生姓名喔！"; errorMsg.style.display = "block"; return; }
             const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
-            if(badWords.some(bad => cleanName.includes(bad))) { alert("請使用有禮貌的名字喔！😇"); return; }
-            playerName = inputName; document.getElementById('display-name').innerText = "Dr. " + playerName;
+            if(badWords.some(bad => cleanName.includes(bad))) { errorMsg.innerText = "⚠️ 請使用有禮貌的名字喔！😇"; errorMsg.style.display = "block"; return; }
+            if(themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
+            
+            playerName = inputName; currentTheme = themeSelect.value;
+            document.getElementById('display-name').innerText = "Dr. " + playerName;
+            
             bgm.volume = 0.4; bgm.play().catch(e => console.log(e)); secretBgm.onended = function() { bgm.play(); };
-            document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('hospital-ward').style.visibility = 'visible';
-            score = 0; curedCount = 0; seconds = 0; timerInterval = setInterval(countUp, 1000);
-            let speed = currentTheme === "er-level3" ? 1000 : 1500; spawnInterval = setInterval(spawnPatient, speed); spawnPatient(); 
+            document.getElementById('start-overlay').style.display = 'none'; 
+            document.getElementById('header').style.visibility = 'visible'; 
+            document.getElementById('hospital-ward').style.visibility = 'visible';
+            
+            score = 0; seconds = 60; 
+            document.getElementById('score-val').textContent = score; 
+            document.getElementById('timer').textContent = seconds;
+            
+            timerInterval = setInterval(() => { 
+                seconds--; document.getElementById('timer').textContent = seconds; 
+                if(seconds <= 0) endGame(); 
+            }, 1000);
+            
+            spawnInterval = setInterval(spawnPatient, 1200); 
+            spawnPatient(); 
         }
 
         function spawnPatient() {
-            if (curedCount >= targetCures) return;
             let emptyBeds = []; activeBeds.forEach((isActive, idx) => { if(!isActive) emptyBeds.push(idx); });
             if (emptyBeds.length === 0) return; 
-            let bedIdx = emptyBeds[Math.floor(Math.random() * emptyBeds.length)]; activeBeds[bedIdx] = true;
-            const bedEl = document.getElementById(`bed-${bedIdx}`), bubbleEl = document.getElementById(`bubble-${bedIdx}`), emojiEl = document.getElementById(`emoji-${bedIdx}`), btnsEl = document.getElementById(`btns-${bedIdx}`);
+            let bedIdx = emptyBeds[Math.floor(Math.random() * emptyBeds.length)]; 
+            activeBeds[bedIdx] = true;
+            
+            const bedEl = document.getElementById(`bed-${bedIdx}`);
+            const bubbleEl = document.getElementById(`bubble-${bedIdx}`);
+            const emojiEl = document.getElementById(`emoji-${bedIdx}`);
+            const btnsEl = document.getElementById(`btns-${bedIdx}`);
 
             let isEasterEgg = Math.random() < 0.01;
 
             if (isEasterEgg) {
-                bubbleEl.innerHTML = "I am..."; emojiEl.innerText = "😎"; btnsEl.innerHTML = `<button class="btn-cure btn-rock" onclick="handleCure(${bedIdx}, 'ROCK', 'ROCK', event)">ROCK</button>`;
+                bubbleEl.innerHTML = "I am..."; emojiEl.innerText = "😎"; 
+                btnsEl.innerHTML = `<button class="btn-cure btn-rock" onclick="handleCure(${bedIdx}, 'ROCK', 'ROCK', event)">ROCK</button>`;
             } else {
-                let needsPlural = Math.random() < 0.5; let targetWord = ""; let correctAnswer = "";
-                if (needsPlural) { let words = grammarData[currentTheme].hurt; targetWord = words[Math.floor(Math.random() * words.length)]; correctAnswer = "hurt"; } 
-                else { let words = grammarData[currentTheme].hurts; targetWord = words[Math.floor(Math.random() * words.length)]; correctAnswer = "hurts"; }
-                bubbleEl.innerHTML = `My <b>${targetWord}</b>...`; emojiEl.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-                let btnHtml1 = `<button class="btn-cure btn-hurt" onclick="handleCure(${bedIdx}, 'hurt', '${correctAnswer}', event)">hurt</button>`, btnHtml2 = `<button class="btn-cure btn-hurts" onclick="handleCure(${bedIdx}, 'hurts', '${correctAnswer}', event)">hurts</button>`;
+                let currentKeys = currentTheme === 'er-g5-l1' ? ['hurt', 'hurts'] : ['have', 'has'];
+                const isPlural = Math.random() > 0.5; 
+                let correctAnswer = isPlural ? currentKeys[0] : currentKeys[1];
+                
+                const dataArr = grammarData[currentTheme][correctAnswer]; 
+                const data = dataArr[Math.floor(Math.random() * dataArr.length)];
+
+                bubbleEl.innerHTML = data.text;
+                emojiEl.innerText = data.icon;
+                
+                let btnHtml1 = `<button class="btn-cure btn-hurt" onclick="handleCure(${bedIdx}, '${currentKeys[0]}', '${correctAnswer}', event)">${currentKeys[0].toUpperCase()}</button>`;
+                let btnHtml2 = `<button class="btn-cure btn-hurts" onclick="handleCure(${bedIdx}, '${currentKeys[1]}', '${correctAnswer}', event)">${currentKeys[1].toUpperCase()}</button>`;
                 btnsEl.innerHTML = Math.random() > 0.5 ? btnHtml1 + btnHtml2 : btnHtml2 + btnHtml1;
             }
             bedEl.classList.add('active');
-            let stayTime = currentTheme === "er-level3" ? 2500 : 3500;
-            setTimeout(() => { if(activeBeds[bedIdx]) { clearBed(bedIdx); } }, stayTime);
+            
+            // 隨著時間經過，病人等待的耐心越來越少 (難度提升)
+            let stayTime = 2000 + Math.random() * 1500;
+            if (seconds < 30) stayTime *= 0.8;
+            
+            setTimeout(() => { 
+                if(activeBeds[bedIdx]) { 
+                    clearBed(bedIdx); 
+                    score = Math.max(0, score - 2); // 沒治到扣2分
+                    document.getElementById('score-val').textContent = score;
+                    bedEl.classList.add('error'); setTimeout(() => { bedEl.classList.remove('error'); }, 300);
+                } 
+            }, stayTime);
         }
 
         function handleCure(bedIdx, chosenAnswer, correctAnswer, event) {
             if (!activeBeds[bedIdx]) return;
             const rect = event.target.getBoundingClientRect(), x = rect.left + rect.width / 2, y = rect.top;
+            
             if (chosenAnswer === 'ROCK') {
                 score += 100; showBurst(x, y, "+100 🌟", "#f1c40f"); bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err));
                 const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => { modal.style.display = 'none'; }, 3000);
                 clearBed(bedIdx); document.getElementById('score-val').textContent = score; return;
             }
+            
             if (chosenAnswer === correctAnswer) {
-                score += 10; curedCount++; playSfx('success'); showBurst(x, y, "+10", "#00b894"); document.getElementById('score-val').textContent = score; document.getElementById('cured-val').textContent = curedCount; clearBed(bedIdx);
-                if (curedCount >= targetCures) { setTimeout(calculateAndEndGame, 500); }
+                score += 10; playSfx('success'); showBurst(x, y, "+10", "#00b894"); 
+                document.getElementById('score-val').textContent = score; 
+                clearBed(bedIdx);
             } else {
-                score = Math.max(0, score - 2); playSfx('error'); showBurst(x, y, "-2", "#d63031"); document.getElementById('score-val').textContent = score;
+                score = Math.max(0, score - 5); playSfx('error'); showBurst(x, y, "-5", "#d63031"); 
+                document.getElementById('score-val').textContent = score;
                 const bedEl = document.getElementById(`bed-${bedIdx}`); bedEl.classList.add('error'); setTimeout(() => { bedEl.classList.remove('error'); }, 300);
             }
         }
 
         function clearBed(bedIdx) { activeBeds[bedIdx] = false; document.getElementById(`bed-${bedIdx}`).classList.remove('active'); }
         function showBurst(x, y, txt, color) { const div = document.createElement('div'); div.className = 'float-num'; div.textContent = txt; div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color; document.body.appendChild(div); setTimeout(() => div.remove(), 800); }
-        function countUp() { seconds++; document.getElementById('timer-val').textContent = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; }
 
-        function calculateAndEndGame() {
+        function endGame() {
             clearInterval(timerInterval); clearInterval(spawnInterval); bgm.pause(); secretBgm.pause();
-            let multiplier = 1.0; let tierName = "🐢 實習醫生 (x1.0)";
-            if (seconds <= 25) { multiplier = 3.0; tierName = "⚡ 神醫黑傑克 (x3.0)"; } else if (seconds <= 35) { multiplier = 2.0; tierName = "🚀 主治醫師 (x2.0)"; } else if (seconds <= 50) { multiplier = 1.5; tierName = "🏃 總醫師 (x1.5)"; } else if (seconds <= 70) { multiplier = 1.2; tierName = "🚶 住院醫師 (x1.2)"; }
-            const finalScore = Math.floor(score * multiplier); const timeStr = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; 
-            document.getElementById('base-score-display').textContent = score; document.getElementById('time-taken-display').textContent = timeStr; document.getElementById('multiplier-display').textContent = tierName; document.getElementById('final-total-display').textContent = finalScore;
-            document.getElementById('end-msg').style.display = "flex"; saveAndDisplayGlobalLeaderboard(finalScore, timeStr);
+            document.getElementById('final-total-display').textContent = score;
+            document.getElementById('end-msg').style.display = "flex";
+            saveAndDisplayGlobalLeaderboard(score, "60s");
         }
 
         function saveAndDisplayGlobalLeaderboard(finalScore, timeStr) {
-            const listDiv = document.getElementById('leaderboard-list'), themeSelect = document.getElementById('theme-select'), themeName = themeSelect.options[themeSelect.selectedIndex].text;
+            const listDiv = document.getElementById('leaderboard-list'), themeSelect = document.getElementById('theme-select');
+            const themeName = themeSelect.options[themeSelect.selectedIndex].text.includes(':') ? themeSelect.options[themeSelect.selectedIndex].text.split(':')[0].substring(3).trim() : themeSelect.options[themeSelect.selectedIndex].text;
             document.getElementById('end-board-title').innerText = `🌍 ${themeName} 英雄榜`; listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳成績到醫院總部...</div>";
             
-            // ✨ 更新：在網址最後面加上 &ip=${userIP} ✨
             fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${finalScore}&time=${encodeURIComponent(timeStr)}&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
                 listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div>你是第一個破關的醫生！</div>"; return; }
                 board.forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name} (${p.time})</span><span>${p.score} pts</span></div>`; });
