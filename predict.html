@@ -28,13 +28,10 @@
         .slot.fail { background: var(--error); border-color: #e74c3c; opacity: 0.8; }
         .slot.fail .slot-input { color: white; }
         
-        /* ✨ 新增原生 input 樣式，完美融入原本的格子 ✨ */
         .slot-input {
             width: 100%; height: 100%; border: none; background: transparent;
             font-size: 22px; font-weight: 900; font-family: 'Quicksand', sans-serif;
-            color: var(--text-dark); text-align: center; outline: none;
-            /* 防止iOS在輸入格放大 */
-            touch-action: manipulation;
+            color: var(--text-dark); text-align: center; outline: none; touch-action: manipulation;
         }
         
         .slot-num { position: absolute; top: -10px; left: -10px; background: var(--text-dark); color: white; width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 5; pointer-events: none;}
@@ -59,7 +56,20 @@
         .front-board-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
         .grade-group { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; width: 90%; max-width: 350px; }
         .grade-title { font-size: 18px; font-weight: 900; margin: 0 0 10px 0; color: #ffeaa7; text-align: left; }
-        select.theme-select { width: 100%; font-size: 16px; padding: 10px; border-radius: 10px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; }
+        
+        /* ✨ 終極修正：強制指定顏色與外觀，解決 iOS Safari 白底白字的問題 ✨ */
+        select.theme-select { 
+            width: 100%; font-size: 16px; padding: 10px 15px; border-radius: 10px; 
+            border: none; outline: none; font-family: 'Quicksand'; font-weight: 700;
+            color: #2c3e50; background-color: #ffffff; appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px;
+        }
+        select.theme-select option, select.theme-select optgroup { color: #2c3e50; background-color: #ffffff; }
+
+        /* ✨ 新增錯誤提示訊息樣式 ✨ */
+        #error-msg { display: none; color: #ffcccc; font-weight: 900; margin-bottom: 15px; background: rgba(255, 71, 87, 0.9); padding: 10px 20px; border-radius: 20px; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
         .name-input { font-size: 22px; padding: 12px 20px; border-radius: 15px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 15px; width: 90%; max-width: 350px; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .start-btn { background: var(--success); color: white; border: none; padding: 15px 40px; font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #27ae60; margin-bottom: 20px; }
         .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; }
@@ -96,17 +106,23 @@
         </div>
         <div class="front-leaderboard">
             <h3 id="front-board-title">🏆 預言家英雄榜</h3>
-            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">📡 讀取中...</div></div>
+            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">請先選擇上方關卡，以查看英雄榜！</div></div>
         </div>
+        
+        <div id="error-msg"></div>
+
         <input type="text" id="player-name" class="name-input" placeholder="輸入預言家姓名..." autocomplete="off" maxlength="12">
         <div class="grade-group">
             <div class="grade-title">📘 選擇挑戰關卡：</div>
             <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
+                <option value="" disabled selected hidden>▼ 請先選擇挑戰關卡...</option>
                 <optgroup label="四年級 (Grade 4)">
                     <option value="predict-g4-unit1">🏠 G4 Unit 1 - Home Space</option>
+                    <option value="predict-g4-unit2">🏃 G4 Unit 2 - Actions</option>
                 </optgroup>
                 <optgroup label="五年級 (Grade 5)">
                     <option value="predict-g5-unit1">🦴 G5 Unit 1 - Body Parts</option>
+                    <option value="predict-g5-unit2">🤒 G5 Unit 2 - Sickness</option>
                 </optgroup>
             </select>
         </div>
@@ -126,26 +142,26 @@
             <div id="word-list">loading...</div>
         </div>
         
-        <!-- ✨ 結構全面升級：使用原生的 input text 達成 Tab 切換與游標點擊修改 ✨ -->
+        <!-- ✨ maxlength 提升至 20 確保長單字也能輸入 ✨ -->
         <div class="grid-container">
             <div class="slot active" id="slot-0" onclick="document.getElementById('txt-0').focus()">
                 <div class="slot-num">1</div>
-                <input type="text" id="txt-0" class="slot-input" autocomplete="off" spellcheck="false" maxlength="15" onfocus="setActiveSlot(0)" oninput="handleNativeInput(0)">
+                <input type="text" id="txt-0" class="slot-input" autocomplete="off" spellcheck="false" maxlength="20" onfocus="setActiveSlot(0)" oninput="handleNativeInput(0)">
                 <div class="system-reveal" id="rev-0"></div>
             </div>
             <div class="slot" id="slot-1" onclick="document.getElementById('txt-1').focus()">
                 <div class="slot-num">2</div>
-                <input type="text" id="txt-1" class="slot-input" autocomplete="off" spellcheck="false" maxlength="15" onfocus="setActiveSlot(1)" oninput="handleNativeInput(1)">
+                <input type="text" id="txt-1" class="slot-input" autocomplete="off" spellcheck="false" maxlength="20" onfocus="setActiveSlot(1)" oninput="handleNativeInput(1)">
                 <div class="system-reveal" id="rev-1"></div>
             </div>
             <div class="slot" id="slot-2" onclick="document.getElementById('txt-2').focus()">
                 <div class="slot-num">3</div>
-                <input type="text" id="txt-2" class="slot-input" autocomplete="off" spellcheck="false" maxlength="15" onfocus="setActiveSlot(2)" oninput="handleNativeInput(2)">
+                <input type="text" id="txt-2" class="slot-input" autocomplete="off" spellcheck="false" maxlength="20" onfocus="setActiveSlot(2)" oninput="handleNativeInput(2)">
                 <div class="system-reveal" id="rev-2"></div>
             </div>
             <div class="slot" id="slot-3" onclick="document.getElementById('txt-3').focus()">
                 <div class="slot-num">4</div>
-                <input type="text" id="txt-3" class="slot-input" autocomplete="off" spellcheck="false" maxlength="15" onfocus="setActiveSlot(3)" oninput="handleNativeInput(3)">
+                <input type="text" id="txt-3" class="slot-input" autocomplete="off" spellcheck="false" maxlength="20" onfocus="setActiveSlot(3)" oninput="handleNativeInput(3)">
                 <div class="system-reveal" id="rev-3"></div>
             </div>
         </div>
@@ -187,9 +203,12 @@
             "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
         ];
 
+        // ✨ 新增了 Unit 2 單字題庫 ✨
         const wordBanks = {
             "predict-g4-unit1": ["bedroom", "living room", "dining room", "kitchen", "bathroom", "balcony", "garage", "basement"],
-            "predict-g5-unit1": ["head", "eye", "ear", "nose", "mouth", "hand", "arm", "leg", "foot", "shoulder", "tooth"]
+            "predict-g4-unit2": ["cooking", "eating", "reading", "sleeping", "writing", "running", "listening to music", "painting", "studying", "watching TV", "doing"],
+            "predict-g5-unit1": ["head", "eye", "ear", "nose", "mouth", "hand", "arm", "leg", "foot", "shoulder", "tooth"],
+            "predict-g5-unit2": ["cold", "fever", "runny nose", "sore throat", "headache", "toothache", "stomachache", "backache", "cough", "diarrhea", "have", "has"]
         };
         const QWERTY = [ ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["Z", "X", "C", "V", "B", "N", "M"] ];
 
@@ -197,7 +216,7 @@
         let playerName = "Player", currentTheme = "";
         let roundWords = [], secretOrder = [], userInputs = ["", "", "", ""];
         let currentSlot = 0, isMuted = false, isRevealing = false, eggBuffer = "";
-        let userIP = "Unknown"; // ✨ IP 追蹤
+        let userIP = "Unknown"; 
 
         const bgmGuess = document.getElementById('bgm-guess'); const sfxDrumroll = document.getElementById('sfx-drumroll'); const sfxBingo = document.getElementById('sfx-bingo'); const sfxFail = document.getElementById('sfx-fail'); const sfxVictory = document.getElementById('sfx-victory'); const sfxFighting = document.getElementById('sfx-fighting'); const secretBgm = document.getElementById('secret-bgm');
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
@@ -205,7 +224,6 @@
         window.onload = function() { 
             fetchFrontLeaderboard(); buildKeyboard();
             
-            // ✨ 實體鍵盤的彩蛋支援 ✨
             document.addEventListener('keyup', (e) => {
                 if(document.getElementById('game-area').style.visibility === 'visible' && !isRevealing) {
                     if(/^[a-zA-Z]$/.test(e.key)) {
@@ -216,12 +234,19 @@
                 }
             });
 
-            // 偷抓 IP
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
         function fetchFrontLeaderboard() {
-            const listDiv = document.getElementById('front-leaderboard-list'); const themeSelect = document.getElementById('theme-select'); currentTheme = themeSelect.value;
+            const listDiv = document.getElementById('front-leaderboard-list'), themeSelect = document.getElementById('theme-select');
+            
+            // ✨ 防呆：未選關卡時的提示 ✨
+            if (themeSelect.value === "") {
+                listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px; color:#636e72;'>請先選擇上方關卡，以查看英雄榜！</div>";
+                return;
+            }
+
+            currentTheme = themeSelect.value; 
             const optionText = themeSelect.options[themeSelect.selectedIndex].text; const themeName = optionText.includes('-') ? optionText.split('-')[1].trim() : optionText;
             document.getElementById('front-board-title').innerText = `🏆 ${themeName} 榜`; listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
             fetch(`${GOOGLE_API_URL}?action=get&theme=${currentTheme}`).then(response => response.json()).then(board => {
@@ -252,9 +277,19 @@
 
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
-            if(inputName === "") { alert("請輸入預言家姓名喔！"); return; }
-            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
-            playerName = inputName; document.getElementById('display-name').innerText = playerName; currentTheme = document.getElementById('theme-select').value;
+            const errorMsg = document.getElementById('error-msg');
+            const themeSelect = document.getElementById('theme-select');
+            
+            errorMsg.style.display = "none";
+            
+            if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入預言家姓名喔！"; errorMsg.style.display = "block"; return; }
+            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
+            
+            // ✨ 防呆機制：沒選關卡會跳錯 ✨
+            if(themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
+            
+            playerName = inputName; document.getElementById('display-name').innerText = playerName; currentTheme = themeSelect.value;
+            
             document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('game-area').style.visibility = 'visible';
             totalScore = 0; currentRound = 1; document.getElementById('score-val').textContent = totalScore;
             bgmGuess.volume = 0.4; stopAllAudio(); bgmGuess.play().catch(e => console.log(e)); initRound();
@@ -271,11 +306,9 @@
                 let inputEl = document.getElementById(`txt-${i}`); inputEl.value = ""; inputEl.readOnly = false;
                 let rev = document.getElementById(`rev-${i}`); rev.style.visibility = 'hidden'; rev.style.animation = 'none'; rev.innerText = ""; 
             }
-            // 遊戲開始，游標自動聚焦第一格
             document.getElementById('txt-0').focus();
         }
 
-        // ✨ 處理原生 input 的焦點狀態，確保 Tab 鍵能帶動紫色的背景框 ✨
         function setActiveSlot(idx) { 
             if(isRevealing) return; 
             currentSlot = idx; 
@@ -283,31 +316,27 @@
             document.getElementById(`slot-${idx}`).classList.add('active'); 
         }
 
-        // ✨ 處理實體鍵盤的原生輸入事件 ✨
         function handleNativeInput(idx) {
             playSfx('type');
             userInputs[idx] = document.getElementById(`txt-${idx}`).value;
             validateInputs();
         }
 
-        // ✨ 處理畫面下方「虛擬鍵盤」的點擊，支援在特定游標位置插入/刪除 ✨
         function handleKey(key) {
             if(isRevealing) return;
             
-            // 處理虛擬鍵盤的彩蛋輸入
             if(key.length === 1) { eggBuffer += key; if (eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4); if (eggBuffer === "ROCK") { triggerEasterEgg(); return; } }
             
             playSfx('type'); 
             
             let inputEl = document.getElementById(`txt-${currentSlot}`);
-            inputEl.focus(); // 確保虛擬按鍵點擊後游標還在
+            inputEl.focus(); 
             
             let start = inputEl.selectionStart;
             let end = inputEl.selectionEnd;
             let val = inputEl.value;
 
             if (key === 'DEL') {
-                // 如果有選取範圍，則刪除選取範圍；如果沒有，則刪除游標前一個字元
                 if (start === end && start > 0) {
                     inputEl.value = val.slice(0, start - 1) + val.slice(start);
                     inputEl.setSelectionRange(start - 1, start - 1);
@@ -316,18 +345,17 @@
                     inputEl.setSelectionRange(start, start);
                 }
             } else if (key === 'SPACE') {
-                if (val.length < 15) {
+                if (val.length < 20) {
                     inputEl.value = val.slice(0, start) + ' ' + val.slice(end);
                     inputEl.setSelectionRange(start + 1, start + 1);
                 }
             } else {
-                if (val.length < 15) {
+                if (val.length < 20) {
                     inputEl.value = val.slice(0, start) + key.toLowerCase() + val.slice(end);
                     inputEl.setSelectionRange(start + 1, start + 1);
                 }
             }
             
-            // 更新記錄並檢查是否可以開獎
             userInputs[currentSlot] = inputEl.value; 
             validateInputs();
         }
@@ -343,7 +371,6 @@
             if(document.getElementById('submit-btn').disabled) return;
             isRevealing = true; document.getElementById('submit-btn').disabled = true;
             
-            // 鎖定所有輸入框，不讓學生在動畫時偷改
             for(let i=0; i<4; i++) { 
                 document.getElementById(`slot-${i}`).classList.remove('active'); 
                 document.getElementById(`txt-${i}`).readOnly = true;
@@ -381,7 +408,6 @@
             stopAllAudio(); document.getElementById('final-total-display').textContent = totalScore; document.getElementById('end-msg').style.display = "flex";
             const listDiv = document.getElementById('leaderboard-list'); listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:18px;'>📡 上傳成績中...</div>";
             
-            // ✨ 加入 IP 傳送 ✨
             const url = `${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${totalScore}&time=Predictor&theme=${currentTheme}&ip=${userIP}`;
 
             fetch(url).then(r => r.json()).then(board => {
