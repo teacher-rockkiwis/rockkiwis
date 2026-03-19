@@ -17,7 +17,7 @@
             min-height: 100dvh; font-family: 'Quicksand', sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
             color: var(--text); overflow-x: hidden;
-            padding-bottom: 50px;
+            padding-bottom: 80px; /* 留空間給底部老師專區 */
         }
 
         .sound-toggle {
@@ -71,7 +71,6 @@
         .card-7:hover { border-color: #00b894; } .card-7 .game-icon { background: #55efc4; color: white; filter: drop-shadow(0 0 10px rgba(0, 184, 148, 0.5)); } .card-7 .play-btn { background: #00b894; }
         .card-6:hover { border-color: #e67e22; } .card-6 .game-icon { background: #f39c12; color: white; } .card-6 .play-btn { background: #e67e22; }
         .card-8:hover { border-color: #c0392b; } .card-8 .game-icon { background: #e74c3c; color: white; filter: drop-shadow(0 0 10px rgba(192, 57, 43, 0.5)); } .card-8 .play-btn { background: #c0392b; }
-        /* ✨ 新增 Grammar Defender 卡片配色 (魔法藍) ✨ */
         .card-9:hover { border-color: #2980b9; } .card-9 .game-icon { background: #3498db; color: white; filter: drop-shadow(0 0 10px rgba(52, 152, 219, 0.5)); } .card-9 .play-btn { background: #2980b9; }
 
         .game-icon {
@@ -82,7 +81,6 @@
         .game-title { font-size: 28px; font-weight: 900; margin: 0 0 10px 0; }
         .game-desc { font-size: 16px; color: #636e72; font-weight: 700; margin-bottom: 25px; line-height: 1.5; flex-grow: 1; }
         
-        /* 特別標示新關卡上線的樣式 */
         .new-update-text { color: #e74c3c; font-weight: 900; display: block; margin-top: 5px; }
 
         .play-btn {
@@ -91,6 +89,17 @@
         }
         .game-card:active .play-btn { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
 
+        /* ✨ 老師上課專區按鈕樣式 ✨ */
+        .teacher-zone-btn {
+            margin-top: 60px; background: #2d3436; color: #f1c40f; padding: 15px 40px;
+            border-radius: 50px; display: flex; align-items: center; gap: 15px; cursor: pointer;
+            box-shadow: 0 8px 0 #1e272e; border: 4px solid #f1c40f; transition: 0.1s; z-index: 10;
+        }
+        .teacher-zone-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #1e272e; }
+        .teacher-icon { font-size: 40px; }
+        .teacher-text { font-size: 24px; font-weight: 900; letter-spacing: 2px; }
+
+        /* 彈窗樣式 */
         .overlay-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); z-index: 99999; justify-content: center; align-items: center;
@@ -108,16 +117,26 @@
         }
         .warning-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #c0392b; }
 
+        /* 密碼彈窗共用 */
+        .pwd-box {
+            background: white; padding: 30px; border-radius: 20px; text-align: center; width: 350px; max-width: 90%;
+            border: 5px solid #2d3436; box-shadow: 0 10px 25px rgba(0,0,0,0.5); animation: popIn 0.2s;
+        }
+        .secure-input { -webkit-text-security: disc; text-security: disc; }
+
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         @media (max-width: 768px) {
             .sound-toggle { top: 10px; right: 10px; font-size: 14px; padding: 8px 15px; }
             .header-title { margin-top: 60px; }
             .header-title h1 { font-size: 40px; }
-            .game-container { flex-direction: column; align-items: center; gap: 20px; margin-bottom: 40px;}
+            .game-container { flex-direction: column; align-items: center; gap: 20px; }
             .game-card { width: 100%; max-width: 350px; padding: 25px; }
             .game-icon { font-size: 50px; width: 100px; height: 100px; line-height: 100px; }
             .modal-content { padding: 30px 20px; }
+            .teacher-zone-btn { padding: 12px 25px; }
+            .teacher-icon { font-size: 30px; }
+            .teacher-text { font-size: 20px; }
         }
     </style>
 </head>
@@ -134,7 +153,6 @@
 
     <div class="game-container">
         
-        <!-- 忍者新遊戲卡片 -->
         <a href="javascript:void(0)" onclick="checkNinjaAccess(event)" class="game-card card-8">
             <div class="game-icon">🥷</div>
             <h2 class="game-title">Phonics Ninja</h2>
@@ -145,7 +163,6 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
-        <!-- ✨ 全新 Grammar Defender 城堡守衛戰卡片 ✨ -->
         <a href="defender.html" class="game-card card-9">
             <div class="game-icon">🏰</div>
             <h2 class="game-title">Grammar Defender</h2>
@@ -212,9 +229,28 @@
             </p>
             <div class="play-btn">PLAY NOW</div>
         </a>
-
     </div>
 
+    <!-- ✨ 老師上課專區按鈕 (置於最下方) ✨ -->
+    <div class="teacher-zone-btn" onclick="showTeacherModal()">
+        <div class="teacher-icon">💪</div>
+        <div class="teacher-text">老師上課專區</div>
+    </div>
+
+    <!-- ✨ 老師專區密碼鎖彈窗 ✨ -->
+    <div id="teacher-modal" class="overlay-modal">
+        <div class="pwd-box">
+            <h3 style="margin-top:0; font-size:26px; color:#2d3436;">👨‍🏫 進入上課專區</h3>
+            <p style="color: #e74c3c; font-weight: 900; margin-bottom: 15px;">學生請勿擅闖！</p>
+            <input type="password" id="teacher-pwd" class="secure-input" placeholder="輸入通關密碼" autocomplete="off" spellcheck="false" style="font-size:20px; padding:12px; width:100%; margin-bottom:20px; border-radius:10px; border:2px solid #bdc3c7; text-align:center; outline:none; font-family: 'Quicksand';" onkeypress="if(event.key === 'Enter') verifyTeacher()">
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeTeacherModal()" style="flex:1; padding:12px; background:#bdc3c7; color:white; border:none; border-radius:10px; font-weight:900; font-size:18px; cursor:pointer;">取消</button>
+                <button onclick="verifyTeacher()" style="flex:1; padding:12px; background:#2d3436; color:#f1c40f; border:none; border-radius:10px; font-weight:900; font-size:18px; cursor:pointer;">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ninja 彈窗 -->
     <div id="ninja-modal" class="overlay-modal">
         <div class="modal-content" style="border-color: #c0392b;">
             <h2 style="color:#c0392b; font-size:32px; margin-top:0; margin-bottom:10px;">🥷 忍者修練中...</h2>
@@ -222,14 +258,10 @@
                 全新遊戲《發音忍者》還在進行最後的打磨！<br>
                 將於 <strong style="color:#e74c3c; font-size: 22px;">3/15 中午 12:00</strong> 正式上線！
             </p>
-            
             <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 20px;">
                 <div style="font-size: 16px; color: #636e72; font-weight: 900; margin-bottom: 5px;">距離道場開門還有：</div>
-                <div id="ninja-timer" style="font-size: 32px; font-weight: 900; color: #c0392b; font-variant-numeric: tabular-nums;">
-                    -- : -- : --
-                </div>
+                <div id="ninja-timer" style="font-size: 32px; font-weight: 900; color: #c0392b; font-variant-numeric: tabular-nums;">-- : -- : --</div>
             </div>
-
             <button onclick="document.getElementById('ninja-modal').style.display='none'" style="background:#c0392b; color:white; border:none; padding:12px 30px; border-radius:50px; font-size:20px; font-weight:900; cursor:pointer; box-shadow: 0 5px 0 #922b21;">好哦，我明天再來！</button>
         </div>
     </div>
@@ -238,22 +270,13 @@
     <div id="warning-modal" class="overlay-modal" style="z-index: 999999;">
         <div class="modal-content warning-content">
             <h2 style="color:#e74c3c; font-size:32px; margin-top:0; margin-bottom:20px;">⚠️ ROCK 老師公告 ⚠️</h2>
-            
             <div style="text-align: left; font-size:18px; font-weight:700; color:#2c3e50; line-height:1.6; letter-spacing: 0.5px;">
-                <p style="margin: 0 0 15px 0;">
-                    近期發現有同學使用 <strong style="color:#e74c3c;">不雅字眼</strong> 或 <strong style="color:#e74c3c;">謾罵他人</strong> 的詞彙作為玩家姓名。
-                </p>
-                
+                <p style="margin: 0 0 15px 0;">近期發現有同學使用 <strong style="color:#e74c3c;">不雅字眼</strong> 或 <strong style="color:#e74c3c;">謾罵他人</strong> 的詞彙作為玩家姓名。</p>
                 <div style="background: #fadbd8; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center; border: 2px solid #e74c3c;">
-                    若再次發現此情形，本網站將<br>
-                    <strong style="color:#c0392b; font-size:24px;">無條件關閉一天</strong>
+                    若再次發現此情形，本網站將<br><strong style="color:#c0392b; font-size:24px;">無條件關閉一天</strong>
                 </div>
-                
-                <p style="margin: 0 0 25px 0;">
-                    請不要因為個人的無禮行為，剝奪了其他同學學習與遊戲的權利。請大家好好愛護並尊重這個專屬的學習空間！
-                </p>
+                <p style="margin: 0 0 25px 0;">請不要因為個人的無禮行為，剝奪了其他同學學習與遊戲的權利。請大家好好愛護並尊重這個專屬的學習空間！</p>
             </div>
-
             <button class="warning-btn" onclick="closeWarning()">我了解了，會遵守規定</button>
         </div>
     </div>
@@ -263,17 +286,12 @@
         <div class="modal-content">
             <h2 style="color:#e67e22; font-size:32px; margin-top:0; margin-bottom:10px;">🐶 狗狗休假中...</h2>
             <p style="font-size:18px; font-weight:700; color:#2c3e50; line-height:1.6; margin-bottom: 20px;">
-                這是一個超級隱藏的舒壓關卡！<br>
-                固定於每週 <strong style="color:#e74c3c; font-size: 22px;">週五 17:00</strong> 開放挑戰！
+                這是一個超級隱藏的舒壓關卡！<br>固定於每週 <strong style="color:#e74c3c; font-size: 22px;">週五 17:00</strong> 開放挑戰！
             </p>
-            
             <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 20px;">
                 <div style="font-size: 16px; color: #636e72; font-weight: 900; margin-bottom: 5px;">距離大門解鎖還有：</div>
-                <div id="modal-timer" style="font-size: 32px; font-weight: 900; color: #e74c3c; font-variant-numeric: tabular-nums;">
-                    -- : -- : --
-                </div>
+                <div id="modal-timer" style="font-size: 32px; font-weight: 900; color: #e74c3c; font-variant-numeric: tabular-nums;">-- : -- : --</div>
             </div>
-
             <button onclick="document.getElementById('weekend-modal').style.display='none'" style="background:#e67e22; color:white; border:none; padding:12px 30px; border-radius:50px; font-size:20px; font-weight:900; cursor:pointer; box-shadow: 0 5px 0 #d35400;">好哦，我等等再來！</button>
         </div>
     </div>
@@ -314,6 +332,28 @@
                 updateNinjaCountdown();
             }, 1000);
         };
+
+        // ✨ 老師專區密碼邏輯 ✨
+        function showTeacherModal() {
+            document.getElementById('teacher-modal').style.display = 'flex';
+            document.getElementById('teacher-pwd').value = '';
+            document.getElementById('teacher-pwd').focus();
+        }
+        
+        function closeTeacherModal() {
+            document.getElementById('teacher-modal').style.display = 'none';
+        }
+        
+        function verifyTeacher() {
+            const pwd = document.getElementById('teacher-pwd').value;
+            if (pwd === 'rock1994') {
+                window.location.href = 'teacher.html';
+            } else {
+                alert('❌ 密碼錯誤！這不是給學生進來的地方喔！');
+                document.getElementById('teacher-pwd').value = '';
+                document.getElementById('teacher-pwd').focus();
+            }
+        }
 
         function closeWarning() {
             document.getElementById('warning-modal').style.display = 'none';
@@ -428,7 +468,7 @@
         }
 
         document.body.addEventListener('click', function(e) {
-            if (e.target.closest('.game-card') || e.target.closest('#sound-btn') || e.target.closest('.modal-content')) return;
+            if (e.target.closest('.game-card') || e.target.closest('#sound-btn') || e.target.closest('.modal-content') || e.target.closest('.teacher-zone-btn')) return;
             if (!isPlaying) { toggleSound(); }
         });
     </script>
