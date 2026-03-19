@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ROCK 老師上課專區</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #2d3436; --text: #ecf0f1; --gold: #f1c40f; --card-bg: #34495e;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg); margin: 0; padding: 0;
+            min-height: 100dvh; font-family: 'Quicksand', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            color: var(--text); overflow-x: hidden; padding-bottom: 50px;
+        }
+
+        .back-btn {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50px;
+            padding: 10px 20px; font-size: 16px; font-weight: 900; color: white; text-decoration: none;
+            transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); border-color: white; }
+
+        .header-title {
+            text-align: center; margin-bottom: 50px; margin-top: 80px;
+        }
+        .header-title h1 {
+            font-size: 45px; color: var(--gold); margin: 0; text-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+        }
+        .header-title p {
+            font-size: 20px; color: #bdc3c7; margin-top: 10px; font-weight: 700;
+        }
+
+        .game-container {
+            display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1200px; padding: 0 20px;
+        }
+
+        /* 遊戲卡片設計 */
+        .game-card {
+            background: var(--card-bg); border-radius: 25px; padding: 30px; width: 350px;
+            text-align: center; text-decoration: none; color: inherit;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 4px solid transparent;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
+        }
+
+        .game-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: var(--gold); }
+
+        .game-icon {
+            font-size: 60px; width: 120px; height: 120px; line-height: 120px;
+            border-radius: 50%; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            background: #2c3e50; color: white; border: 4px solid var(--gold);
+        }
+
+        .game-title { font-size: 28px; font-weight: 900; margin: 0 0 10px 0; color: white; }
+        .game-desc { font-size: 16px; color: #bdc3c7; font-weight: 700; margin-bottom: 25px; line-height: 1.5; flex-grow: 1; }
+
+        .play-btn {
+            background: var(--gold); color: #2d3436; padding: 12px 40px; font-size: 22px; border-radius: 50px;
+            font-weight: 900; box-shadow: 0 5px 0 #d4ac0d; width: 100%; transition: 0.1s; border: none;
+        }
+        .game-card:active .play-btn { transform: translateY(5px); box-shadow: 0 0 0 #d4ac0d; }
+
+        @media (max-width: 768px) {
+            .header-title h1 { font-size: 32px; }
+            .back-btn { top: 15px; left: 15px; padding: 8px 15px; font-size: 14px; }
+            .game-container { flex-direction: column; align-items: center; gap: 20px; }
+            .game-card { width: 100%; max-width: 350px; padding: 25px; }
+            .game-icon { font-size: 50px; width: 100px; height: 100px; line-height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-btn">🔙 回學生大廳</a>
+
+    <div class="header-title">
+        <h1>💪 ROCK 老師上課專區</h1>
+        <p>Teachers Only. 請選擇上課專用互動遊戲</p>
+    </div>
+
+    <div class="game-container">
+        
+        <!-- 上課用 Hangman 卡片 -->
+        <a href="hangman.html" class="game-card">
+            <div class="game-icon">🕵️‍♂️</div>
+            <h2 class="game-title">Hangman</h2>
+            <p class="game-desc">
+                經典猜字遊戲！<br>
+                不提供中文翻譯，讓全班一起集思廣益，猜錯 6 次小人就會被吊起來！
+            </p>
+            <div class="play-btn">START GAME</div>
+        </a>
+
+        <!-- 未來可以新增更多上課專用的卡片在這裡 -->
+
+    </div>
+
+</body>
+</html>
