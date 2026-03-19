@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Dr. ROCK - Hangman</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #9b59b6; --secondary: #8e44ad; --success: #2ecc71; --error: #e74c3c;
+            --bg: #2c3e50; --text-light: #ecf0f1; --gold: #f1c40f; --board-bg: #34495e;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; outline: none; }
+        body, html {
+            background-color: var(--bg); margin: 0; padding: 0;
+            height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif;
+            overflow: hidden; display: flex; flex-direction: column; user-select: none;
+        }
+
+        .sound-toggle {
+            position: fixed; top: max(15px, env(safe-area-inset-top)); right: 15px; background: rgba(255,255,255,0.9);
+            border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px;
+            font-size: 16px; font-weight: 900; cursor: pointer; color: #2d3436; z-index: 50000; transition: 0.2s;
+        }
+        .exit-btn {
+            position: fixed; top: max(15px, env(safe-area-inset-top)); left: 15px; background: rgba(231,76,60,0.9);
+            color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900;
+            font-size: 16px; cursor: pointer; z-index: 50000; box-shadow: 0 4px 0 #c0392b;
+        }
+
+        #header {
+            height: 60px; background: rgba(255,255,255,0.95); border-bottom: 3px solid var(--primary);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; z-index: 100;
+        }
+        .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; color: #2d3436; }
+
+        #game-area {
+            flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 10px 20px; visibility: hidden; width: 100%; max-width: 800px; margin: 0 auto;
+        }
+
+        /* Hangman Canvas & Hint Area */
+        #top-section {
+            display: flex; flex-direction: column; align-items: center; width: 100%; margin-bottom: 15px;
+        }
+        
+        #hint-display {
+            font-size: 28px; font-weight: 900; color: var(--gold); margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5); text-align: center;
+            background: rgba(0,0,0,0.4); padding: 5px 20px; border-radius: 20px;
+        }
+
+        #canvas-container {
+            background: var(--text-light); border-radius: 15px; padding: 10px;
+            box-shadow: 0 8px 0 #bdc3c7; border: 4px solid #7f8c8d; margin-bottom: 15px;
+        }
+        canvas { display: block; width: 180px; height: 200px; }
+
+        /* Word Display */
+        #word-display {
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; width: 100%;
+        }
+        .letter-slot {
+            width: 35px; height: 45px; border-bottom: 4px solid var(--text-light);
+            font-size: 32px; font-weight: 900; color: var(--success);
+            display: flex; justify-content: center; align-items: flex-end; padding-bottom: 2px;
+            text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .letter-slot.space { border-bottom: none; width: 20px; }
+        .letter-slot.missed { color: var(--error); } /* 如果沒猜中，結算時顯示紅色 */
+
+        /* Virtual Keyboard */
+        #keyboard {
+            width: 100%; background: #bdc3c7; padding: 15px 5px; border-radius: 15px 15px 0 0;
+            margin-top: auto; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+        }
+        .key-row { display: flex; justify-content: center; gap: 6px; }
+        .key {
+            background: white; color: #2d3436; border: none; border-radius: 8px;
+            font-size: 22px; font-weight: 900; font-family: 'Quicksand', sans-serif;
+            padding: 12px 0; flex: 1; max-width: 45px; cursor: pointer;
+            box-shadow: 0 4px 0 #95a5a6; transition: 0.1s; text-transform: uppercase;
+        }
+        .key:active { transform: translateY(4px); box-shadow: 0 0 0 #95a5a6; background: #e0e0e0; }
+        .key.correct { background: var(--success); color: white; box-shadow: 0 4px 0 #219150; pointer-events: none; }
+        .key.wrong { background: var(--error); color: white; box-shadow: 0 4px 0 #c0392b; pointer-events: none; opacity: 0.6; }
+
+        /* Overlays & UI */
+        #start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column;
+            justify-content: flex-start; align-items: center; z-index: 60000; overflow-y: auto;
+            padding: 40px 20px 20px 20px; background: rgba(44, 62, 80, 0.95);
+        }
+        #end-msg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column;
+            justify-content: flex-start; align-items: center; z-index: 60000; overflow-y: auto;
+            padding: 30px 20px 20px 20px; background: rgba(255,255,255,0.98); text-align: center;
+        }
+
+        .name-input { font-size: 22px; padding: 12px 20px; border-radius: 15px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 15px; width: 90%; max-width: 350px; outline: none; flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
+        .start-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #6c3483; transition: 0.1s; margin-bottom: 20px; flex-shrink: 0;}
+        .start-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #6c3483; }
+
+        /* iOS Safari Dropdown Fix */
+        select.theme-select {
+            width: 90%; max-width: 350px; font-size: 16px; padding: 12px 15px; border-radius: 15px;
+            border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; margin-bottom: 20px; flex-shrink: 0;
+            color: #2c3e50; background-color: #ffffff; appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px;
+        }
+        select.theme-select option, select.theme-select optgroup { color: #2c3e50; background-color: #ffffff; }
+
+        #error-msg { display: none; color: #ffcccc; font-weight: 900; margin-bottom: 15px; background: rgba(255, 71, 87, 0.9); padding: 10px 20px; border-radius: 20px; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #2d3436; text-align: left; }
+        .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
+        #front-leaderboard-list { max-height: 180px; overflow-y: auto; padding-right: 5px; } #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
+        .front-board-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
+
+        .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; flex-shrink: 0;}
+        .board-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #dfe6e9; font-size: 16px; font-weight: 700; color: #2d3436;}
+
+        #secret-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); color: white; padding: 30px; border-radius: 20px; z-index: 40000; text-align: center; box-shadow: 0 0 40px var(--gold); border: 4px solid var(--gold); width: 85%; max-width: 350px; }
+        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 60px; z-index: 30000; text-shadow: 3px 3px 0px white, -3px -3px 0px white; animation: burst 0.8s forwards; }
+        @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-30px); opacity: 1; } 100% { transform: scale(1.2) translateY(-150px); opacity: 0; } }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
+
+        @media screen and (max-height: 600px) {
+            #start-overlay { padding-top: 20px; }
+            #start-overlay h1 { font-size: 32px; margin-top: 0; margin-bottom: 5px;}
+            #start-overlay p { margin-bottom: 10px; font-size: 14px;}
+            .name-input { margin-bottom: 10px; padding: 8px 15px; font-size: 18px; }
+            select.theme-select { margin-bottom: 10px; padding: 8px 15px; }
+            .start-btn { font-size: 20px; padding: 10px 30px; margin-bottom: 10px; }
+            canvas { height: 150px; width: 135px; }
+            .letter-slot { font-size: 24px; width: 25px; height: 35px; }
+            .key { padding: 8px 0; font-size: 18px; }
+        }
+        @media screen and (max-width: 768px) {
+            .sound-toggle { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); right: 5px; }
+            .exit-btn { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); left: 5px; }
+            #header { padding: 0 100px 0 5px; height: 50px; gap: 5px; }
+            .stat-pill { font-size: 13px !important; padding: 4px 6px; }
+            .key { max-width: 32px; font-size: 18px; padding: 10px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" src="music.mp3" loop></audio>
+    <audio id="sfx-damage" src="damage.mp3"></audio>  <!-- 猜錯扣血音效 -->
+    <audio id="sfx-victory" src="victory.mp3"></audio> <!-- 完整猜對音效 -->
+    <audio id="secret-bgm" src="67.mp3"></audio>
+
+    <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
+
+    <div id="start-overlay">
+        <h1 style="font-size: 50px; color: var(--gold); text-shadow: 0 5px 15px rgba(0,0,0,0.5); text-align: center; margin-bottom: 5px; margin-top: 20px;">🕵️‍♂️ Hangman</h1>
+        <p style="color: #bdc3c7; font-size: 16px; margin-bottom: 20px; text-align: center; line-height: 1.5;">
+            經典猜字遊戲！看中文提示猜單字，<br>猜錯 6 次小人就會被吊起來囉！
+        </p>
+        
+        <div id="error-msg"></div>
+
+        <input type="text" id="player-name" class="name-input" placeholder="輸入玩家姓名..." autocomplete="off" maxlength="12">
+        
+        <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
+            <option value="" disabled selected hidden>▼ 請先選擇挑戰關卡...</option>
+            <optgroup label="五年級 (Grade 5)">
+                <option value="hangman-g5-l2">🤒 L2: Sickness (疾病單字)</option>
+            </optgroup>
+        </select>
+
+        <button class="start-btn" onclick="startGame()">開始猜字！</button>
+
+        <div class="front-leaderboard">
+            <h3 id="front-board-title">🏆 猜字英雄榜</h3>
+            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">請先選擇上方關卡，以查看英雄榜！</div></div>
+        </div>
+    </div>
+
+    <div id="header">
+        <div class="stat-pill">👤 <span id="display-name">Player</span></div>
+        <div class="stat-pill">🎯 進度: <span id="word-progress" style="color:var(--primary);">1</span>/5</div>
+        <div class="stat-pill">🏆 <span id="score-val" style="color:#f39c12;">0</span></div>
+        <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
+    </div>
+
+    <div id="game-area">
+        <div id="top-section">
+            <div id="hint-display">中文提示</div>
+            <div id="canvas-container">
+                <canvas id="hangman-canvas" width="180" height="200"></canvas>
+            </div>
+        </div>
+        
+        <div id="word-display">
+            <!-- blanks will be generated here -->
+        </div>
+
+        <div id="keyboard"></div>
+    </div>
+
+    <div id="secret-modal">
+        <h2 style="margin:0 0 10px 0; color:#f1c40f; font-size:36px;">😎 隱藏彩蛋！</h2>
+        <p style="font-size:22px; margin:0; line-height: 1.5;">ROCK 老師神救援！<br>直接通關並獲得 <strong style="font-size: 30px;">+100</strong> 分！</p>
+    </div>
+
+    <div id="end-msg">
+        <h1 id="end-title" style="font-size: 45px; color: var(--primary); margin: 0; margin-top: 10px;">遊戲結束！🎉</h1>
+        <div class="result-panel">
+            <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: #2d3436; text-align: center;">
+                總積分：<br><span id="final-total-display" style="color:var(--error); font-size:45px;">0</span> pts
+            </div>
+            <h2 class="board-row" style="color: var(--primary); justify-content: center; border-top: 2px dashed #ddd; padding-top: 15px;">🌍 猜字英雄榜</h2>
+            <div id="leaderboard-list" style="max-height: 150px; overflow-y: auto;"></div>
+        </div>
+        <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:50px; font-weight:900; cursor:pointer; margin-bottom: 10px;">再猜一次</button>
+    </div>
+
+    <script>
+        // 🛡️ 防外掛與防作弊系統
+        document.addEventListener('contextmenu', event => event.preventDefault()); 
+        document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
+        setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
+
+        const badWords = [
+            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
+            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
+            "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
+            "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
+            "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
+        ];
+
+        let userIP = "Unknown";
+        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
+
+        // ✨ 題庫設定 ✨
+        const wordBanks = {
+            "hangman-g5-l2": [
+                { en: "cold", ch: "感冒" }, { en: "fever", ch: "發燒" },
+                { en: "runny nose", ch: "流鼻水" }, { en: "sore throat", ch: "喉嚨痛" },
+                { en: "headache", ch: "頭痛" }, { en: "toothache", ch: "牙痛" },
+                { en: "stomachache", ch: "胃痛" }, { en: "backache", ch: "背痛" },
+                { en: "cough", ch: "咳嗽" }, { en: "diarrhea", ch: "腹瀉" },
+                { en: "have", ch: "有(複數)" }, { en: "has", ch: "有(單數)" }
+            ]
+        };
+
+        const QWERTY = [ ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["Z", "X", "C", "V", "B", "N", "M"] ];
+
+        let score = 0;
+        let isPlaying = false, isMuted = false, isAnimating = false;
+        let playerName = "Player", currentTheme = "";
+        let eggBuffer = "";
+        
+        let gameWords = [];
+        let currentWordIndex = 0;
+        let currentWordObj = null;
+        let guessedLetters = new Set();
+        let mistakes = 0;
+        const maxMistakes = 6;
+
+        const bgm = document.getElementById('bgm');
+        const sfxDamage = document.getElementById('sfx-damage');
+        const sfxVictory = document.getElementById('sfx-victory');
+        const secretBgm = document.getElementById('secret-bgm');
+        const canvas = document.getElementById('hangman-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        bgm.volume = 0.4; sfxDamage.volume = 0.8; sfxVictory.volume = 0.8; secretBgm.volume = 0.6;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTypeSfx() {
+            if (isMuted) return; if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); 
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); 
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        window.onload = function() { 
+            fetchFrontLeaderboard();
+            buildKeyboard();
+            initCanvas();
+            
+            document.addEventListener('keydown', (e) => {
+                if(!isPlaying || isAnimating) return;
+                const key = e.key.toUpperCase();
+                
+                // 彩蛋檢測
+                if(/^[A-Z]$/.test(key)) {
+                    eggBuffer += key;
+                    if(eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4);
+                    if(eggBuffer === "ROCK") { triggerEasterEgg(); return; }
+                }
+
+                if(/^[A-Z]$/.test(key)) {
+                    handleGuess(key);
+                }
+            });
+
+            fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
+        };
+
+        function toggleSound(e) { 
+            if (e) e.stopPropagation(); isMuted = !isMuted; 
+            const btn = document.getElementById('sound-btn'); 
+            if (isMuted) { 
+                btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; 
+                bgm.muted = true; sfxDamage.muted = true; sfxVictory.muted = true; secretBgm.muted = true;
+            } else { 
+                btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; 
+                bgm.muted = false; sfxDamage.muted = false; sfxVictory.muted = false; secretBgm.muted = false;
+            } 
+        }
+
+        function fetchFrontLeaderboard() {
+            const listDiv = document.getElementById('front-leaderboard-list'); 
+            const themeSelect = document.getElementById('theme-select');
+            
+            if (themeSelect.value === "") {
+                listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px; color:#636e72;'>請先選擇上方關卡，以查看英雄榜！</div>";
+                return;
+            }
+
+            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            fetch(`${GOOGLE_API_URL}?action=get&theme=${themeSelect.value}`).then(response => response.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='padding:5px; font-size:14px;'>目前無紀錄，搶下首殺！</div>"; return; }
+                board.slice(0, 5).forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗 😢</div>");
+        }
+
+        function buildKeyboard() {
+            const kb = document.getElementById('keyboard'); kb.innerHTML = "";
+            QWERTY.forEach(row => {
+                const rowDiv = document.createElement('div'); rowDiv.className = 'key-row';
+                row.forEach(letter => { 
+                    const btn = document.createElement('button'); 
+                    btn.className = 'key'; btn.innerText = letter; btn.id = `key-${letter}`;
+                    btn.onpointerdown = (e) => { e.preventDefault(); handleGuess(letter); }; 
+                    rowDiv.appendChild(btn); 
+                });
+                kb.appendChild(rowDiv);
+            });
+        }
+
+        function resetKeyboard() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(k => {
+                k.classList.remove('correct');
+                k.classList.remove('wrong');
+            });
+        }
+
+        // --- Canvas Drawing Logic ---
+        function initCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#2d3436";
+            ctx.lineCap = "round";
+
+            // Base & Pole (Always drawn at start of word)
+            ctx.beginPath();
+            ctx.moveTo(20, 190); ctx.lineTo(160, 190); // Base
+            ctx.moveTo(50, 190); ctx.lineTo(50, 20);   // Pole
+            ctx.moveTo(50, 20);  ctx.lineTo(120, 20);  // Top
+            ctx.moveTo(120, 20); ctx.lineTo(120, 40);  // Rope
+            ctx.stroke();
+        }
+
+        function drawPart(step) {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#e74c3c";
+            ctx.beginPath();
+            
+            switch(step) {
+                case 1: // Head
+                    ctx.arc(120, 60, 20, 0, Math.PI * 2);
+                    break;
+                case 2: // Body
+                    ctx.moveTo(120, 80); ctx.lineTo(120, 140);
+                    break;
+                case 3: // L Arm
+                    ctx.moveTo(120, 90); ctx.lineTo(90, 120);
+                    break;
+                case 4: // R Arm
+                    ctx.moveTo(120, 90); ctx.lineTo(150, 120);
+                    break;
+                case 5: // L Leg
+                    ctx.moveTo(120, 140); ctx.lineTo(90, 180);
+                    break;
+                case 6: // R Leg & Dead Eyes
+                    ctx.moveTo(120, 140); ctx.lineTo(150, 180);
+                    // Dead Eyes X X
+                    ctx.moveTo(110, 55); ctx.lineTo(116, 61);
+                    ctx.moveTo(116, 55); ctx.lineTo(110, 61);
+                    ctx.moveTo(124, 55); ctx.lineTo(130, 61);
+                    ctx.moveTo(130, 55); ctx.lineTo(124, 61);
+                    break;
+            }
+            ctx.stroke();
+        }
+
+        function startGame() {
+            const inputName = document.getElementById('player-name').value.trim();
+            const errorMsg = document.getElementById('error-msg');
+            const themeSelect = document.getElementById('theme-select');
+            
+            errorMsg.style.display = "none";
+            
+            if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入玩家姓名！"; errorMsg.style.display = "block"; return; }
+            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
+            if (themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
+            
+            playerName = inputName; 
+            currentTheme = themeSelect.value;
+            
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('header').style.visibility = 'visible';
+            document.getElementById('game-area').style.visibility = 'visible';
+            
+            score = 0;
+            currentWordIndex = 0;
+            updateHUD();
+
+            bgm.play().catch(e => console.log(e));
+            
+            // Pick 5 random words for the game
+            let fullBank = [...wordBanks[currentTheme]];
+            gameWords = fullBank.sort(() => Math.random() - 0.5).slice(0, 5);
+            
+            isPlaying = true;
+            loadNextWord();
+        }
+
+        function loadNextWord() {
+            if (currentWordIndex >= gameWords.length) {
+                endGame();
+                return;
+            }
+            
+            document.getElementById('word-progress').innerText = currentWordIndex + 1;
+            currentWordObj = gameWords[currentWordIndex];
+            guessedLetters.clear();
+            mistakes = 0;
+            isAnimating = false;
+            
+            document.getElementById('hint-display').innerText = currentWordObj.ch;
+            
+            initCanvas();
+            resetKeyboard();
+            renderWord();
+        }
+
+        function renderWord(revealAll = false) {
+            const display = document.getElementById('word-display');
+            display.innerHTML = "";
+            let targetStr = currentWordObj.en.toUpperCase();
+            
+            for(let i=0; i<targetStr.length; i++) {
+                let char = targetStr[i];
+                let slot = document.createElement('div');
+                
+                if (char === ' ') {
+                    slot.className = 'letter-slot space';
+                } else {
+                    slot.className = 'letter-slot';
+                    if (guessedLetters.has(char)) {
+                        slot.innerText = char;
+                    } else if (revealAll) {
+                        slot.innerText = char;
+                        slot.classList.add('missed'); // 未猜到的字標紅
+                    }
+                }
+                display.appendChild(slot);
+            }
+        }
+
+        function handleGuess(letter) {
+            if (!isPlaying || isAnimating || guessedLetters.has(letter)) return;
+            
+            let targetStr = currentWordObj.en.toUpperCase();
+            guessedLetters.add(letter);
+            
+            let keyBtn = document.getElementById(`key-${letter}`);
+            
+            if (targetStr.includes(letter)) {
+                // Correct guess
+                playTypeSfx();
+                score += 10;
+                updateHUD();
+                if(keyBtn) keyBtn.classList.add('correct');
+                renderWord();
+                checkWinCondition(targetStr);
+            } else {
+                // Wrong guess -> Play damage.mp3
+                if(!isMuted) {
+                    sfxDamage.currentTime = 0;
+                    sfxDamage.play().catch(e => {});
+                }
+                mistakes++;
+                drawPart(mistakes);
+                if(keyBtn) keyBtn.classList.add('wrong');
+                
+                document.body.style.backgroundColor = "rgba(231, 76, 60, 0.3)";
+                setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
+                
+                if (mistakes >= maxMistakes) {
+                    handleLoss();
+                }
+            }
+        }
+
+        function checkWinCondition(targetStr) {
+            let won = true;
+            for(let char of targetStr) {
+                if (char !== ' ' && !guessedLetters.has(char)) {
+                    won = false;
+                    break;
+                }
+            }
+            
+            if (won) {
+                isAnimating = true;
+                // Play Victory sound when fully guessed
+                if(!isMuted) {
+                    sfxVictory.currentTime = 0;
+                    sfxVictory.play().catch(e => {});
+                }
+                
+                let bonus = 50 + ((maxMistakes - mistakes) * 10);
+                score += bonus;
+                updateHUD();
+                
+                showBurst(window.innerWidth/2 - 20, window.innerHeight/2, `+${bonus}`, "#f1c40f");
+                
+                currentWordIndex++;
+                setTimeout(loadNextWord, 2000);
+            }
+        }
+
+        function handleLoss() {
+            isAnimating = true;
+            renderWord(true); // Reveal the whole word in red
+            currentWordIndex++;
+            setTimeout(loadNextWord, 2500);
+        }
+
+        function updateHUD() {
+            document.getElementById('score-val').innerText = score;
+        }
+
+        function triggerEasterEgg() {
+            eggBuffer = ""; score += 100; updateHUD();
+            showBurst(window.innerWidth/2 - 50, window.innerHeight/2, "+100 🌟", "#f1c40f");
+            bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err));
+            const modal = document.getElementById('secret-modal'); modal.style.display = 'block';
+            
+            setTimeout(() => { 
+                modal.style.display = 'none'; 
+                if(isPlaying) bgm.play(); 
+                
+                // Immediately win current word
+                let targetStr = currentWordObj.en.toUpperCase();
+                for(let char of targetStr) {
+                    if(char !== ' ') guessedLetters.add(char);
+                }
+                checkWinCondition(targetStr);
+
+            }, 3000);
+        }
+
+        function showBurst(x, y, txt, color) { 
+            const div = document.createElement('div'); div.className = 'float-num'; div.textContent = txt; 
+            div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color; 
+            document.body.appendChild(div); setTimeout(() => div.remove(), 800); 
+        }
+
+        function endGame() {
+            isPlaying = false; 
+            bgm.pause(); 
+            
+            document.getElementById('header').style.visibility = 'none';
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('final-total-display').textContent = score; 
+            document.getElementById('end-msg').style.display = "flex";
+            
+            const listDiv = document.getElementById('leaderboard-list'); 
+            const themeName = document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text.split(':')[0].substring(3);
+            listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳猜字成績...</div>";
+            
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=Finished&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) return;
+                board.slice(0,5).forEach((p, i) => { 
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; 
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; 
+                });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
+        }
+    </script>
+</body>
+</html>
