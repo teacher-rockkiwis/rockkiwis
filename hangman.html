@@ -127,7 +127,8 @@
         #secret-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); color: white; padding: 30px; border-radius: 20px; z-index: 40000; text-align: center; box-shadow: 0 0 40px var(--gold); border: 4px solid var(--gold); width: 85%; max-width: 350px; }
         .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 60px; z-index: 30000; text-shadow: 3px 3px 0px white, -3px -3px 0px white; animation: burst 0.8s forwards; }
         @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-30px); opacity: 1; } 100% { transform: scale(1.2) translateY(-150px); opacity: 0; } }
-        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
+        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-5px, 0, 0); } 20%, 80% { transform: translate3d(5px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-10px, 0, 0); } 40%, 60% { transform: translate3d(10px, 0, 0); } }
 
         @media screen and (max-height: 600px) {
             #start-overlay { padding-top: 20px; }
@@ -195,7 +196,6 @@
 
     <div id="game-area">
         <div id="top-section">
-            <!-- 移除中文提示，改為通用英文提示 -->
             <div id="hint-display">🤔 Guess the Word!</div>
             <div id="canvas-container">
                 <canvas id="hangman-canvas" width="180" height="200"></canvas>
@@ -233,27 +233,400 @@
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
         const badWords = [
+            // 英文髒話與不雅詞彙 (已避開會誤擋 Chloe, Cassie 等英文名字的短詞)
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
+            
+            // 國罵、三字經、諧音
             "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
+            
+            // 智力、精神疾病、身心障礙歧視 (國中小最愛罵)
             "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
+            
+            // 咒罵死亡、家人、孤兒 (惡意攻擊)
             "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
+            
+            // 性別特質、性傾向歧視、蕩婦羞辱
             "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
+            
+            // 排泄物、器官、一般羞辱
             "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
         ];
 
         let userIP = "Unknown";
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        // ✨ 題庫設定 (不顯示中文了) ✨
+        // ✨ 題庫設定 (已加入四年級 L2 動作單字) ✨
         const wordBanks = {
             "hangman-g4-l2": [
-                { en: "cooking", ch: "烹飪" }, { en: "eating", ch: "吃" },
-                { en: "reading", ch: "閱讀" }, { en: "sleeping", ch: "睡覺" },
-                { en: "writing", ch: "寫字" }, { en: "running", ch: "跑步" },
-                { en: "listening to music", ch: "聽音樂" }, { en: "painting", ch: "畫畫" },
-                { en: "studying", ch: "研讀" }, { en: "watching TV", ch: "看電視" },
-                { en: "doing", ch: "做" }
+                { en: "cooking", ch: "" }, { en: "eating", ch: "" },
+                { en: "reading", ch: "" }, { en: "sleeping", ch: "" },
+                { en: "writing", ch: "" }, { en: "running", ch: "" },
+                { en: "listening to music", ch: "" }, { en: "painting", ch: "" },
+                { en: "studying", ch: "" }, { en: "watching TV", ch: "" },
+                { en: "doing", ch: "" }
             ],
             "hangman-g5-l2": [
-                { en: "cold", ch: "感冒" }, { en: "fever", ch: "發燒" },
-                { en: "runny nose", ch: "流鼻水" }, { en: "sore throat", ch: "喉嚨痛" },
+                { en: "cold", ch: "" }, { en: "fever", ch: "" },
+                { en: "runny nose", ch: "" }, { en: "sore throat", ch: "" },
+                { en: "headache", ch: "" }, { en: "toothache", ch: "" },
+                { en: "stomachache", ch: "" }, { en: "backache", ch: "" },
+                { en: "cough", ch: "" }, { en: "diarrhea", ch: "" },
+                { en: "have", ch: "" }, { en: "has", ch: "" }
+            ]
+        };
+
+        const QWERTY = [ ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["Z", "X", "C", "V", "B", "N", "M"] ];
+
+        let score = 0;
+        let isPlaying = false, isMuted = false, isAnimating = false;
+        let playerName = "Player", currentTheme = "";
+        let eggBuffer = "";
+        
+        let gameWords = [];
+        let currentWordIndex = 0;
+        let currentWordObj = null;
+        let guessedLetters = new Set();
+        let mistakes = 0;
+        const maxMistakes = 6;
+
+        const bgm = document.getElementById('bgm');
+        const sfxDamage = document.getElementById('sfx-damage');
+        const sfxVictory = document.getElementById('sfx-victory');
+        const secretBgm = document.getElementById('secret-bgm');
+        const canvas = document.getElementById('hangman-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        bgm.volume = 0.4; sfxDamage.volume = 0.8; sfxVictory.volume = 0.8; secretBgm.volume = 0.6;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTypeSfx() {
+            if (isMuted) return; if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); 
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); 
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        window.onload = function() { 
+            fetchFrontLeaderboard();
+            buildKeyboard();
+            initCanvas();
+            
+            document.addEventListener('keydown', (e) => {
+                if(!isPlaying || isAnimating) return;
+                const key = e.key.toUpperCase();
+                
+                // 彩蛋檢測
+                if(/^[A-Z]$/.test(key)) {
+                    eggBuffer += key;
+                    if(eggBuffer.length > 4) eggBuffer = eggBuffer.slice(-4);
+                    if(eggBuffer === "ROCK") { triggerEasterEgg(); return; }
+                }
+
+                if(/^[A-Z]$/.test(key)) {
+                    handleGuess(key);
+                }
+            });
+
+            fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
+        };
+
+        function toggleSound(e) { 
+            if (e) e.stopPropagation(); isMuted = !isMuted; 
+            const btn = document.getElementById('sound-btn'); 
+            if (isMuted) { 
+                btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; 
+                bgm.muted = true; sfxDamage.muted = true; sfxVictory.muted = true; secretBgm.muted = true;
+            } else { 
+                btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; 
+                bgm.muted = false; sfxDamage.muted = false; sfxVictory.muted = false; secretBgm.muted = false;
+            } 
+        }
+
+        function fetchFrontLeaderboard() {
+            const listDiv = document.getElementById('front-leaderboard-list'); 
+            const themeSelect = document.getElementById('theme-select');
+            
+            if (themeSelect.value === "") {
+                listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px; color:#636e72;'>請先選擇上方關卡，以查看英雄榜！</div>";
+                return;
+            }
+
+            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            fetch(`${GOOGLE_API_URL}?action=get&theme=${themeSelect.value}`).then(response => response.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='padding:5px; font-size:14px;'>目前無紀錄，搶下首殺！</div>"; return; }
+                board.slice(0, 5).forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗 😢</div>");
+        }
+
+        function buildKeyboard() {
+            const kb = document.getElementById('keyboard'); kb.innerHTML = "";
+            QWERTY.forEach(row => {
+                const rowDiv = document.createElement('div'); rowDiv.className = 'key-row';
+                row.forEach(letter => { 
+                    const btn = document.createElement('button'); 
+                    btn.className = 'key'; btn.innerText = letter; btn.id = `key-${letter}`;
+                    btn.onpointerdown = (e) => { e.preventDefault(); handleGuess(letter); }; 
+                    rowDiv.appendChild(btn); 
+                });
+                kb.appendChild(rowDiv);
+            });
+        }
+
+        function resetKeyboard() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(k => {
+                k.classList.remove('correct');
+                k.classList.remove('wrong');
+            });
+        }
+
+        // --- Canvas Drawing Logic ---
+        function initCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#2d3436";
+            ctx.lineCap = "round";
+
+            // Base & Pole (Always drawn at start of word)
+            ctx.beginPath();
+            ctx.moveTo(20, 190); ctx.lineTo(160, 190); // Base
+            ctx.moveTo(50, 190); ctx.lineTo(50, 20);   // Pole
+            ctx.moveTo(50, 20);  ctx.lineTo(120, 20);  // Top
+            ctx.moveTo(120, 20); ctx.lineTo(120, 40);  // Rope
+            ctx.stroke();
+        }
+
+        function drawPart(step) {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#e74c3c";
+            ctx.beginPath();
+            
+            switch(step) {
+                case 1: // Head
+                    ctx.arc(120, 60, 20, 0, Math.PI * 2);
+                    break;
+                case 2: // Body
+                    ctx.moveTo(120, 80); ctx.lineTo(120, 140);
+                    break;
+                case 3: // L Arm
+                    ctx.moveTo(120, 90); ctx.lineTo(90, 120);
+                    break;
+                case 4: // R Arm
+                    ctx.moveTo(120, 90); ctx.lineTo(150, 120);
+                    break;
+                case 5: // L Leg
+                    ctx.moveTo(120, 140); ctx.lineTo(90, 180);
+                    break;
+                case 6: // R Leg & Dead Eyes
+                    ctx.moveTo(120, 140); ctx.lineTo(150, 180);
+                    // Dead Eyes X X
+                    ctx.moveTo(110, 55); ctx.lineTo(116, 61);
+                    ctx.moveTo(116, 55); ctx.lineTo(110, 61);
+                    ctx.moveTo(124, 55); ctx.lineTo(130, 61);
+                    ctx.moveTo(130, 55); ctx.lineTo(124, 61);
+                    break;
+            }
+            ctx.stroke();
+        }
+
+        function startGame() {
+            const inputName = document.getElementById('player-name').value.trim();
+            const errorMsg = document.getElementById('error-msg');
+            const themeSelect = document.getElementById('theme-select');
+            
+            errorMsg.style.display = "none";
+            
+            if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入玩家姓名！"; errorMsg.style.display = "block"; return; }
+            if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
+            if (themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
+            
+            playerName = inputName; 
+            currentTheme = themeSelect.value;
+            
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('header').style.visibility = 'visible';
+            document.getElementById('game-area').style.visibility = 'visible';
+            
+            score = 0;
+            currentWordIndex = 0;
+            updateHUD();
+
+            bgm.play().catch(e => console.log(e));
+            
+            // Pick 5 random words for the game
+            let fullBank = [...wordBanks[currentTheme]];
+            gameWords = fullBank.sort(() => Math.random() - 0.5).slice(0, 5);
+            
+            isPlaying = true;
+            loadNextWord();
+        }
+
+        function loadNextWord() {
+            if (currentWordIndex >= gameWords.length) {
+                endGame();
+                return;
+            }
+            
+            document.getElementById('word-progress').innerText = currentWordIndex + 1;
+            currentWordObj = gameWords[currentWordIndex];
+            guessedLetters.clear();
+            mistakes = 0;
+            isAnimating = false;
+            
+            // ✨ 將提示固定為 Guess the Word! ✨
+            document.getElementById('hint-display').innerText = "🤔 Guess the Word!";
+            
+            initCanvas();
+            resetKeyboard();
+            renderWord();
+        }
+
+        function renderWord(revealAll = false) {
+            const display = document.getElementById('word-display');
+            display.innerHTML = "";
+            let targetStr = currentWordObj.en.toUpperCase();
+            
+            for(let i=0; i<targetStr.length; i++) {
+                let char = targetStr[i];
+                let slot = document.createElement('div');
+                
+                if (char === ' ') {
+                    slot.className = 'letter-slot space';
+                } else {
+                    slot.className = 'letter-slot';
+                    if (guessedLetters.has(char)) {
+                        slot.innerText = char;
+                    } else if (revealAll) {
+                        slot.innerText = char;
+                        slot.classList.add('missed'); // 未猜到的字標紅
+                    }
+                }
+                display.appendChild(slot);
+            }
+        }
+
+        function handleGuess(letter) {
+            if (!isPlaying || isAnimating || guessedLetters.has(letter)) return;
+            
+            let targetStr = currentWordObj.en.toUpperCase();
+            guessedLetters.add(letter);
+            
+            let keyBtn = document.getElementById(`key-${letter}`);
+            
+            if (targetStr.includes(letter)) {
+                // Correct guess
+                playTypeSfx();
+                score += 10;
+                updateHUD();
+                if(keyBtn) keyBtn.classList.add('correct');
+                renderWord();
+                checkWinCondition(targetStr);
+            } else {
+                // Wrong guess -> Play damage.mp3
+                if(!isMuted) {
+                    sfxDamage.currentTime = 0;
+                    sfxDamage.play().catch(e => {});
+                }
+                mistakes++;
+                drawPart(mistakes);
+                if(keyBtn) keyBtn.classList.add('wrong');
+                
+                document.body.style.backgroundColor = "rgba(231, 76, 60, 0.3)";
+                setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 150);
+                
+                if (mistakes >= maxMistakes) {
+                    handleLoss();
+                }
+            }
+        }
+
+        function checkWinCondition(targetStr) {
+            let won = true;
+            for(let char of targetStr) {
+                if (char !== ' ' && !guessedLetters.has(char)) {
+                    won = false;
+                    break;
+                }
+            }
+            
+            if (won) {
+                isAnimating = true;
+                // Play Victory sound when fully guessed
+                if(!isMuted) {
+                    sfxVictory.currentTime = 0;
+                    sfxVictory.play().catch(e => {});
+                }
+                
+                let bonus = 50 + ((maxMistakes - mistakes) * 10);
+                score += bonus;
+                updateHUD();
+                
+                showBurst(window.innerWidth/2 - 20, window.innerHeight/2, `+${bonus}`, "#f1c40f");
+                
+                currentWordIndex++;
+                setTimeout(loadNextWord, 2000);
+            }
+        }
+
+        function handleLoss() {
+            isAnimating = true;
+            renderWord(true); // Reveal the whole word in red
+            currentWordIndex++;
+            setTimeout(loadNextWord, 2500);
+        }
+
+        function updateHUD() {
+            document.getElementById('score-val').innerText = score;
+        }
+
+        function triggerEasterEgg() {
+            eggBuffer = ""; score += 100; updateHUD();
+            showBurst(window.innerWidth/2 - 50, window.innerHeight/2, "+100 🌟", "#f1c40f");
+            bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err));
+            const modal = document.getElementById('secret-modal'); modal.style.display = 'block';
+            
+            setTimeout(() => { 
+                modal.style.display = 'none'; 
+                if(isPlaying) bgm.play(); 
+                
+                // Immediately win current word
+                let targetStr = currentWordObj.en.toUpperCase();
+                for(let char of targetStr) {
+                    if(char !== ' ') guessedLetters.add(char);
+                }
+                checkWinCondition(targetStr);
+
+            }, 3000);
+        }
+
+        function showBurst(x, y, txt, color) { 
+            const div = document.createElement('div'); div.className = 'float-num'; div.textContent = txt; 
+            div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color; 
+            document.body.appendChild(div); setTimeout(() => div.remove(), 800); 
+        }
+
+        function endGame() {
+            isPlaying = false; 
+            bgm.pause(); 
+            
+            document.getElementById('header').style.visibility = 'none';
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('final-total-display').textContent = score; 
+            document.getElementById('end-msg').style.display = "flex";
+            
+            const listDiv = document.getElementById('leaderboard-list'); 
+            const themeName = document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text.split(':')[0].substring(3);
+            listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳猜字成績...</div>";
+            
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=Finished&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
+                listDiv.innerHTML = ""; if (!board || board.length === 0) return;
+                board.slice(0,5).forEach((p, i) => { 
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; 
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; 
+                });
+            }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
+        }
+    </script>
+</body>
+</html>
