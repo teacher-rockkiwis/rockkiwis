@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr. ROCK - Boss Raid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --bg: #1e272e; --primary: #c0392b; --secondary: #f39c12; --success: #27ae60; --text: #ecf0f1; --dark: #2c3e50; }
+        * { box-sizing: border-box; touch-action: manipulation; outline: none; }
+        body { background-color: var(--bg); margin: 0; font-family: 'Quicksand', sans-serif; color: var(--text); display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+        
+        .screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; width: 100%; }
+        .active-screen { display: flex !important; }
+
+        h1 { font-size: 45px; color: var(--secondary); text-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 10px; text-align: center; }
+        .subtitle { font-size: 18px; color: #bdc3c7; margin-bottom: 25px; text-align: center; }
+        
+        .btn { padding: 15px 30px; font-size: 24px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand'; width: 100%; max-width: 350px;}
+        .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
+        .btn-host { background: var(--primary); box-shadow: 0 6px 0 #922b21; }
+        .btn-player { background: #2980b9; box-shadow: 0 6px 0 #1f618d; }
+        
+        .input-box { font-size: 20px; padding: 15px; border-radius: 15px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 350px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+        select.theme-select { font-size: 18px; padding: 12px; border-radius: 15px; border: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; max-width: 350px; margin-bottom: 15px; color: #2c3e50; }
+
+        /* 👑 老師端大螢幕 (Host) 樣式 */
+        #host-game { justify-content: flex-start; padding-top: 40px; position: relative;}
+        .room-code-box { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; border: 2px dashed var(--secondary); }
+        .player-count-box { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; color: #3498db; }
+        
+        .dragon-area { display: flex; flex-direction: column; align-items: center; margin-top: 20px; position: relative; }
+        .dragon-emoji { font-size: 150px; filter: drop-shadow(0 20px 20px rgba(0,0,0,0.8)); transition: 0.2s; }
+        
+        .hp-bar-container { width: 600px; max-width: 90%; height: 40px; background: #2c3e50; border-radius: 20px; border: 4px solid #7f8c8d; overflow: hidden; margin-top: 20px; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .hp-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.5s ease-out; }
+        .hp-text { position: absolute; width: 100%; text-align: center; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 900; color: white; text-shadow: 2px 2px 0 black; }
+        
+        .host-question-box { background: white; color: var(--dark); padding: 30px; border-radius: 25px; font-size: 45px; font-weight: 900; width: 90%; max-width: 900px; text-align: center; margin-top: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); border: 6px solid var(--secondary); }
+        .host-timer { font-size: 60px; font-weight: 900; color: var(--secondary); margin-top: 20px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.5); font-variant-numeric: tabular-nums; }
+        
+        .host-result-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .host-result-title { font-size: 60px; font-weight: 900; margin-bottom: 20px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .host-result-dmg { font-size: 100px; color: var(--primary); font-weight: 900; text-shadow: 0 0 30px var(--primary); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        /* 📱 學生端手機 (Player) 樣式 */
+        .player-hud { display: flex; justify-content: space-between; width: 100%; max-width: 400px; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 20px; margin-bottom: 20px; }
+        .player-hp { font-size: 24px; letter-spacing: 3px; }
+        .player-status { font-size: 20px; font-weight: 900; color: var(--secondary); }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; }
+        .opt-btn { height: 120px; color: white; border: none; font-size: 32px; font-weight: 900; border-radius: 20px; cursor: pointer; box-shadow: 0 8px 0 rgba(0,0,0,0.3); transition: 0.1s; display: flex; justify-content: center; align-items: center; }
+        .opt-btn:active { transform: translateY(8px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
+        .opt-btn:disabled { filter: grayscale(0.8); opacity: 0.6; cursor: not-allowed; transform: translateY(8px); box-shadow: none; }
+        
+        .color-A { background: #e74c3c; } .color-B { background: #3498db; } .color-C { background: #f1c40f; color: var(--dark); } .color-D { background: #2ecc71; }
+
+        .wait-msg { font-size: 24px; font-weight: 900; color: #bdc3c7; text-align: center; margin-top: 50px; }
+
+        /* 動畫 */
+        .shake { animation: shake 0.4s; }
+        .hit-anim { animation: hitFlash 0.3s; }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
+        @keyframes hitFlash { 0% { filter: brightness(1) drop-shadow(0 20px 20px rgba(0,0,0,0.8)); } 50% { filter: brightness(3) drop-shadow(0 0 50px red); transform: scale(0.9); } 100% { filter: brightness(1) drop-shadow(0 20px 20px rgba(0,0,0,0.8)); } }
+        @keyframes popIn { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 35px; }
+            .dragon-emoji { font-size: 100px; }
+            .host-question-box { font-size: 28px; padding: 20px; border-width: 4px; }
+            .host-timer { font-size: 40px; }
+            .room-code-box, .player-count-box { font-size: 16px; padding: 8px 12px; }
+            .opt-btn { height: 100px; font-size: 24px; }
+            .host-result-title { font-size: 40px; }
+            .host-result-dmg { font-size: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 音效 -->
+    <audio id="sfx-hit" src="shoot.mp3"></audio>
+    <audio id="sfx-wrong" src="damage.mp3"></audio>
+    <audio id="sfx-win" src="victory.mp3"></audio>
+    <audio id="bgm" src="arcade.mp3" loop></audio>
+
+    <script>
+        // 老師的 Firebase 金鑰
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
+            authDomain: "rockgames-48853.firebaseapp.com",
+            databaseURL: "https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rockgames-48853",
+            storageBucket: "rockgames-48853.firebasestorage.app",
+            messagingSenderId: "313395129447",
+            appId: "1:313395129447:web:618531167064c7afdd38c2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 題庫 (與拔河戰相同)
+        const questionBanks = {
+            "g4-l1": [
+                { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ he?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ she?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ they?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ I?", opts: ["am", "is", "are", "does"], ans: "am" },
+                { q: "Where ____ Tom?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ the dog?", opts: ["is", "are", "am", "do"], ans: "is" },
+                { q: "Where ____ the cats?", opts: ["are", "is", "am", "does"], ans: "are" },
+                { q: "Where ____ we?", opts: ["are", "is", "am", "does"], ans: "are" },
+                { q: "Where ____ Mom and Dad?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "I ____ in the bedroom.", opts: ["am", "is", "are", "be"], ans: "am" },
+                { q: "You ____ in the kitchen.", opts: ["are", "is", "am", "be"], ans: "are" },
+                { q: "He ____ in the yard.", opts: ["is", "are", "am", "be"], ans: "is" },
+                { q: "She ____ in the dining room.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "It ____ in the living room.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "We ____ in the bathroom.", opts: ["are", "is", "am", "be"], ans: "are" },
+                { q: "They ____ in the kitchen.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "The dog ____ in the house.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "The birds ____ in the tree.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "My mom ____ in the bedroom.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "My parents ____ in the yard.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Tom ____ in the living room.", opts: ["is", "are", "am", "be"], ans: "is" },
+                { q: "Mary and Tom ____ in the kitchen.", opts: ["are", "is", "am", "does"], ans: "are" },
+                { q: "The cat ____ on the sofa.", opts: ["is", "are", "am", "do"], ans: "is" },
+                { q: "____ you in the yard?", opts: ["Are", "Is", "Am", "Do"], ans: "Are" },
+                { q: "____ he in the bedroom?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
+                { q: "____ she in the dining room?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
+                { q: "____ they in the kitchen?", opts: ["Are", "Is", "Am", "Do"], ans: "Are" },
+                { q: "____ the dog in the house?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
+                { q: "Yes, I ____.", opts: ["am", "is", "are", "do"], ans: "am" }
+            ],
+            "g4-l2": [
+                { q: "What ____ you doing?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "What ____ he doing?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "What ____ she doing?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "What ____ they doing?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "What ____ the dog doing?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "What is he ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
+                { q: "What are you ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
+                { q: "I am ____.", opts: ["running", "run", "runs", "ran"], ans: "running" },
+                { q: "You are ____.", opts: ["reading", "read", "reads", "reader"], ans: "reading" },
+                { q: "He is ____ a book.", opts: ["reading", "read", "reads", "reader"], ans: "reading" },
+                { q: "She is ____ TV.", opts: ["watching", "watch", "watches", "watched"], ans: "watching" },
+                { q: "It is ____.", opts: ["sleeping", "sleep", "sleeps", "slept"], ans: "sleeping" },
+                { q: "We are ____.", opts: ["cooking", "cook", "cooks", "cooked"], ans: "cooking" },
+                { q: "They are ____.", opts: ["eating", "eat", "eats", "ate"], ans: "eating" },
+                { q: "The dog is ____.", opts: ["jumping", "jump", "jumps", "jumped"], ans: "jumping" },
+                { q: "The cats are ____.", opts: ["playing", "play", "plays", "played"], ans: "playing" },
+                { q: "Tom is ____.", opts: ["writing", "write", "writes", "wrote"], ans: "writing" },
+                { q: "Mary is ____.", opts: ["painting", "paint", "paints", "painted"], ans: "painting" },
+                { q: "My mom is ____.", opts: ["cooking", "cook", "cooks", "cooked"], ans: "cooking" },
+                { q: "I am ____ to music.", opts: ["listening", "listen", "listens", "listened"], ans: "listening" },
+                { q: "He is ____ math.", opts: ["studying", "study", "studies", "studied"], ans: "studying" },
+                { q: "Where ____ you going?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ he going?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ she going?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ they going?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where is she ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
+                { q: "Where are they ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
+                { q: "I am going ____ the park.", opts: ["to", "in", "on", "at"], ans: "to" },
+                { q: "He is going ____ school.", opts: ["to", "in", "on", "at"], ans: "to" },
+                { q: "She is going ____ the shop.", opts: ["to", "in", "on", "at"], ans: "to" }
+            ],
+            "g5-l1": [
+                { q: "What's ____?", opts: ["wrong", "matter", "bad", "problem"], ans: "wrong" },
+                { q: "My head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My nose ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My mouth ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My neck ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My back ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His shoulder ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Her arm ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His hand ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Her leg ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His foot ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My tooth ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Your right eye ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His left ear ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Her stomach ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My ears ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Your shoulders ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His arms ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Her hands ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My fingers ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His legs ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Her knees ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Your toes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His teeth ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Tom's eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Mary's head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My brother's foot ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My sister's feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" }
+            ],
+            "g5-l2": [
+                { q: "____ you have a fever?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
+                { q: "____ I have a cold?", opts: ["Do", "Does", "Am", "Is"], ans: "Do" },
+                { q: "____ we have a headache?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
+                { q: "____ they have a toothache?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
+                { q: "____ he have a stomachache?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ she have a sore throat?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ it have a runny nose?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ Tom have a cough?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ Mary have diarrhea?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ your brother have a cold?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "Yes, I ____.", opts: ["do", "does", "am", "are"], ans: "do" },
+                { q: "Yes, you ____.", opts: ["do", "does", "are", "is"], ans: "do" },
+                { q: "Yes, we ____.", opts: ["do", "does", "are", "is"], ans: "do" },
+                { q: "Yes, they ____.", opts: ["do", "does", "are", "is"], ans: "do" },
+                { q: "Yes, he ____.", opts: ["does", "do", "is", "has"], ans: "does" },
+                { q: "Yes, she ____.", opts: ["does", "do", "is", "has"], ans: "does" },
+                { q: "Yes, it ____.", opts: ["does", "do", "is", "has"], ans: "does" },
+                { q: "No, I ____.", opts: ["don't", "doesn't", "not", "no"], ans: "don't" },
+                { q: "No, they ____.", opts: ["don't", "doesn't", "aren't", "no"], ans: "don't" },
+                { q: "No, he ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
+                { q: "No, she ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
+                { q: "I ____ a runny nose.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "You ____ a cold.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "We ____ a fever.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "They ____ a headache.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "He ____ a sore throat.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "She ____ a stomachache.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "It ____ a runny nose.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "Tom ____ a toothache.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "Mary ____ a backache.", opts: ["has", "have", "having", "had"], ans: "has" }
+            ]
+        };
+    </script>
+
+    <!-- 主選單 -->
+    <div id="main-menu" class="screen active-screen">
+        <h1>🐉 Boss Raid 巨龍討伐戰</h1>
+        <p class="subtitle">全班共鬥！打敗時態破壞龍！</p>
+        <button class="btn btn-host" onclick="showHostLobby()">👑 我是大螢幕 (老師開房)</button>
+        <button class="btn btn-player" onclick="showPlayerLobby()">📱 我是討伐隊員 (學生加入)</button>
+        <button class="btn" style="background:#7f8c8d; margin-top:30px;" onclick="location.href='index.html'">🔙 回大廳</button>
+    </div>
+
+    <!-- 👑 老師端：開房大廳 -->
+    <div id="host-lobby" class="screen">
+        <h1>👑 建立討伐戰</h1>
+        <select id="host-theme" class="theme-select">
+            <option value="g4-l1">📍 四年級 L1: Where are you?</option>
+            <option value="g4-l2">🏃‍♂️ 四年級 L2: What are you doing?</option>
+            <option value="g5-l1">🤕 五年級 L1: hurt vs hurts</option>
+            <option value="g5-l2">🤒 五年級 L2: have vs has</option>
+        </select>
+        <select id="host-hp" class="theme-select">
+            <option value="10000">🟢 幼龍 (血量: 10,000 / 適合小班級)</option>
+            <option value="50000" selected>🟡 飛龍 (血量: 50,000 / 適合中班級)</option>
+            <option value="100000">🔴 遠古巨龍 (血量: 100,000 / 適合全班大亂鬥)</option>
+        </select>
+        <button class="btn btn-host" onclick="createRoom()">建立房間</button>
+        <button class="btn" style="background:transparent; border: 2px solid white;" onclick="location.reload()">取消</button>
+    </div>
+
+    <!-- 📱 學生端：加入大廳 -->
+    <div id="player-lobby" class="screen">
+        <h1>📱 加入討伐小隊</h1>
+        <input type="text" id="player-name" class="input-box" placeholder="輸入隊員姓名..." maxlength="10">
+        <input type="text" id="room-code" class="input-box" placeholder="輸入4碼房間號" maxlength="4" style="letter-spacing: 5px;">
+        <button class="btn btn-player" onclick="joinRoom()">加入房間</button>
+        <button class="btn" style="background:transparent; border: 2px solid white;" onclick="location.reload()">取消</button>
+    </div>
+
+    <!-- 👑 老師端：遊戲畫面 -->
+    <div id="host-game" class="screen">
+        <div class="room-code-box">房號：<span id="display-room-code" style="color:var(--gold);">0000</span></div>
+        <div class="player-count-box">隊員人數：<span id="player-count">0</span></div>
+        
+        <div class="dragon-area">
+            <div class="dragon-emoji" id="dragon-emoji">🐉</div>
+            <div class="hp-bar-container">
+                <div class="hp-bar-fill" id="host-hp-fill"></div>
+                <div class="hp-text" id="host-hp-text">100,000 / 100,000</div>
+            </div>
+        </div>
+
+        <div class="host-question-box" id="host-question">等待隊員加入...</div>
+        <div class="host-timer" id="host-timer">15</div>
+
+        <button class="btn btn-host" id="btn-start-raid" onclick="startRound()" style="margin-top: 30px; font-size: 30px; width: 400px; max-width: 90%;">⚔️ 全員到齊，開始討伐！</button>
+
+        <!-- 老師端回合結算特效 -->
+        <div id="host-result-overlay" class="host-result-overlay">
+            <div class="host-result-title" id="host-result-title">討伐結算</div>
+            <div class="subtitle" id="host-result-desc" style="font-size: 30px; font-weight: 900; margin-bottom: 0;"></div>
+            <div class="host-result-dmg" id="host-result-dmg">- 0</div>
+        </div>
+    </div>
+
+    <!-- 📱 學生端：遊戲畫面 -->
+    <div id="player-game" class="screen">
+        <div class="player-hud">
+            <div class="player-hp" id="player-hp-display">❤️❤️❤️</div>
+            <div class="player-status" id="player-status-display">待命準備中...</div>
+        </div>
+        
+        <div class="wait-msg" id="player-wait-msg">請看大螢幕，等待題目出現！👀</div>
+
+        <div class="options-grid" id="player-options" style="display: none;">
+            <button class="opt-btn color-A" id="btn-opt-0" onclick="submitAnswer(0)">A</button>
+            <button class="opt-btn color-B" id="btn-opt-1" onclick="submitAnswer(1)">B</button>
+            <button class="opt-btn color-C" id="btn-opt-2" onclick="submitAnswer(2)">C</button>
+            <button class="opt-btn color-D" id="btn-opt-3" onclick="submitAnswer(3)">D</button>
+        </div>
+    </div>
+
+    <script>
+        let role = ''; // 'host' or 'player'
+        let roomId = '';
+        let roomRef = null;
+        let myName = '';
+        
+        // 遊戲變數
+        let maxDragonHp = 100000;
+        let currentDragonHp = 100000;
+        let currentTheme = '';
+        let questions = [];
+        let currentQData = null;
+        let currentOptions = [];
+        let correctAnswerIdx = -1;
+        
+        let roundTimer = null;
+        let timeLeft = 15;
+        let playerHp = 3;
+
+        const sfxHit = document.getElementById('sfx-hit');
+        const sfxWrong = document.getElementById('sfx-wrong');
+        const sfxWin = document.getElementById('sfx-win');
+        const bgm = document.getElementById('bgm');
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        function showHostLobby() { switchScreen('host-lobby'); }
+        function showPlayerLobby() { switchScreen('player-lobby'); }
+
+        // ==========================================
+        // 👑 老師端邏輯 (Host)
+        // ==========================================
+        function createRoom() {
+            role = 'host';
+            currentTheme = document.getElementById('host-theme').value;
+            maxDragonHp = parseInt(document.getElementById('host-hp').value);
+            currentDragonHp = maxDragonHp;
+            
+            roomId = Math.floor(1000 + Math.random() * 9000).toString();
+            questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
+
+            roomRef = db.ref('raid_rooms/' + roomId);
+            roomRef.set({
+                status: 'lobby',
+                dragonMaxHp: maxDragonHp,
+                dragonHp: currentDragonHp,
+                question: null,
+                timestamp: Date.now()
+            });
+
+            roomRef.onDisconnect().remove();
+
+            switchScreen('host-game');
+            document.getElementById('display-room-code').innerText = roomId;
+            updateHostHpBar();
+            
+            bgm.volume = 0.4; bgm.play().catch(e=>{});
+
+            // 監聽玩家加入
+            db.ref('raid_rooms/' + roomId + '/players').on('value', snap => {
+                let count = snapshotToArray(snap).length;
+                document.getElementById('player-count').innerText = count;
+            });
+        }
+
+        function startRound() {
+            document.getElementById('btn-start-raid').style.display = 'none';
+            
+            if (questions.length === 0) {
+                // 如果題目用完，重新打亂
+                questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
+            }
+            
+            let q = questions.pop();
+            currentOptions = [...q.opts].sort(() => Math.random() - 0.5);
+            correctAnswerIdx = currentOptions.indexOf(q.ans);
+            
+            let qText = q.q.replace('____', '_____');
+            document.getElementById('host-question').innerHTML = `${qText}<br><br>
+                <div style="font-size: 24px; display:flex; justify-content:center; gap:20px; color:#bdc3c7;">
+                    <span style="color:#e74c3c;">(A) ${currentOptions[0]}</span>
+                    <span style="color:#3498db;">(B) ${currentOptions[1]}</span>
+                    <span style="color:#f1c40f;">(C) ${currentOptions[2]}</span>
+                    <span style="color:#2ecc71;">(D) ${currentOptions[3]}</span>
+                </div>
+            `;
+
+            // 清空所有玩家的上一回合答案
+            db.ref('raid_rooms/' + roomId + '/players').once('value').then(snap => {
+                let updates = {};
+                snapshotToArray(snap).forEach(p => {
+                    updates[p.id + '/ans'] = -1; 
+                });
+                if(Object.keys(updates).length > 0) {
+                    db.ref('raid_rooms/' + roomId + '/players').update(updates);
+                }
+            });
+
+            roomRef.update({
+                status: 'playing',
+                question: { text: qText, opts: currentOptions }
+            });
+
+            timeLeft = 12; // 每題 12 秒
+            document.getElementById('host-timer').innerText = timeLeft;
+            document.getElementById('host-timer').style.display = 'block';
+
+            roundTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('host-timer').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(roundTimer);
+                    evaluateRound();
+                }
+            }, 1000);
+        }
+
+        function evaluateRound() {
+            roomRef.update({ status: 'evaluating' });
+            
+            db.ref('raid_rooms/' + roomId + '/players').once('value').then(snap => {
+                let players = snapshotToArray(snap);
+                let correctCount = 0;
+                let updates = {};
+
+                players.forEach(p => {
+                    if (p.hp <= 0) return; // 死掉的不算
+                    if (p.ans === correctAnswerIdx) {
+                        correctCount++;
+                        updates[p.id + '/lastResult'] = 'correct';
+                    } else {
+                        updates[p.id + '/hp'] = Math.max(0, p.hp - 1);
+                        updates[p.id + '/lastResult'] = 'wrong';
+                    }
+                });
+
+                if(Object.keys(updates).length > 0) {
+                    db.ref('raid_rooms/' + roomId + '/players').update(updates);
+                }
+
+                // 計算傷害
+                let baseDmg = correctCount * 100;
+                let multiplier = 1;
+                
+                if (correctCount >= 40) multiplier = 5;
+                else if (correctCount >= 30) multiplier = 4;
+                else if (correctCount >= 20) multiplier = 3;
+                else if (correctCount >= 10) multiplier = 2;
+
+                let totalDmg = baseDmg * multiplier;
+                currentDragonHp = Math.max(0, currentDragonHp - totalDmg);
+                
+                roomRef.update({ dragonHp: currentDragonHp });
+                updateHostHpBar();
+
+                showHostRoundResult(correctCount, multiplier, totalDmg);
+            });
+        }
+
+        function showHostRoundResult(correct, multiplier, dmg) {
+            const overlay = document.getElementById('host-result-overlay');
+            const title = document.getElementById('host-result-title');
+            const desc = document.getElementById('host-result-desc');
+            const dmgText = document.getElementById('host-result-dmg');
+            const dragon = document.getElementById('dragon-emoji');
+
+            overlay.style.display = 'flex';
+            
+            if (correct > 0) {
+                sfxHit.currentTime = 0; sfxHit.play().catch(e=>{});
+                title.innerText = "💥 攻擊成功！";
+                title.style.color = "var(--success)";
+                let comboText = multiplier > 1 ? `<br><span style="color:#f1c40f;">${multiplier}倍 合體陣法發動！</span>` : "";
+                desc.innerHTML = `${correct} 名隊員命中目標！${comboText}`;
+                dmgText.innerText = `- ${dmg}`;
+                dmgText.style.color = "var(--primary)";
+                dragon.classList.add('hit-anim');
+                setTimeout(() => dragon.classList.remove('hit-anim'), 300);
+            } else {
+                sfxWrong.currentTime = 0; sfxWrong.play().catch(e=>{});
+                title.innerText = "🔥 遭到龍之吐息攻擊！";
+                title.style.color = "var(--error)";
+                desc.innerText = "沒有人擊中要害，全體隊員受傷！";
+                dmgText.innerText = "Miss!";
+                dmgText.style.color = "#95a5a6";
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 400);
+            }
+
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                if (currentDragonHp <= 0) {
+                    showHostVictory();
+                } else {
+                    startRound();
+                }
+            }, 4000);
+        }
+
+        function updateHostHpBar() {
+            let pct = (currentDragonHp / maxDragonHp) * 100;
+            document.getElementById('host-hp-fill').style.width = pct + '%';
+            document.getElementById('host-hp-text').innerText = `${currentDragonHp} / ${maxDragonHp}`;
+        }
+
+        function showHostVictory() {
+            bgm.pause(); sfxWin.play().catch(e=>{});
+            document.getElementById('host-question').innerText = "🎉 巨龍討伐成功！世界恢復了和平！";
+            document.getElementById('host-question').style.color = "var(--success)";
+            document.getElementById('host-timer').style.display = 'none';
+            document.getElementById('dragon-emoji').innerText = "💀";
+            roomRef.update({ status: 'victory' });
+        }
+
+        // ==========================================
+        // 📱 學生端邏輯 (Player)
+        // ==========================================
+        function joinRoom() {
+            role = 'player';
+            myName = document.getElementById('player-name').value.trim();
+            roomId = document.getElementById('room-code').value.trim();
+            
+            if(!myName || roomId.length !== 4) return alert("請輸入姓名與4碼房號！");
+
+            roomRef = db.ref('raid_rooms/' + roomId);
+            roomRef.once('value').then(snap => {
+                if(snap.exists()) {
+                    switchScreen('player-game');
+                    document.getElementById('player-status-display').innerText = myName;
+                    
+                    let myRef = db.ref('raid_rooms/' + roomId + '/players').push();
+                    myRef.set({
+                        name: myName,
+                        hp: 3,
+                        ans: -1,
+                        lastResult: ''
+                    });
+
+                    // 斷線時刪除自己
+                    myRef.onDisconnect().remove();
+
+                    // 監聽房間狀態
+                    roomRef.on('value', roomSnap => {
+                        let data = roomSnap.val();
+                        if(!data) {
+                            alert("房間已關閉！");
+                            location.reload();
+                            return;
+                        }
+
+                        if (data.status === 'playing') {
+                            document.getElementById('player-wait-msg').style.display = 'none';
+                            
+                            // 更新按鈕文字
+                            if (data.question && data.question.opts) {
+                                for(let i=0; i<4; i++) {
+                                    let btn = document.getElementById(`btn-opt-${i}`);
+                                    btn.innerText = data.question.opts[i];
+                                    btn.disabled = false;
+                                }
+                            }
+                            
+                            if (playerHp > 0) {
+                                document.getElementById('player-options').style.display = 'grid';
+                            } else {
+                                document.getElementById('player-wait-msg').style.display = 'block';
+                                document.getElementById('player-wait-msg').innerText = "👻 陣亡觀戰中...";
+                            }
+                        }
+
+                        if (data.status === 'victory') {
+                            document.getElementById('player-options').style.display = 'none';
+                            document.getElementById('player-wait-msg').style.display = 'block';
+                            document.getElementById('player-wait-msg').innerHTML = "🎉 討伐成功！<br><br><button class='btn btn-player' onclick='location.reload()'>回大廳</button>";
+                        }
+                    });
+
+                    // 監聽自己的血量與結算狀態
+                    myRef.on('value', mySnap => {
+                        let me = mySnap.val();
+                        if(!me) return;
+                        
+                        playerHp = me.hp;
+                        let hearts = "";
+                        for(let i=0; i<3; i++) hearts += (i < playerHp) ? "❤️" : "🖤";
+                        document.getElementById('player-hp-display').innerText = hearts;
+
+                        if (me.lastResult === 'wrong') {
+                            sfxWrong.currentTime = 0; sfxWrong.play().catch(e=>{});
+                            document.body.style.backgroundColor = "rgba(231, 76, 60, 0.5)";
+                            setTimeout(() => document.body.style.backgroundColor = "var(--bg)", 500);
+                            myRef.update({lastResult: ''});
+                        } else if (me.lastResult === 'correct') {
+                            sfxHit.currentTime = 0; sfxHit.play().catch(e=>{});
+                            myRef.update({lastResult: ''});
+                        }
+                    });
+
+                } else {
+                    alert("找不到這個房間喔！");
+                }
+            });
+        }
+
+        function submitAnswer(idx) {
+            if (playerHp <= 0) return;
+            
+            // 鎖定所有按鈕
+            for(let i=0; i<4; i++) {
+                document.getElementById(`btn-opt-${i}`).disabled = true;
+            }
+            
+            document.getElementById('player-options').style.display = 'none';
+            document.getElementById('player-wait-msg').style.display = 'block';
+            document.getElementById('player-wait-msg').innerText = "🏹 攻擊蓄力中！等待隊友...";
+
+            // 尋找自己的 ID 並更新答案
+            db.ref('raid_rooms/' + roomId + '/players').orderByChild('name').equalTo(myName).once('value').then(snap => {
+                snap.forEach(child => {
+                    child.ref.update({ ans: idx });
+                });
+            });
+        }
+
+        // Helper
+        function snapshotToArray(snapshot) {
+            var returnArr = [];
+            snapshot.forEach(function(childSnapshot) {
+                var item = childSnapshot.val();
+                item.id = childSnapshot.key;
+                returnArr.push(item);
+            });
+            return returnArr;
+        }
+    </script>
+</body>
+</html>
