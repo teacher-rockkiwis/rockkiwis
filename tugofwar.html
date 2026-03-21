@@ -6,7 +6,6 @@
     <title>Dr. ROCK - 1v1 文法拔河戰</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
     
-    <!-- 引入 Firebase 實時連線套件 (Compat CDN 版本) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
@@ -47,7 +46,7 @@
         #marker { font-size: 55px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 0 10px white); }
         .player-avatar { position: absolute; top: 50%; transform: translateY(-50%); font-size: 55px; z-index: 5; transition: 0.2s; }
         
-        /* ✨ 修正 P2 的對齊問題：合併 translateY 與 scaleX ✨ */
+        /* 修正法師對齊 */
         #avatar-p1 { left: 10px; filter: drop-shadow(0 0 15px var(--primary)); }
         #avatar-p2 { right: 10px; filter: drop-shadow(0 0 15px var(--secondary)); transform: translateY(-50%) scaleX(-1); }
         
@@ -97,13 +96,11 @@
 </head>
 <body>
 
-    <!-- ✨ 音效區：更換為 defender_bgm.mp3 ✨ -->
     <audio id="bgm" src="defender_bgm.mp3" loop></audio>
     <audio id="sfx-hit" src="shoot.mp3"></audio>
     <audio id="sfx-wrong" src="damage.mp3"></audio>
     <audio id="sfx-win" src="victory.mp3"></audio>
 
-    <!-- 📖 圖卡式新手教學 (強制最先顯示) -->
     <div id="intro-screen">
         <div class="tutorial-card">
             <h2 style="color:var(--gold); font-size: 32px; margin: 0 0 20px 0; text-align: center; text-shadow: 0 2px 5px rgba(0,0,0,0.3);">⚔️ 1v1 寶物爭奪戰</h2>
@@ -137,7 +134,6 @@
         </div>
     </div>
 
-    <!-- 老師的專屬 Firebase 金鑰 -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
@@ -150,16 +146,17 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        
+        // ✨ 加入 Google Sheet 接收端 API 網址 ✨
+        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
     </script>
 
-    <!-- 登入大廳 -->
     <div id="lobby">
         <h1>🏆 Grammar Tug-of-War</h1>
         <p style="color: #bdc3c7; margin-bottom: 15px; font-weight: 700;">兩人對戰，一決高下！</p>
         
         <input type="text" id="player-name" class="input-box" placeholder="請輸入你的戰鬥代號..." maxlength="10">
         
-        <!-- 房主專區 -->
         <div style="background: rgba(232, 67, 147, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 15px; border: 2px solid var(--primary);">
             <div style="color:var(--primary); font-weight: 900; margin-bottom: 10px;">👑 房主專區 (建立遊戲)</div>
             <select id="theme-select" class="theme-select">
@@ -171,7 +168,6 @@
             <button class="btn btn-create" style="width: 100%; margin: 0;" onclick="createRoom()">創建房間</button>
         </div>
 
-        <!-- 好友加入專區 -->
         <div style="background: rgba(9, 132, 227, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 10px; border: 2px solid var(--secondary);">
             <div style="color:var(--secondary); font-weight: 900; margin-bottom: 10px;">🚀 挑戰者專區 (加入遊戲)</div>
             <input type="text" id="room-code-input" class="input-box" placeholder="輸入 4 碼房間號" maxlength="4" style="margin-bottom: 10px; font-weight: 900; letter-spacing: 5px;">
@@ -181,7 +177,6 @@
         <button class="btn" style="background:transparent; color:#bdc3c7; border: 2px solid #bdc3c7; box-shadow: none; margin-top: 10px;" onclick="location.href='index.html'">🔙 放棄並回大廳</button>
     </div>
 
-    <!-- 遊戲對戰區 -->
     <div id="game-area">
         <div id="waiting-msg" style="display:none; font-size:20px; color:#f1c40f; font-weight:900; background: rgba(0,0,0,0.6); padding: 30px; border-radius: 20px; border: 4px dashed #f1c40f;">
             房間建立成功！<br>請告訴對手這個號碼：
@@ -197,7 +192,6 @@
                 <div class="combo-badge" id="combo-p2">0 連擊 🔵</div>
             </div>
 
-            <!-- 豪華拔河區 -->
             <div id="tug-container">
                 <div class="player-name-tag" id="name-p1">P1</div>
                 <div class="player-avatar" id="avatar-p1">🧙‍♂️</div>
@@ -205,33 +199,27 @@
                 <div id="beam-p1" style="width: 50%;"></div>
                 <div id="beam-p2" style="width: 50%;"></div>
                 
-                <!-- ✨ 寶物中心點 ✨ -->
                 <div id="marker" style="left: 50%;">🏆</div>
                 
                 <div class="player-avatar" id="avatar-p2">🧙‍♂️</div>
                 <div class="player-name-tag" id="name-p2">P2</div>
             </div>
 
-            <!-- 暈眩提示 -->
             <div id="stun-msg">😵⚡</div>
 
-            <!-- 題目區 -->
             <div id="question-box">題目載入中...</div>
             <div class="options-grid" id="options-container">
-                <!-- 按鈕動態生成 -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- 結算畫面 -->
     <div id="end-screen">
         <h1 id="win-msg" style="font-size: 50px; margin-bottom: 10px; line-height: 1.2;">🎉</h1>
-        <p style="font-size: 20px; color: #bdc3c7; font-weight: 700; margin-bottom: 30px;">成功奪得寶物！</p>
+        <p style="font-size: 20px; color: #bdc3c7; font-weight: 700; margin-bottom: 30px;">成功奪得寶物！<br><span style="font-size: 16px; color: #f39c12;">(成績已自動上傳)</span></p>
         <button class="btn btn-create" style="width: 250px; margin-bottom: 15px;" onclick="location.reload()">🔄 再戰一局</button>
         <button class="btn" style="background:transparent; color:#bdc3c7; border: 2px solid #bdc3c7; width: 250px; box-shadow: none;" onclick="location.href='index.html'">🔙 回大廳休息</button>
     </div>
 
-    <!-- ✨ 題庫與核心遊戲邏輯 ✨ -->
     <script>
         const questionBanks = {
             "g4-l1": [
@@ -466,7 +454,7 @@
             roomRef.once('value').then((snapshot) => {
                 if(snapshot.exists() && snapshot.val().status === 'waiting') {
                     let data = snapshot.val();
-                    currentQuestions = questionBanks[data.theme]; // 🌟 同步房主的題庫
+                    currentQuestions = questionBanks[data.theme]; 
 
                     roomRef.update({ p2: myName, status: 'playing' });
                     
@@ -493,7 +481,6 @@
 
                     updateBattleUI(data.score);
                     
-                    // 如果題目換了才重新渲染 (避免不必要的閃爍)
                     if(!currentQuestion || currentQuestions[data.qIdx].q !== currentQuestion.q) {
                         loadQuestion(data.qIdx);
                     }
@@ -507,17 +494,29 @@
 
                     let winText = "";
                     let winColor = "";
-                    if (data.score <= 0) {
+                    
+                    // ✨ 設定分數獎勵機制 ✨
+                    let myFinalScore = 20; // 預設輸家拿 20 分參加獎
+
+                    if (data.score <= 0) { // 🔴 P1 贏了
                         winText = `🔴 恭喜<br>${data.p1} 獲勝！`;
                         winColor = 'var(--primary)';
-                    } else {
+                        if(myRole === 'p1') myFinalScore = 100; // 我是贏家拿 100 分
+                    } else { // 🔵 P2 贏了
                         winText = `🔵 恭喜<br>${data.p2} 獲勝！`;
                         winColor = 'var(--secondary)';
+                        if(myRole === 'p2') myFinalScore = 100; // 我是贏家拿 100 分
                     }
                     
                     const winMsg = document.getElementById('win-msg');
                     winMsg.innerHTML = winText;
                     winMsg.style.color = winColor;
+
+                    // ✨ 將最終成績上傳給 Google Sheet API ✨
+                    fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(myName)}&score=${myFinalScore}&time=PvP&theme=${data.theme}&ip=PvP`)
+                        .then(res => console.log("對戰成績上傳成功！"))
+                        .catch(err => console.log("對戰成績上傳失敗", err));
+
                     roomRef.off(); // 遊戲結束拔掉監聽
                 }
             });
@@ -529,7 +528,6 @@
             document.getElementById('beam-p1').style.width = pos + '%';
             document.getElementById('beam-p2').style.width = (100 - pos) + '%';
 
-            // 動態表情變化 (快輸的時候流汗)
             document.getElementById('avatar-p1').innerText = score > 80 ? '😰' : (score < 30 ? '😎' : '🧙‍♂️');
             document.getElementById('avatar-p2').innerText = score < 20 ? '😰' : (score > 70 ? '😎' : '🧙‍♂️');
         }
@@ -562,11 +560,10 @@
                 myCombo++;
                 updateComboBadge();
                 
-                // 計算拉力 (連擊爆發)
                 let pullPower = 5; 
                 let textColor = "#2ecc71";
-                if (myCombo >= 5) { pullPower = 10; textColor = "#f1c40f"; } // 2倍拉力
-                else if (myCombo >= 3) { pullPower = 7.5; textColor = "#e67e22"; } // 1.5倍拉力
+                if (myCombo >= 5) { pullPower = 10; textColor = "#f1c40f"; } 
+                else if (myCombo >= 3) { pullPower = 7.5; textColor = "#e67e22"; } 
                 
                 const rect = event.target.getBoundingClientRect();
                 showFloatText(rect.left + rect.width/2, rect.top, `HIT!`, textColor);
@@ -623,7 +620,7 @@
                 isStunned = false;
                 container.classList.remove('stunned');
                 stunMsg.style.display = 'none';
-            }, 2000); // 暈眩 2 秒
+            }, 2000); 
         }
 
         function showFloatText(x, y, txt, color) { 
