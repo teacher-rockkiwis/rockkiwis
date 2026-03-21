@@ -31,7 +31,7 @@
         /* 👑 老師端大螢幕 (Host) 樣式 */
         #host-game { justify-content: flex-start; padding-top: 40px; position: relative;}
         .room-code-box { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; border: 2px dashed var(--secondary); }
-        .player-count-box { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; color: #3498db; }
+        .player-count-box { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; color: #3498db; z-index: 100;}
         
         .dragon-area { display: flex; flex-direction: column; align-items: center; margin-top: 20px; position: relative; }
         .dragon-emoji { font-size: 150px; filter: drop-shadow(0 20px 20px rgba(0,0,0,0.8)); transition: 0.2s; }
@@ -40,13 +40,22 @@
         .hp-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.5s ease-out; }
         .hp-text { position: absolute; width: 100%; text-align: center; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 900; color: white; text-shadow: 2px 2px 0 black; }
         
-        .host-question-box { background: white; color: var(--dark); padding: 30px; border-radius: 25px; font-size: 45px; font-weight: 900; width: 90%; max-width: 900px; text-align: center; margin-top: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); border: 6px solid var(--secondary); }
-        .host-timer { font-size: 60px; font-weight: 900; color: var(--secondary); margin-top: 20px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.5); font-variant-numeric: tabular-nums; }
+        .host-question-box { background: white; color: var(--dark); padding: 30px; border-radius: 25px; font-size: 45px; font-weight: 900; width: 90%; max-width: 900px; text-align: center; margin-top: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); border: 6px solid var(--secondary); display: none;}
+        .host-timer { font-size: 60px; font-weight: 900; color: var(--secondary); margin-top: 20px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.5); font-variant-numeric: tabular-nums; display: none;}
         
         .host-result-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .host-result-title { font-size: 60px; font-weight: 900; margin-bottom: 20px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .host-result-dmg { font-size: 100px; color: var(--primary); font-weight: 900; text-shadow: 0 0 30px var(--primary); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
+        /* ✨ 實時等待區與名牌樣式 ✨ */
+        #host-waiting-area { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 25px; border: 4px dashed var(--secondary); margin-top: 30px; width: 90%; max-width: 900px; display: flex; flex-direction: column; align-items: center; z-index: 50;}
+        .waiting-content { display: flex; gap: 40px; align-items: stretch; width: 100%; justify-content: center; margin-bottom: 20px;}
+        .qr-box { background: white; padding: 15px; border-radius: 15px; text-align: center;}
+        .qr-box img { width: 180px; height: 180px; }
+        .qr-box p { color: var(--dark); font-weight: 900; margin: 10px 0 0 0; font-size: 18px;}
+        .player-list-container { flex-grow: 1; text-align: left; background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; max-height: 230px; overflow-y: auto;}
+        .player-badge { background: #3498db; color: white; padding: 8px 15px; border-radius: 20px; font-size: 20px; font-weight: 900; box-shadow: 0 4px 0 #2980b9; margin: 5px; display: inline-block; animation: popIn 0.3s; }
+
         /* 📱 學生端手機 (Player) 樣式 */
         .player-hud { display: flex; justify-content: space-between; width: 100%; max-width: 400px; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 20px; margin-bottom: 20px; }
         .player-hp { font-size: 24px; letter-spacing: 3px; }
@@ -77,6 +86,7 @@
             .opt-btn { height: 100px; font-size: 24px; }
             .host-result-title { font-size: 40px; }
             .host-result-dmg { font-size: 60px; }
+            .waiting-content { flex-direction: column; align-items: center; gap: 20px;}
         }
     </style>
 </head>
@@ -88,8 +98,8 @@
     <audio id="sfx-win" src="../victory.mp3"></audio>
     <audio id="bgm" src="../arcade.mp3" loop></audio>
 
+    <!-- 老師的 Firebase 金鑰 -->
     <script>
-        // 老師的 Firebase 金鑰
         const firebaseConfig = {
             apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
             authDomain: "rockgames-48853.firebaseapp.com",
@@ -102,7 +112,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 題庫 (與拔河戰相同)
+        // 題庫
         const questionBanks = {
             "g4-l1": [
                 { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
@@ -155,7 +165,7 @@
                 { q: "The cats are ____.", opts: ["playing", "play", "plays", "played"], ans: "playing" },
                 { q: "Tom is ____.", opts: ["writing", "write", "writes", "wrote"], ans: "writing" },
                 { q: "Mary is ____.", opts: ["painting", "paint", "paints", "painted"], ans: "painting" },
-                { q: "My mom is ____.", opts: ["cooking", "cook", "cooks", "cooked"], ans: "cooking" },
+                { q: "My mom is ____.", opts: ["cooking", "cook", "cooks", "cooked"], cooking: "cooking" },
                 { q: "I am ____ to music.", opts: ["listening", "listen", "listens", "listened"], ans: "listening" },
                 { q: "He is ____ math.", opts: ["studying", "study", "studies", "studied"], ans: "studying" },
                 { q: "Where ____ you going?", opts: ["are", "is", "am", "do"], ans: "are" },
@@ -233,6 +243,18 @@
                 { q: "Mary ____ a backache.", opts: ["has", "have", "having", "had"], ans: "has" }
             ]
         };
+
+        // ✨ 網址參數解析 (檢查是否有掃碼帶入的房間號) ✨
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            if (roomParam) {
+                // 如果網址有 room 參數，自動切換到學生加入畫面，並填入房號
+                showPlayerLobby();
+                document.getElementById('room-code').value = roomParam;
+            }
+        };
+
     </script>
 
     <!-- 主選單 (已將回大廳改為回上層的老師專區) -->
@@ -274,7 +296,7 @@
     <!-- 👑 老師端：遊戲畫面 -->
     <div id="host-game" class="screen">
         <div class="room-code-box">房號：<span id="display-room-code" style="color:var(--gold);">0000</span></div>
-        <div class="player-count-box">隊員人數：<span id="player-count">0</span></div>
+        <div class="player-count-box">上線人數：<span id="player-count">0</span></div>
         
         <div class="dragon-area">
             <div class="dragon-emoji" id="dragon-emoji">🐉</div>
@@ -284,10 +306,28 @@
             </div>
         </div>
 
+        <!-- ✨ 實時等待區 (顯示 QR Code 與加入玩家名單) ✨ -->
+        <div id="host-waiting-area">
+            <h2 style="color: var(--gold); margin-top: 0; font-size: 32px; margin-bottom: 20px;">⚔️ 等待討伐隊員集結...</h2>
+            <div class="waiting-content">
+                <div class="qr-box">
+                    <img id="qr-code-img" src="" alt="掃描加入房間">
+                    <p>掃描極速加入</p>
+                </div>
+                <div class="player-list-container">
+                    <div style="color: #bdc3c7; font-weight: 900; margin-bottom: 10px; font-size: 18px;">
+                        已報到的勇者 (<span id="player-count-waiting" style="color:var(--success);">0</span> 人)
+                    </div>
+                    <div id="host-player-list">
+                        <!-- 玩家名牌將會動態生成在這裡 -->
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-host" onclick="startRound()" style="font-size: 28px; width: 100%; margin: 0; box-shadow: 0 6px 0 #922b21;">⚔️ 全員到齊，開始討伐！</button>
+        </div>
+
         <div class="host-question-box" id="host-question">等待隊員加入...</div>
         <div class="host-timer" id="host-timer">15</div>
-
-        <button class="btn btn-host" id="btn-start-raid" onclick="startRound()" style="margin-top: 30px; font-size: 30px; width: 400px; max-width: 90%;">⚔️ 全員到齊，開始討伐！</button>
 
         <!-- 老師端回合結算特效 -->
         <div id="host-result-overlay" class="host-result-overlay">
@@ -375,15 +415,28 @@
             
             bgm.volume = 0.4; bgm.play().catch(e=>{});
 
-            // 監聽玩家加入
+            // ✨ 生成專屬 QR Code (使用 QRCode API) ✨
+            // 抓取目前的網址 (忽略原有的 query 參數)，並加上 ?room=房間號碼
+            const currentUrlBase = window.location.href.split('?')[0];
+            const joinUrl = currentUrlBase + "?room=" + roomId;
+            document.getElementById('qr-code-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(joinUrl);
+
+            // ✨ 監聽玩家加入並實時更新名牌 ✨
             db.ref('raid_rooms/' + roomId + '/players').on('value', snap => {
-                let count = snapshotToArray(snap).length;
-                document.getElementById('player-count').innerText = count;
+                let players = snapshotToArray(snap);
+                document.getElementById('player-count').innerText = players.length;
+                document.getElementById('player-count-waiting').innerText = players.length;
+                
+                // 動態生成玩家名牌
+                let listHtml = players.map(p => `<span class="player-badge">${p.name}</span>`).join('');
+                document.getElementById('host-player-list').innerHTML = listHtml;
             });
         }
 
         function startRound() {
-            document.getElementById('btn-start-raid').style.display = 'none';
+            // ✨ 隱藏等待區，顯示大螢幕題目 ✨
+            document.getElementById('host-waiting-area').style.display = 'none';
+            document.getElementById('host-question').style.display = 'block';
             
             if (questions.length === 0) {
                 // 如果題目用完，重新打亂
@@ -563,7 +616,8 @@
                         let data = roomSnap.val();
                         if(!data) {
                             alert("房間已關閉！");
-                            location.reload();
+                            // 如果是掃描 QR code 進來的，重新載入會回到首頁，所以手動導回學生首頁
+                            window.location.href = '../index.html';
                             return;
                         }
 
