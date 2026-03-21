@@ -11,153 +11,341 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #e84393; --secondary: #0984e3; --success: #00b894; --error: #d63031; --bg: #2d3436; }
+        :root { --primary: #e84393; --secondary: #0984e3; --success: #00b894; --error: #d63031; --bg: #2d3436; --gold: #f1c40f;}
         * { box-sizing: border-box; touch-action: manipulation; outline: none; }
         body { background-color: var(--bg); margin: 0; font-family: 'Quicksand', sans-serif; color: white; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
         
-        #lobby, #game-area, #end-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; text-align: center; }
-        #lobby { display: flex; }
-
-        h1 { font-size: 40px; color: #f1c40f; margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .input-box { font-size: 20px; padding: 12px; border-radius: 10px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 300px; font-family: 'Quicksand'; font-weight: 700;}
-        .btn { padding: 12px 30px; font-size: 20px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 5px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand';}
-        .btn:active { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
+        #intro-screen, #lobby, #game-area, #end-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; text-align: center; }
+        #intro-screen { display: flex; background: rgba(45, 52, 54, 0.95); z-index: 100000; position: fixed; top: 0; left: 0; width: 100%; height: 100%;}
+        
+        /* 📚 圖卡式教學設計 */
+        .tutorial-card { background: white; color: #2d3436; padding: 30px; border-radius: 25px; max-width: 90%; width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 5px solid var(--gold); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .tutorial-step { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; text-align: left; background: #f1f2f6; padding: 15px; border-radius: 15px;}
+        .step-icon { font-size: 45px; flex-shrink: 0; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2)); }
+        .step-text h3 { margin: 0 0 5px 0; color: var(--primary); font-size: 20px; }
+        .step-text p { margin: 0; font-size: 15px; color: #636e72; font-weight: 700; line-height: 1.4; }
+        
+        h1 { font-size: 40px; color: var(--gold); margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .input-box { font-size: 20px; padding: 12px; border-radius: 10px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 300px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+        select.theme-select { font-size: 16px; padding: 10px; border-radius: 10px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; margin-bottom: 10px; }
+        
+        .btn { padding: 15px 30px; font-size: 22px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand';}
+        .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
         .btn-create { background: var(--primary); }
         .btn-join { background: var(--secondary); }
+        .btn-ready { background: var(--success); width: 100%; font-size: 26px; margin: 10px 0 0 0; }
 
-        .room-code-display { font-size: 40px; color: #00cec9; font-weight: 900; margin: 20px 0; letter-spacing: 10px; background: rgba(0,0,0,0.5); padding: 15px 30px; border-radius: 15px; border: 2px dashed #00cec9;}
+        .room-code-display { font-size: 45px; color: #00cec9; font-weight: 900; margin: 15px 0; letter-spacing: 8px; background: rgba(0,0,0,0.5); padding: 10px 30px; border-radius: 15px; border: 3px dashed #00cec9;}
 
-        /* 拔河區設計 */
-        #tug-container { width: 100%; max-width: 800px; position: relative; height: 120px; background: rgba(0,0,0,0.3); border-radius: 60px; margin: 20px 0; display: flex; align-items: center; border: 4px solid #636e72; overflow: hidden; }
-        #rope { width: 100%; height: 15px; background: #cd84f1; position: absolute; z-index: 1; }
-        #marker { font-size: 60px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 15px rgba(255,255,255,0.5); }
-        .player-avatar { position: absolute; top: 50%; transform: translateY(-50%); font-size: 50px; z-index: 5; }
-        #avatar-p1 { left: 10px; filter: drop-shadow(0 0 10px var(--primary)); }
-        #avatar-p2 { right: 10px; filter: drop-shadow(0 0 10px var(--secondary)); transform: scaleX(-1); }
-        .player-name-tag { position: absolute; top: -30px; font-size: 16px; font-weight: 900; background: rgba(0,0,0,0.8); padding: 3px 10px; border-radius: 10px; }
-        #name-p1 { left: 20px; color: var(--primary); }
-        #name-p2 { right: 20px; color: var(--secondary); }
+        /* ⚔️ 豪華對戰拔河區 */
+        #tug-container { width: 100%; max-width: 800px; position: relative; height: 100px; background: #1e272e; border-radius: 50px; margin: 10px 0 20px 0; display: flex; align-items: center; border: 4px solid #636e72; overflow: hidden; box-shadow: inset 0 10px 20px rgba(0,0,0,0.5); }
+        
+        /* 雙色雷射光束設計 */
+        #beam-p1 { position: absolute; left: 0; height: 20px; background: linear-gradient(90deg, var(--primary), #fd79a8); box-shadow: 0 0 15px var(--primary); transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #beam-p2 { position: absolute; right: 0; height: 20px; background: linear-gradient(-90deg, var(--secondary), #74b9ff); box-shadow: 0 0 15px var(--secondary); transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        #marker { font-size: 55px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 0 10px white); }
+        .player-avatar { position: absolute; top: 50%; transform: translateY(-50%); font-size: 55px; z-index: 5; transition: 0.2s; }
+        #avatar-p1 { left: 10px; filter: drop-shadow(0 0 15px var(--primary)); }
+        #avatar-p2 { right: 10px; filter: drop-shadow(0 0 15px var(--secondary)); transform: scaleX(-1); }
+        .player-name-tag { position: absolute; top: -35px; font-size: 16px; font-weight: 900; background: rgba(0,0,0,0.9); padding: 5px 12px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 20;}
+        #name-p1 { left: 15px; color: #fd79a8; border: 2px solid var(--primary); }
+        #name-p2 { right: 15px; color: #74b9ff; border: 2px solid var(--secondary); }
+
+        /* 狀態列設計 */
+        .status-bar { display: flex; justify-content: space-between; width: 100%; max-width: 800px; padding: 0 10px; margin-bottom: 5px;}
+        .combo-badge { font-size: 16px; font-weight: 900; padding: 4px 10px; border-radius: 10px; background: rgba(0,0,0,0.5); opacity: 0.5; transition: 0.2s; }
+        .combo-badge.active { opacity: 1; background: var(--gold); color: #2d3436; transform: scale(1.1); box-shadow: 0 0 10px var(--gold); }
 
         /* 題目區設計 */
-        #question-box { background: white; color: #2d3436; padding: 20px; border-radius: 20px; font-size: 28px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 4px solid #f1c40f; }
-        
+        #question-box { background: white; color: #2d3436; padding: 20px; border-radius: 20px; font-size: 32px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 5px solid var(--gold); transition: 0.2s;}
+        .blank-space { color: var(--error); border-bottom: 4px solid var(--error); padding: 0 15px; display: inline-block; min-width: 80px; margin: 0 5px; }
+
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 800px; }
-        .opt-btn { background: #636e72; color: white; border: none; padding: 15px; font-size: 22px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #2d3436; transition: 0.1s; font-family: 'Quicksand';}
+        .opt-btn { background: #636e72; color: white; border: none; padding: 18px; font-size: 24px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #2d3436; transition: 0.1s; font-family: 'Quicksand'; position: relative; overflow: hidden;}
         .opt-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #2d3436; }
         
-        /* 錯誤特效 */
+        /* 暈眩特效 */
+        .stunned { filter: grayscale(1) brightness(0.5); pointer-events: none; }
+        #stun-msg { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; z-index: 100; animation: popIn 0.2s; text-shadow: 0 0 20px yellow;}
+
+        /* 動畫特效 */
         .shake { animation: shake 0.3s; }
-        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
+        @keyframes popIn { 0%{transform:translate(-50%, -50%) scale(0);} 80%{transform:translate(-50%, -50%) scale(1.2);} 100%{transform:translate(-50%, -50%) scale(1);} }
+
+        /* 特效粒子 */
+        .hit-particle { position: fixed; font-size: 30px; font-weight: 900; pointer-events: none; z-index: 5000; animation: floatUp 0.8s forwards; text-shadow: 2px 2px 0px white;}
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; margin-bottom: 5px;}
+            .tutorial-card { padding: 20px; }
+            .step-text h3 { font-size: 18px; }
+            .step-text p { font-size: 13px; }
+            #tug-container { height: 80px; }
+            #marker { font-size: 40px; }
+            .player-avatar { font-size: 40px; }
+            #question-box { font-size: 22px; padding: 15px; border-width: 3px; margin-bottom: 15px;}
+            .opt-btn { font-size: 18px; padding: 12px; }
+            .room-code-display { font-size: 35px; padding: 10px; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- 音效區 -->
+    <audio id="bgm" src="arcade.mp3" loop></audio>
+    <audio id="sfx-hit" src="shoot.mp3"></audio>
+    <audio id="sfx-wrong" src="damage.mp3"></audio>
+    <audio id="sfx-win" src="victory.mp3"></audio>
+
+    <!-- 📖 圖卡式新手教學 (強制最先顯示) -->
+    <div id="intro-screen">
+        <div class="tutorial-card">
+            <h2 style="color:var(--gold); font-size: 32px; margin: 0 0 20px 0; text-align: center; text-shadow: 0 2px 5px rgba(0,0,0,0.3);">⚔️ 1v1 實時拔河對戰</h2>
+            
+            <div class="tutorial-step">
+                <div class="step-icon">🧑‍🤝‍🧑</div>
+                <div class="step-text">
+                    <h3>STEP 1：找個好朋友</h3>
+                    <p>這是一個連線對戰遊戲！請先找好一位同學，一個人當「房主」，另一個人負責「加入」。</p>
+                </div>
+            </div>
+            
+            <div class="tutorial-step">
+                <div class="step-icon">🏠</div>
+                <div class="step-text">
+                    <h3>STEP 2：創建與加入房間</h3>
+                    <p>房主：點擊「創建房間」並選擇題庫，告訴朋友你的 4 碼房號。<br>好友：輸入該房號並點擊「加入房間」。</p>
+                </div>
+            </div>
+
+            <div class="tutorial-step">
+                <div class="step-icon">⚡</div>
+                <div class="step-text">
+                    <h3>STEP 3：極速搶答大戰</h3>
+                    <p>畫面上方會顯示相同的題目。誰先答對，雷射光就會往對手那邊推！<strong style="color:var(--error);">答錯會被暈眩 2 秒喔！</strong></p>
+                </div>
+            </div>
+
+            <button class="btn btn-ready" onclick="closeIntro()">我準備好了！</button>
+            <button class="btn" style="background:#636e72; width: 100%; margin: 5px 0 0 0; font-size: 16px; padding: 10px;" onclick="location.href='index.html'">🔙 放棄並回大廳</button>
+        </div>
+    </div>
+
     <!-- ✨ 完整植入老師您的專屬 Firebase 金鑰 ✨ -->
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
-            authDomain: "rockgames-48853.firebaseapp.com",
-            databaseURL: "https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "rockgames-48853",
-            storageBucket: "rockgames-48853.firebasestorage.app",
-            messagingSenderId: "313395129447",
-            appId: "1:313395129447:web:618531167064c7afdd38c2"
+        // 擴充題庫 (每個關卡 40 題)
+        const questionBanks = {
+            "g4-l1": [
+                { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ he?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ she?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ they?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ I?", opts: ["am", "is", "are", "does"], ans: "am" },
+                { q: "Where ____ Tom?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ the dog?", opts: ["is", "are", "am", "do"], ans: "is" },
+                { q: "Where ____ the cats?", opts: ["are", "is", "am", "does"], ans: "are" },
+                { q: "Where ____ we?", opts: ["are", "is", "am", "does"], ans: "are" },
+                { q: "Where ____ Mom and Dad?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "I ____ in the bedroom.", opts: ["am", "is", "are", "be"], ans: "am" },
+                { q: "You ____ in the kitchen.", opts: ["are", "is", "am", "be"], ans: "are" },
+                { q: "He ____ in the yard.", opts: ["is", "are", "am", "be"], ans: "is" },
+                { q: "She ____ in the dining room.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "It ____ in the living room.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "We ____ in the bathroom.", opts: ["are", "is", "am", "be"], ans: "are" },
+                { q: "They ____ in the kitchen.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "The dog ____ in the house.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "The birds ____ in the tree.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "My mom ____ in the bedroom.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "My parents ____ in the yard.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Tom ____ in the living room.", opts: ["is", "are", "am", "be"], ans: "is" },
+                { q: "Mary and Tom ____ in the kitchen.", opts: ["are", "is", "am", "does"], ans: "are" },
+                { q: "The cat ____ on the sofa.", opts: ["is", "are", "am", "do"], ans: "is" },
+                { q: "____ you in the yard?", opts: ["Are", "Is", "Am", "Do"], ans: "Are" },
+                { q: "____ he in the bedroom?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
+                { q: "____ she in the dining room?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
+                { q: "____ they in the kitchen?", opts: ["Are", "Is", "Am", "Do"], ans: "Are" },
+                { q: "____ the dog in the house?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
+                { q: "Yes, I ____.", opts: ["am", "is", "are", "do"], ans: "am" },
+                { q: "Yes, he ____.", opts: ["is", "am", "are", "does"], ans: "is" },
+                { q: "Yes, they ____.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Yes, we ____.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "No, he ____ not.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "No, she ____ not.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "No, they ____ not.", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "No, I ____ not.", opts: ["am", "is", "are", "do"], ans: "am" },
+                { q: "____ it in the bathroom?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
+                { q: "Where ____ the teacher?", opts: ["is", "are", "am", "do"], ans: "is" },
+                { q: "Where ____ the students?", opts: ["are", "is", "am", "do"], ans: "are" }
+            ],
+            "g4-l2": [
+                { q: "What ____ you doing?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "What ____ he doing?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "What ____ she doing?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "What ____ they doing?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "What ____ the dog doing?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "What is he ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
+                { q: "What are you ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
+                { q: "I am ____.", opts: ["running", "run", "runs", "ran"], ans: "running" },
+                { q: "You are ____.", opts: ["reading", "read", "reads", "reader"], ans: "reading" },
+                { q: "He is ____ a book.", opts: ["reading", "read", "reads", "reader"], ans: "reading" },
+                { q: "She is ____ TV.", opts: ["watching", "watch", "watches", "watched"], ans: "watching" },
+                { q: "It is ____.", opts: ["sleeping", "sleep", "sleeps", "slept"], ans: "sleeping" },
+                { q: "We are ____.", opts: ["cooking", "cook", "cooks", "cooked"], ans: "cooking" },
+                { q: "They are ____.", opts: ["eating", "eat", "eats", "ate"], ans: "eating" },
+                { q: "The dog is ____.", opts: ["jumping", "jump", "jumps", "jumped"], ans: "jumping" },
+                { q: "The cats are ____.", opts: ["playing", "play", "plays", "played"], ans: "playing" },
+                { q: "Tom is ____.", opts: ["writing", "write", "writes", "wrote"], ans: "writing" },
+                { q: "Mary is ____.", opts: ["painting", "paint", "paints", "painted"], ans: "painting" },
+                { q: "My mom is ____.", opts: ["cooking", "cook", "cooks", "cooked"], ans: "cooking" },
+                { q: "I am ____ to music.", opts: ["listening", "listen", "listens", "listened"], ans: "listening" },
+                { q: "He is ____ math.", opts: ["studying", "study", "studies", "studied"], ans: "studying" },
+                { q: "Where ____ you going?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ he going?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ she going?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ they going?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where is she ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
+                { q: "Where are they ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
+                { q: "I am going ____ the park.", opts: ["to", "in", "on", "at"], ans: "to" },
+                { q: "He is going ____ school.", opts: ["to", "in", "on", "at"], ans: "to" },
+                { q: "She is going ____ the shop.", opts: ["to", "in", "on", "at"], ans: "to" },
+                { q: "They are going ____ the zoo.", opts: ["to", "in", "on", "at"], ans: "to" },
+                { q: "We ____ going to the shop.", opts: ["are", "is", "am", "be"], ans: "are" },
+                { q: "I ____ going to the park.", opts: ["am", "is", "are", "be"], ans: "am" },
+                { q: "He ____ going to the hospital.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "She ____ going to the library.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "He is going to ____.", opts: ["sleep", "sleeping", "sleeps", "slept"], ans: "sleep" },
+                { q: "She is going to ____.", opts: ["eat", "eating", "eats", "ate"], ans: "eat" },
+                { q: "I am going to ____.", opts: ["read", "reading", "reads", "reader"], ans: "read" },
+                { q: "They are going to ____.", opts: ["play", "playing", "plays", "played"], ans: "play" },
+                { q: "We are going to ____.", opts: ["run", "running", "runs", "ran"], ans: "run" }
+            ],
+            "g5-l1": [
+                { q: "What's ____?", opts: ["wrong", "matter", "bad", "problem"], ans: "wrong" },
+                { q: "My head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My nose ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My mouth ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My neck ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My back ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His shoulder ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Her arm ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His hand ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Her leg ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His foot ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My tooth ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Your right eye ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His left ear ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Her stomach ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My ears ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Your shoulders ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His arms ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Her hands ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My fingers ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His legs ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Her knees ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Your toes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His teeth ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Tom's eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Mary's head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My brother's foot ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My sister's feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "The dog's leg ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "The cat's ears ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Our eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Their legs ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My left foot ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My right hand ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "His left arm ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "Her right ear ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My thumbs ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Her lips ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" }
+            ],
+            "g5-l2": [
+                { q: "____ you have a fever?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
+                { q: "____ I have a cold?", opts: ["Do", "Does", "Am", "Is"], ans: "Do" },
+                { q: "____ we have a headache?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
+                { q: "____ they have a toothache?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
+                { q: "____ he have a stomachache?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ she have a sore throat?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ it have a runny nose?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ Tom have a cough?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ Mary have diarrhea?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ your brother have a cold?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "Yes, I ____.", opts: ["do", "does", "am", "are"], ans: "do" },
+                { q: "Yes, you ____.", opts: ["do", "does", "are", "is"], ans: "do" },
+                { q: "Yes, we ____.", opts: ["do", "does", "are", "is"], ans: "do" },
+                { q: "Yes, they ____.", opts: ["do", "does", "are", "is"], ans: "do" },
+                { q: "Yes, he ____.", opts: ["does", "do", "is", "has"], ans: "does" },
+                { q: "Yes, she ____.", opts: ["does", "do", "is", "has"], ans: "does" },
+                { q: "Yes, it ____.", opts: ["does", "do", "is", "has"], ans: "does" },
+                { q: "No, I ____.", opts: ["don't", "doesn't", "not", "no"], ans: "don't" },
+                { q: "No, they ____.", opts: ["don't", "doesn't", "aren't", "no"], ans: "don't" },
+                { q: "No, he ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
+                { q: "No, she ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
+                { q: "I ____ a runny nose.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "You ____ a cold.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "We ____ a fever.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "They ____ a headache.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "He ____ a sore throat.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "She ____ a stomachache.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "It ____ a runny nose.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "Tom ____ a toothache.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "Mary ____ a backache.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "My brother ____ a cough.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "My sister ____ diarrhea.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "The dog ____ a cold.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "My parents ____ a fever.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "I don't ____ a headache.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "He doesn't ____ a cold.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "She doesn't ____ a fever.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "They don't ____ a runny nose.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "Tom doesn't ____ a stomachache.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "Mary doesn't ____ a toothache.", opts: ["have", "has", "having", "had"], ans: "have" }
+            ]
         };
-        // 初始化 Firebase (使用相容模式語法)
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-    </script>
 
-    <!-- 登入大廳 -->
-    <div id="lobby">
-        <h1>⚔️ 1v1 拔河對戰</h1>
-        <p style="color: #bdc3c7; margin-bottom: 20px;">輸入名字並選擇創建或加入房間</p>
-        
-        <input type="text" id="player-name" class="input-box" placeholder="輸入你的名字..." maxlength="10">
-        
-        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 20px;">
-            <button class="btn btn-create" style="width: 100%; margin: 0 0 15px 0;" onclick="createRoom()">👑 創建房間</button>
-            <hr style="border-color: rgba(255,255,255,0.2); margin-bottom: 15px;">
-            <input type="text" id="room-code-input" class="input-box" placeholder="輸入 4 碼房間號" maxlength="4" style="margin-bottom: 10px; font-weight: 900; letter-spacing: 5px;">
-            <button class="btn btn-join" style="width: 100%; margin: 0;" onclick="joinRoom()">🚀 加入房間</button>
-        </div>
-        <button class="btn" style="background:#636e72;" onclick="location.href='index.html'">🔙 回大廳</button>
-    </div>
-
-    <!-- 遊戲對戰區 -->
-    <div id="game-area">
-        <div id="waiting-msg" style="display:none; font-size:24px; color:#f1c40f; font-weight:900;">
-            房間已建立！<br>請對手輸入號碼：
-            <div id="display-room-code" class="room-code-display">0000</div>
-            等待對手加入中... ⏳
-        </div>
-
-        <div id="battle-ui" style="display:none; width: 100%; flex-direction: column; align-items: center;">
-            <div style="display:flex; justify-content:space-between; width:100%; max-width:800px; margin-bottom:10px;">
-                <div style="color:var(--primary); font-weight:900; font-size:20px;">🔴 <span id="p1-name">P1</span></div>
-                <div style="color:var(--secondary); font-weight:900; font-size:20px;"><span id="p2-name">P2</span> 🔵</div>
-            </div>
-
-            <!-- 拔河區 -->
-            <div id="tug-container">
-                <div id="rope"></div>
-                <div class="player-name-tag" id="name-p1">P1</div>
-                <div class="player-avatar" id="avatar-p1">🧙‍♂️</div>
-                
-                <div id="marker">💎</div>
-                
-                <div class="player-avatar" id="avatar-p2">🧙‍♂️</div>
-                <div class="player-name-tag" id="name-p2">P2</div>
-            </div>
-
-            <!-- 題目區 -->
-            <div id="question-box">題目載入中...</div>
-            <div class="options-grid" id="options-container">
-                <!-- 按鈕動態生成 -->
-            </div>
-        </div>
-    </div>
-
-    <!-- 結算畫面 -->
-    <div id="end-screen">
-        <h1 id="win-msg" style="font-size: 60px; margin-bottom: 20px;">🎉</h1>
-        <button class="btn btn-create" onclick="location.reload()">再玩一次</button>
-        <button class="btn" style="background:#636e72;" onclick="location.href='index.html'">回大廳</button>
-    </div>
-
-    <script>
-        // 簡單示範題庫 (連線對戰時雙方都會看到同一題)
-        const qBank = [
-            { q: "Where ____ you?", opts: ["are", "is", "am"], ans: "are" },
-            { q: "What is he ____?", opts: ["doing", "do", "does"], ans: "doing" },
-            { q: "My head ____.", opts: ["hurts", "hurt", "hurting"], ans: "hurts" },
-            { q: "I ____ a fever.", opts: ["have", "has", "having"], ans: "have" },
-            { q: "She ____ reading a book.", opts: ["is", "are", "am"], ans: "is" },
-            { q: "Where ____ they?", opts: ["are", "is", "am"], ans: "are" },
-            { q: "My hands ____.", opts: ["hurt", "hurts", "hurting"], ans: "hurt" },
-            { q: "He ____ a cold.", opts: ["has", "have", "having"], ans: "has" }
-        ];
-
-        let myRole = ''; // 'p1' 或 'p2'
+        let myRole = ''; 
         let currentRoomId = '';
         let roomRef = null;
         let myName = '';
+        let currentQuestions = [];
         let currentQuestion = null;
+        
+        let myCombo = 0;
+        let isStunned = false;
+
+        const bgm = document.getElementById('bgm');
+        const sfxHit = document.getElementById('sfx-hit');
+        const sfxWrong = document.getElementById('sfx-wrong');
+        const sfxWin = document.getElementById('sfx-win');
+        let isAudioMuted = false;
+
+        function closeIntro() {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('lobby').style.display = 'flex';
+            bgm.volume = 0.4; bgm.play().catch(e => console.log(e));
+        }
 
         function createRoom() {
             myName = document.getElementById('player-name').value.trim();
-            if(!myName) return alert("請輸入名字！");
+            if(!myName) return alert("請輸入戰鬥代號！");
+            if(myName.length > 8) return alert("名字太長囉！");
 
-            // 產生 4 碼隨機房號
+            let selectedTheme = document.getElementById('theme-select').value;
             currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
             myRole = 'p1';
 
             roomRef = db.ref('rooms/' + currentRoomId);
-            // 寫入初始房間狀態 (score: 50 代表繩子在正中間 50%)
+            currentQuestions = questionBanks[selectedTheme];
+
             roomRef.set({
                 p1: myName, p2: '',
-                status: 'waiting', score: 50,
-                qIdx: Math.floor(Math.random() * qBank.length)
+                status: 'waiting', score: 50, theme: selectedTheme,
+                qIdx: Math.floor(Math.random() * currentQuestions.length)
             });
 
             document.getElementById('lobby').style.display = 'none';
@@ -165,32 +353,32 @@
             document.getElementById('waiting-msg').style.display = 'block';
             document.getElementById('display-room-code').innerText = currentRoomId;
 
-            // 當網頁關閉時自動刪除房間，避免佔用資料庫
             roomRef.onDisconnect().remove();
-
             listenToRoom();
         }
 
         function joinRoom() {
             myName = document.getElementById('player-name').value.trim();
             const code = document.getElementById('room-code-input').value.trim();
-            if(!myName) return alert("請輸入名字！");
+            if(!myName) return alert("請輸入戰鬥代號！");
             if(code.length !== 4) return alert("請輸入正確的 4 碼房號！");
 
             currentRoomId = code;
             myRole = 'p2';
             roomRef = db.ref('rooms/' + currentRoomId);
 
-            // 檢查房間是否存在且正在等待中
             roomRef.once('value').then((snapshot) => {
                 if(snapshot.exists() && snapshot.val().status === 'waiting') {
+                    let data = snapshot.val();
+                    currentQuestions = questionBanks[data.theme]; // 🌟 同步房主的題庫
+
                     roomRef.update({ p2: myName, status: 'playing' });
                     
                     document.getElementById('lobby').style.display = 'none';
                     document.getElementById('game-area').style.display = 'flex';
                     listenToRoom();
                 } else {
-                    alert("找不到房間或遊戲已開始！請確認號碼是否正確。");
+                    alert("找不到房間或遊戲已開始！請確認房號。");
                 }
             });
         }
@@ -200,89 +388,152 @@
                 if(!snapshot.exists()) return;
                 const data = snapshot.val();
 
-                // 遊戲開始
                 if(data.status === 'playing') {
                     document.getElementById('waiting-msg').style.display = 'none';
                     document.getElementById('battle-ui').style.display = 'flex';
                     
-                    document.getElementById('p1-name').innerText = "🔴 " + data.p1;
                     document.getElementById('name-p1').innerText = data.p1;
-                    document.getElementById('p2-name').innerText = data.p2 + " 🔵";
                     document.getElementById('name-p2').innerText = data.p2;
 
-                    updateRope(data.score);
-                    loadQuestion(data.qIdx);
+                    updateBattleUI(data.score);
+                    
+                    // 如果題目換了才重新渲染 (避免不必要的閃爍)
+                    if(!currentQuestion || currentQuestions[data.qIdx].q !== currentQuestion.q) {
+                        loadQuestion(data.qIdx);
+                    }
                 }
 
-                // 遊戲結束
                 if(data.status === 'finished') {
                     document.getElementById('game-area').style.display = 'none';
                     document.getElementById('end-screen').style.display = 'flex';
+                    bgm.pause();
+                    if(!isAudioMuted) sfxWin.play().catch(e=>{});
+
+                    let winText = "";
+                    let winColor = "";
                     if (data.score <= 0) {
-                        document.getElementById('win-msg').innerText = `${data.p1} 獲勝！🏆`;
-                        document.getElementById('win-msg').style.color = 'var(--primary)';
+                        winText = `🔴 恭喜<br>${data.p1} 獲勝！`;
+                        winColor = 'var(--primary)';
                     } else {
-                        document.getElementById('win-msg').innerText = `${data.p2} 獲勝！🏆`;
-                        document.getElementById('win-msg').style.color = 'var(--secondary)';
+                        winText = `🔵 恭喜<br>${data.p2} 獲勝！`;
+                        winColor = 'var(--secondary)';
                     }
-                    // 拔掉監聽器
-                    roomRef.off();
+                    
+                    const winMsg = document.getElementById('win-msg');
+                    winMsg.innerHTML = winText;
+                    winMsg.style.color = winColor;
+                    roomRef.off(); // 遊戲結束拔掉監聽
                 }
             });
         }
 
-        function updateRope(score) {
-            // score 50 是中間。0 是 P1 贏(最左)，100 是 P2 贏(最右)
-            let pos = Math.max(10, Math.min(90, score)); // 限制標記不能超出畫面
+        function updateBattleUI(score) {
+            let pos = Math.max(5, Math.min(95, score));
             document.getElementById('marker').style.left = pos + '%';
+            document.getElementById('beam-p1').style.width = pos + '%';
+            document.getElementById('beam-p2').style.width = (100 - pos) + '%';
+
+            // 動態表情變化 (快輸的時候流汗)
+            document.getElementById('avatar-p1').innerText = score > 80 ? '😰' : (score < 30 ? '😎' : '🧙‍♂️');
+            document.getElementById('avatar-p2').innerText = score < 20 ? '😰' : (score > 70 ? '😎' : '🧙‍♂️');
         }
 
         function loadQuestion(idx) {
-            currentQuestion = qBank[idx];
-            document.getElementById('question-box').innerHTML = currentQuestion.q;
+            currentQuestion = currentQuestions[idx];
+            let parts = currentQuestion.q.split('____');
+            let html = parts[0] + "<span class='blank-space'></span>" + (parts[1] || "");
+            document.getElementById('question-box').innerHTML = html;
             
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             
-            // 打亂選項
             let opts = [...currentQuestion.opts].sort(() => Math.random() - 0.5);
             opts.forEach(opt => {
                 let btn = document.createElement('button');
                 btn.className = 'opt-btn';
                 btn.innerText = opt;
-                btn.onclick = () => checkAnswer(opt);
+                btn.onclick = (e) => checkAnswer(opt, e);
                 container.appendChild(btn);
             });
         }
 
-        function checkAnswer(selected) {
+        function checkAnswer(selected, event) {
+            if (isStunned) return;
+
             if(selected === currentQuestion.ans) {
-                // 答對了！使用 Firebase 的 Transaction 確保兩人同時答題時分數不會算錯
+                // ⭕ 答對
+                if(!isAudioMuted) { sfxHit.currentTime = 0; sfxHit.play().catch(e=>{}); }
+                myCombo++;
+                updateComboBadge();
+                
+                // 計算拉力 (連擊爆發)
+                let pullPower = 5; 
+                let textColor = "#2ecc71";
+                if (myCombo >= 5) { pullPower = 10; textColor = "#f1c40f"; } // 2倍拉力
+                else if (myCombo >= 3) { pullPower = 7.5; textColor = "#e67e22"; } // 1.5倍拉力
+                
+                const rect = event.target.getBoundingClientRect();
+                showFloatText(rect.left + rect.width/2, rect.top, `HIT!`, textColor);
+
                 roomRef.child('score').transaction((currentScore) => {
                     if (currentScore === null) return 50;
                     
-                    // P1 往左拉 (-20)，P2 往右拉 (+20) (拉 3 次就獲勝)
-                    let newScore = myRole === 'p1' ? currentScore - 20 : currentScore + 20;
-                    
-                    // 檢查是否有人獲勝
-                    if (newScore <= 10 || newScore >= 90) {
+                    let newScore = myRole === 'p1' ? currentScore - pullPower : currentScore + pullPower;
+                    if (newScore <= 0 || newScore >= 100) {
                         roomRef.update({ status: 'finished' });
                     }
                     return newScore;
                 });
 
-                // 更換下一題 (隨機挑選)
-                roomRef.update({ qIdx: Math.floor(Math.random() * qBank.length) });
+                roomRef.update({ qIdx: Math.floor(Math.random() * currentQuestions.length) });
 
             } else {
-                // 答錯，畫面震動
-                document.getElementById('question-box').classList.add('shake');
-                document.body.style.backgroundColor = "rgba(214, 48, 49, 0.3)";
-                setTimeout(() => {
-                    document.getElementById('question-box').classList.remove('shake');
-                    document.body.style.backgroundColor = "var(--bg)";
-                }, 300);
+                // ❌ 答錯：暈眩懲罰
+                if(!isAudioMuted) { sfxWrong.currentTime = 0; sfxWrong.play().catch(e=>{}); }
+                myCombo = 0;
+                updateComboBadge();
+                stunPlayer();
             }
+        }
+
+        function updateComboBadge() {
+            const badgeId = myRole === 'p1' ? 'combo-p1' : 'combo-p2';
+            const badge = document.getElementById(badgeId);
+            
+            let prefix = myRole === 'p1' ? '🔴 ' : '';
+            let suffix = myRole === 'p2' ? ' 🔵' : '';
+
+            if (myCombo >= 5) {
+                badge.innerText = `${prefix}🔥 ${myCombo} 連擊!${suffix}`;
+                badge.classList.add('active');
+            } else if (myCombo >= 3) {
+                badge.innerText = `${prefix}⚡ ${myCombo} 連擊!${suffix}`;
+                badge.classList.add('active');
+            } else {
+                badge.innerText = `${prefix}${myCombo} 連擊${suffix}`;
+                badge.classList.remove('active');
+            }
+        }
+
+        function stunPlayer() {
+            isStunned = true;
+            const container = document.getElementById('battle-ui');
+            const stunMsg = document.getElementById('stun-msg');
+            
+            container.classList.add('stunned');
+            stunMsg.style.display = 'block';
+            
+            setTimeout(() => {
+                isStunned = false;
+                container.classList.remove('stunned');
+                stunMsg.style.display = 'none';
+            }, 2000); // 暈眩 2 秒
+        }
+
+        function showFloatText(x, y, txt, color) { 
+            const div = document.createElement('div'); div.className = 'hit-particle'; div.textContent = txt; 
+            div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color; 
+            document.body.appendChild(div); setTimeout(() => div.remove(), 800); 
         }
     </script>
 </body>
