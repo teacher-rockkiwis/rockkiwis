@@ -27,7 +27,7 @@
         
         h1 { font-size: 40px; color: var(--gold); margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .input-box { font-size: 20px; padding: 12px; border-radius: 10px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 300px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
-        select.theme-select { font-size: 16px; padding: 10px; border-radius: 10px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; margin-bottom: 10px; }
+        select.theme-select { font-size: 16px; padding: 10px; border-radius: 10px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; margin-bottom: 10px; color: #2c3e50;}
         
         .btn { padding: 15px 30px; font-size: 22px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand';}
         .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
@@ -136,7 +136,99 @@
 
     <!-- ✨ 完整植入老師您的專屬 Firebase 金鑰 ✨ -->
     <script>
-        // 擴充題庫 (每個關卡 40 題)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
+            authDomain: "rockgames-48853.firebaseapp.com",
+            databaseURL: "https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rockgames-48853",
+            storageBucket: "rockgames-48853.firebasestorage.app",
+            messagingSenderId: "313395129447",
+            appId: "1:313395129447:web:618531167064c7afdd38c2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
+
+    <!-- 登入大廳 -->
+    <div id="lobby">
+        <h1>⚔️ Grammar Tug-of-War</h1>
+        <p style="color: #bdc3c7; margin-bottom: 15px; font-weight: 700;">兩人對戰，一決高下！</p>
+        
+        <input type="text" id="player-name" class="input-box" placeholder="請輸入你的戰鬥代號..." maxlength="10">
+        
+        <!-- 房主專區 -->
+        <div style="background: rgba(232, 67, 147, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 15px; border: 2px solid var(--primary);">
+            <div style="color:var(--primary); font-weight: 900; margin-bottom: 10px;">👑 房主專區 (建立遊戲)</div>
+            <select id="theme-select" class="theme-select">
+                <option value="g4-l1">📍 四年級 L1: Where are you?</option>
+                <option value="g4-l2">🏃‍♂️ 四年級 L2: What are you doing?</option>
+                <option value="g5-l1">🤕 五年級 L1: hurt vs hurts</option>
+                <option value="g5-l2">🤒 五年級 L2: have vs has</option>
+            </select>
+            <button class="btn btn-create" style="width: 100%; margin: 0;" onclick="createRoom()">創建房間</button>
+        </div>
+
+        <!-- 好友加入專區 -->
+        <div style="background: rgba(9, 132, 227, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 10px; border: 2px solid var(--secondary);">
+            <div style="color:var(--secondary); font-weight: 900; margin-bottom: 10px;">🚀 挑戰者專區 (加入遊戲)</div>
+            <input type="text" id="room-code-input" class="input-box" placeholder="輸入 4 碼房間號" maxlength="4" style="margin-bottom: 10px; font-weight: 900; letter-spacing: 5px;">
+            <button class="btn btn-join" style="width: 100%; margin: 0;" onclick="joinRoom()">加入對戰</button>
+        </div>
+        
+        <button class="btn" style="background:transparent; color:#bdc3c7; border: 2px solid #bdc3c7; box-shadow: none; margin-top: 10px;" onclick="location.href='index.html'">🔙 放棄並回大廳</button>
+    </div>
+
+    <!-- 遊戲對戰區 -->
+    <div id="game-area">
+        <div id="waiting-msg" style="display:none; font-size:20px; color:#f1c40f; font-weight:900; background: rgba(0,0,0,0.6); padding: 30px; border-radius: 20px; border: 4px dashed #f1c40f;">
+            房間建立成功！<br>請告訴對手這個號碼：
+            <div id="display-room-code" class="room-code-display">0000</div>
+            等待對手加入中... ⏳<br>
+            <span style="font-size: 14px; color:#bdc3c7; margin-top: 10px; display: block;">(對手加入後會自動開始)</span>
+        </div>
+
+        <div id="battle-ui" style="display:none; width: 100%; flex-direction: column; align-items: center; position: relative;">
+            
+            <div class="status-bar">
+                <div class="combo-badge" id="combo-p1">🔴 0 連擊</div>
+                <div class="combo-badge" id="combo-p2">0 連擊 🔵</div>
+            </div>
+
+            <!-- 豪華拔河區 -->
+            <div id="tug-container">
+                <div class="player-name-tag" id="name-p1">P1</div>
+                <div class="player-avatar" id="avatar-p1">🧙‍♂️</div>
+                
+                <div id="beam-p1" style="width: 50%;"></div>
+                <div id="beam-p2" style="width: 50%;"></div>
+                
+                <div id="marker" style="left: 50%;">⚔️</div>
+                
+                <div class="player-avatar" id="avatar-p2">🧙‍♂️</div>
+                <div class="player-name-tag" id="name-p2">P2</div>
+            </div>
+
+            <!-- 暈眩提示 -->
+            <div id="stun-msg">😵⚡</div>
+
+            <!-- 題目區 -->
+            <div id="question-box">題目載入中...</div>
+            <div class="options-grid" id="options-container">
+                <!-- 按鈕動態生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="end-screen">
+        <h1 id="win-msg" style="font-size: 50px; margin-bottom: 10px; line-height: 1.2;">🎉</h1>
+        <p style="font-size: 20px; color: #bdc3c7; font-weight: 700; margin-bottom: 30px;">精彩的對決！</p>
+        <button class="btn btn-create" style="width: 250px; margin-bottom: 15px;" onclick="location.reload()">🔄 再戰一局</button>
+        <button class="btn" style="background:transparent; color:#bdc3c7; border: 2px solid #bdc3c7; width: 250px; box-shadow: none;" onclick="location.href='index.html'">🔙 回大廳休息</button>
+    </div>
+
+    <!-- ✨ 題庫與核心遊戲邏輯 ✨ -->
+    <script>
         const questionBanks = {
             "g4-l1": [
                 { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
