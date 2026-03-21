@@ -82,11 +82,11 @@
 </head>
 <body>
 
-    <!-- 音效 -->
-    <audio id="sfx-hit" src="shoot.mp3"></audio>
-    <audio id="sfx-wrong" src="damage.mp3"></audio>
-    <audio id="sfx-win" src="victory.mp3"></audio>
-    <audio id="bgm" src="arcade.mp3" loop></audio>
+    <!-- 音效 (已加上 ../ 以對應上一層資料夾) -->
+    <audio id="sfx-hit" src="../shoot.mp3"></audio>
+    <audio id="sfx-wrong" src="../damage.mp3"></audio>
+    <audio id="sfx-win" src="../victory.mp3"></audio>
+    <audio id="bgm" src="../arcade.mp3" loop></audio>
 
     <script>
         // 老師的 Firebase 金鑰
@@ -235,13 +235,13 @@
         };
     </script>
 
-    <!-- 主選單 -->
+    <!-- 主選單 (已將回大廳改為回上層的老師專區) -->
     <div id="main-menu" class="screen active-screen">
         <h1>🐉 Boss Raid 巨龍討伐戰</h1>
         <p class="subtitle">全班共鬥！打敗時態破壞龍！</p>
         <button class="btn btn-host" onclick="showHostLobby()">👑 我是大螢幕 (老師開房)</button>
         <button class="btn btn-player" onclick="showPlayerLobby()">📱 我是討伐隊員 (學生加入)</button>
-        <button class="btn" style="background:#7f8c8d; margin-top:30px;" onclick="location.href='index.html'">🔙 回大廳</button>
+        <button class="btn" style="background:#7f8c8d; margin-top:30px;" onclick="location.href='../teacher.html'">🔙 回老師專區</button>
     </div>
 
     <!-- 👑 老師端：開房大廳 -->
@@ -587,10 +587,11 @@
                             }
                         }
 
+                        // 回到上層大廳
                         if (data.status === 'victory') {
                             document.getElementById('player-options').style.display = 'none';
                             document.getElementById('player-wait-msg').style.display = 'block';
-                            document.getElementById('player-wait-msg').innerHTML = "🎉 討伐成功！<br><br><button class='btn btn-player' onclick='location.reload()'>回大廳</button>";
+                            document.getElementById('player-wait-msg').innerHTML = "🎉 討伐成功！<br><br><button class='btn btn-player' onclick='location.href=\"../index.html\"'>回大廳</button>";
                         }
                     });
 
