@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dr. ROCK - 1v1 文法拔河戰</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    
+    <!-- 引入 Firebase 實時連線套件 (Compat CDN 版本) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --primary: #e84393; --secondary: #0984e3; --success: #00b894; --error: #d63031; --bg: #2d3436; }
+        * { box-sizing: border-box; touch-action: manipulation; outline: none; }
+        body { background-color: var(--bg); margin: 0; font-family: 'Quicksand', sans-serif; color: white; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+        
+        #lobby, #game-area, #end-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; text-align: center; }
+        #lobby { display: flex; }
+
+        h1 { font-size: 40px; color: #f1c40f; margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .input-box { font-size: 20px; padding: 12px; border-radius: 10px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 300px; font-family: 'Quicksand'; font-weight: 700;}
+        .btn { padding: 12px 30px; font-size: 20px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 5px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand';}
+        .btn:active { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
+        .btn-create { background: var(--primary); }
+        .btn-join { background: var(--secondary); }
+
+        .room-code-display { font-size: 40px; color: #00cec9; font-weight: 900; margin: 20px 0; letter-spacing: 10px; background: rgba(0,0,0,0.5); padding: 15px 30px; border-radius: 15px; border: 2px dashed #00cec9;}
+
+        /* 拔河區設計 */
+        #tug-container { width: 100%; max-width: 800px; position: relative; height: 120px; background: rgba(0,0,0,0.3); border-radius: 60px; margin: 20px 0; display: flex; align-items: center; border: 4px solid #636e72; overflow: hidden; }
+        #rope { width: 100%; height: 15px; background: #cd84f1; position: absolute; z-index: 1; }
+        #marker { font-size: 60px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 15px rgba(255,255,255,0.5); }
+        .player-avatar { position: absolute; top: 50%; transform: translateY(-50%); font-size: 50px; z-index: 5; }
+        #avatar-p1 { left: 10px; filter: drop-shadow(0 0 10px var(--primary)); }
+        #avatar-p2 { right: 10px; filter: drop-shadow(0 0 10px var(--secondary)); transform: scaleX(-1); }
+        .player-name-tag { position: absolute; top: -30px; font-size: 16px; font-weight: 900; background: rgba(0,0,0,0.8); padding: 3px 10px; border-radius: 10px; }
+        #name-p1 { left: 20px; color: var(--primary); }
+        #name-p2 { right: 20px; color: var(--secondary); }
+
+        /* 題目區設計 */
+        #question-box { background: white; color: #2d3436; padding: 20px; border-radius: 20px; font-size: 28px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 4px solid #f1c40f; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 800px; }
+        .opt-btn { background: #636e72; color: white; border: none; padding: 15px; font-size: 22px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #2d3436; transition: 0.1s; font-family: 'Quicksand';}
+        .opt-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #2d3436; }
+        
+        /* 錯誤特效 */
+        .shake { animation: shake 0.3s; }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
+    </style>
+</head>
+<body>
+
+    <!-- ✨ 完整植入老師您的專屬 Firebase 金鑰 ✨ -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
+            authDomain: "rockgames-48853.firebaseapp.com",
+            databaseURL: "https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rockgames-48853",
+            storageBucket: "rockgames-48853.firebasestorage.app",
+            messagingSenderId: "313395129447",
+            appId: "1:313395129447:web:618531167064c7afdd38c2"
+        };
+        // 初始化 Firebase (使用相容模式語法)
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
+
+    <!-- 登入大廳 -->
+    <div id="lobby">
+        <h1>⚔️ 1v1 拔河對戰</h1>
+        <p style="color: #bdc3c7; margin-bottom: 20px;">輸入名字並選擇創建或加入房間</p>
+        
+        <input type="text" id="player-name" class="input-box" placeholder="輸入你的名字..." maxlength="10">
+        
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 20px;">
+            <button class="btn btn-create" style="width: 100%; margin: 0 0 15px 0;" onclick="createRoom()">👑 創建房間</button>
+            <hr style="border-color: rgba(255,255,255,0.2); margin-bottom: 15px;">
+            <input type="text" id="room-code-input" class="input-box" placeholder="輸入 4 碼房間號" maxlength="4" style="margin-bottom: 10px; font-weight: 900; letter-spacing: 5px;">
+            <button class="btn btn-join" style="width: 100%; margin: 0;" onclick="joinRoom()">🚀 加入房間</button>
+        </div>
+        <button class="btn" style="background:#636e72;" onclick="location.href='index.html'">🔙 回大廳</button>
+    </div>
+
+    <!-- 遊戲對戰區 -->
+    <div id="game-area">
+        <div id="waiting-msg" style="display:none; font-size:24px; color:#f1c40f; font-weight:900;">
+            房間已建立！<br>請對手輸入號碼：
+            <div id="display-room-code" class="room-code-display">0000</div>
+            等待對手加入中... ⏳
+        </div>
+
+        <div id="battle-ui" style="display:none; width: 100%; flex-direction: column; align-items: center;">
+            <div style="display:flex; justify-content:space-between; width:100%; max-width:800px; margin-bottom:10px;">
+                <div style="color:var(--primary); font-weight:900; font-size:20px;">🔴 <span id="p1-name">P1</span></div>
+                <div style="color:var(--secondary); font-weight:900; font-size:20px;"><span id="p2-name">P2</span> 🔵</div>
+            </div>
+
+            <!-- 拔河區 -->
+            <div id="tug-container">
+                <div id="rope"></div>
+                <div class="player-name-tag" id="name-p1">P1</div>
+                <div class="player-avatar" id="avatar-p1">🧙‍♂️</div>
+                
+                <div id="marker">💎</div>
+                
+                <div class="player-avatar" id="avatar-p2">🧙‍♂️</div>
+                <div class="player-name-tag" id="name-p2">P2</div>
+            </div>
+
+            <!-- 題目區 -->
+            <div id="question-box">題目載入中...</div>
+            <div class="options-grid" id="options-container">
+                <!-- 按鈕動態生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="end-screen">
+        <h1 id="win-msg" style="font-size: 60px; margin-bottom: 20px;">🎉</h1>
+        <button class="btn btn-create" onclick="location.reload()">再玩一次</button>
+        <button class="btn" style="background:#636e72;" onclick="location.href='index.html'">回大廳</button>
+    </div>
+
+    <script>
+        // 簡單示範題庫 (連線對戰時雙方都會看到同一題)
+        const qBank = [
+            { q: "Where ____ you?", opts: ["are", "is", "am"], ans: "are" },
+            { q: "What is he ____?", opts: ["doing", "do", "does"], ans: "doing" },
+            { q: "My head ____.", opts: ["hurts", "hurt", "hurting"], ans: "hurts" },
+            { q: "I ____ a fever.", opts: ["have", "has", "having"], ans: "have" },
+            { q: "She ____ reading a book.", opts: ["is", "are", "am"], ans: "is" },
+            { q: "Where ____ they?", opts: ["are", "is", "am"], ans: "are" },
+            { q: "My hands ____.", opts: ["hurt", "hurts", "hurting"], ans: "hurt" },
+            { q: "He ____ a cold.", opts: ["has", "have", "having"], ans: "has" }
+        ];
+
+        let myRole = ''; // 'p1' 或 'p2'
+        let currentRoomId = '';
+        let roomRef = null;
+        let myName = '';
+        let currentQuestion = null;
+
+        function createRoom() {
+            myName = document.getElementById('player-name').value.trim();
+            if(!myName) return alert("請輸入名字！");
+
+            // 產生 4 碼隨機房號
+            currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
+            myRole = 'p1';
+
+            roomRef = db.ref('rooms/' + currentRoomId);
+            // 寫入初始房間狀態 (score: 50 代表繩子在正中間 50%)
+            roomRef.set({
+                p1: myName, p2: '',
+                status: 'waiting', score: 50,
+                qIdx: Math.floor(Math.random() * qBank.length)
+            });
+
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game-area').style.display = 'flex';
+            document.getElementById('waiting-msg').style.display = 'block';
+            document.getElementById('display-room-code').innerText = currentRoomId;
+
+            // 當網頁關閉時自動刪除房間，避免佔用資料庫
+            roomRef.onDisconnect().remove();
+
+            listenToRoom();
+        }
+
+        function joinRoom() {
+            myName = document.getElementById('player-name').value.trim();
+            const code = document.getElementById('room-code-input').value.trim();
+            if(!myName) return alert("請輸入名字！");
+            if(code.length !== 4) return alert("請輸入正確的 4 碼房號！");
+
+            currentRoomId = code;
+            myRole = 'p2';
+            roomRef = db.ref('rooms/' + currentRoomId);
+
+            // 檢查房間是否存在且正在等待中
+            roomRef.once('value').then((snapshot) => {
+                if(snapshot.exists() && snapshot.val().status === 'waiting') {
+                    roomRef.update({ p2: myName, status: 'playing' });
+                    
+                    document.getElementById('lobby').style.display = 'none';
+                    document.getElementById('game-area').style.display = 'flex';
+                    listenToRoom();
+                } else {
+                    alert("找不到房間或遊戲已開始！請確認號碼是否正確。");
+                }
+            });
+        }
+
+        function listenToRoom() {
+            roomRef.on('value', (snapshot) => {
+                if(!snapshot.exists()) return;
+                const data = snapshot.val();
+
+                // 遊戲開始
+                if(data.status === 'playing') {
+                    document.getElementById('waiting-msg').style.display = 'none';
+                    document.getElementById('battle-ui').style.display = 'flex';
+                    
+                    document.getElementById('p1-name').innerText = "🔴 " + data.p1;
+                    document.getElementById('name-p1').innerText = data.p1;
+                    document.getElementById('p2-name').innerText = data.p2 + " 🔵";
+                    document.getElementById('name-p2').innerText = data.p2;
+
+                    updateRope(data.score);
+                    loadQuestion(data.qIdx);
+                }
+
+                // 遊戲結束
+                if(data.status === 'finished') {
+                    document.getElementById('game-area').style.display = 'none';
+                    document.getElementById('end-screen').style.display = 'flex';
+                    if (data.score <= 0) {
+                        document.getElementById('win-msg').innerText = `${data.p1} 獲勝！🏆`;
+                        document.getElementById('win-msg').style.color = 'var(--primary)';
+                    } else {
+                        document.getElementById('win-msg').innerText = `${data.p2} 獲勝！🏆`;
+                        document.getElementById('win-msg').style.color = 'var(--secondary)';
+                    }
+                    // 拔掉監聽器
+                    roomRef.off();
+                }
+            });
+        }
+
+        function updateRope(score) {
+            // score 50 是中間。0 是 P1 贏(最左)，100 是 P2 贏(最右)
+            let pos = Math.max(10, Math.min(90, score)); // 限制標記不能超出畫面
+            document.getElementById('marker').style.left = pos + '%';
+        }
+
+        function loadQuestion(idx) {
+            currentQuestion = qBank[idx];
+            document.getElementById('question-box').innerHTML = currentQuestion.q;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            // 打亂選項
+            let opts = [...currentQuestion.opts].sort(() => Math.random() - 0.5);
+            opts.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected) {
+            if(selected === currentQuestion.ans) {
+                // 答對了！使用 Firebase 的 Transaction 確保兩人同時答題時分數不會算錯
+                roomRef.child('score').transaction((currentScore) => {
+                    if (currentScore === null) return 50;
+                    
+                    // P1 往左拉 (-20)，P2 往右拉 (+20) (拉 3 次就獲勝)
+                    let newScore = myRole === 'p1' ? currentScore - 20 : currentScore + 20;
+                    
+                    // 檢查是否有人獲勝
+                    if (newScore <= 10 || newScore >= 90) {
+                        roomRef.update({ status: 'finished' });
+                    }
+                    return newScore;
+                });
+
+                // 更換下一題 (隨機挑選)
+                roomRef.update({ qIdx: Math.floor(Math.random() * qBank.length) });
+
+            } else {
+                // 答錯，畫面震動
+                document.getElementById('question-box').classList.add('shake');
+                document.body.style.backgroundColor = "rgba(214, 48, 49, 0.3)";
+                setTimeout(() => {
+                    document.getElementById('question-box').classList.remove('shake');
+                    document.body.style.backgroundColor = "var(--bg)";
+                }, 300);
+            }
+        }
+    </script>
+</body>
+</html>
