@@ -35,13 +35,14 @@
         
         .btn { padding: 15px 30px; font-size: 22px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand'; flex-shrink: 0;}
         .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
+        .btn:disabled { filter: grayscale(1); cursor: not-allowed; transform: translateY(6px); box-shadow: none; opacity: 0.8;}
         .btn-create { background: var(--primary); }
         .btn-join { background: var(--secondary); }
         .btn-ready { background: var(--success); width: 100%; font-size: 26px; margin: 10px 0 0 0; }
 
         .room-code-display { font-size: 45px; color: #00cec9; font-weight: 900; margin: 15px 0; letter-spacing: 8px; background: rgba(0,0,0,0.5); padding: 10px 30px; border-radius: 15px; border: 3px dashed #00cec9;}
 
-        /* ✨ 懸浮聊天室 UI 設計 ✨ */
+        /* ✨ 懸浮聊天室與提示 UI ✨ */
         #chat-toggle-btn {
             position: fixed; bottom: 20px; left: 20px; width: 65px; height: 65px;
             border-radius: 50%; background: var(--secondary); color: white; font-size: 32px;
@@ -51,6 +52,18 @@
         #chat-toggle-btn:hover { transform: scale(1.1); }
         #chat-toggle-btn:active { transform: scale(0.9); }
         #chat-toggle-btn.has-new { animation: jumpShake 0.6s infinite; background: var(--error); }
+
+        #chat-tooltip {
+            position: fixed; bottom: 35px; left: 95px; background: var(--error); color: white;
+            padding: 8px 15px; border-radius: 15px; font-weight: 900; font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 50000; animation: bounceX 1s infinite;
+            pointer-events: none; transition: 0.3s;
+        }
+        #chat-tooltip::before {
+            content: ''; position: absolute; top: 50%; left: -8px; transform: translateY(-50%);
+            border-width: 6px 8px 6px 0; border-style: solid; border-color: transparent var(--error) transparent transparent;
+        }
+        @keyframes bounceX { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
 
         #global-chat-container {
             position: fixed; bottom: 95px; left: 20px; width: 350px; max-width: calc(100vw - 40px);
@@ -75,6 +88,7 @@
         #chat-messages::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
         .chat-msg { background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 12px; word-break: break-word; line-height: 1.4;}
         .chat-name { font-weight: 900; color: #f1c40f; margin-right: 5px;}
+        .chat-time { font-size: 11px; color: #b2bec3; float: right; margin-left: 10px; margin-top: 3px; font-weight: 700;}
         .my-msg { background: rgba(9, 132, 227, 0.2); border-left: 4px solid var(--secondary);}
         .my-msg .chat-name { color: #81ecec; }
         .system-msg { color: var(--success); font-weight: 900; text-align: center; background: transparent; font-size: 14px;}
@@ -145,6 +159,7 @@
             #lobby { padding-top: 15px; }
             #chat-toggle-btn { width: 55px; height: 55px; font-size: 28px; bottom: 15px; left: 15px; }
             #global-chat-container { bottom: 80px; left: 15px; width: 300px; height: 300px; }
+            #chat-tooltip { bottom: 25px; left: 80px; font-size: 12px; padding: 6px 10px; }
         }
     </style>
 </head>
@@ -171,7 +186,7 @@
                 <div class="step-icon">💬</div>
                 <div class="step-text">
                     <h3>STEP 2：在左下角約戰</h3>
-                    <p>房主：點擊「創建房間」並選擇題庫，<strong style="color:var(--primary);">點左下角聊天室貼出房號！</strong><br>好友：看聊天室輸入房號並點擊加入。</p>
+                    <p>房主：點擊「創建房間」，<strong style="color:var(--primary);">系統會自動在左下角發佈房號！</strong><br>好友：看聊天室輸入房號並點擊加入。</p>
                 </div>
             </div>
 
@@ -179,7 +194,7 @@
                 <div class="step-icon">⚡</div>
                 <div class="step-text">
                     <h3>STEP 3：極速搶答大戰</h3>
-                    <p>畫面上方會顯示相同的題目。誰先答對，光束就會把寶物推向對手！<strong style="color:var(--error);">答錯會被暈眩 2 秒喔！</strong></p>
+                    <p>誰先答對，光束就會把寶物推向對手！<strong style="color:var(--error);">答錯會被暈眩 2 秒喔！</strong>對戰結束後可以直接申請再戰！</p>
                 </div>
             </div>
 
@@ -215,11 +230,12 @@
         ];
     </script>
 
-    <!-- ✨ 懸浮聊天室與按鈕 (全域存在) ✨ -->
+    <!-- ✨ 懸浮聊天室與提示 (全域存在) ✨ -->
+    <div id="chat-tooltip">按此來和同學聊天約戰！</div>
     <button id="chat-toggle-btn" onclick="toggleChat()">💬</button>
     <div id="global-chat-container" class="hidden">
         <div class="chat-header">
-            <span>💬 全服約戰聊天室</span>
+            <span id="chat-header-text">💬 全服約戰聊天室</span>
             <button class="close-chat" onclick="toggleChat()">✖</button>
         </div>
         <div id="chat-messages">
@@ -263,10 +279,10 @@
     <!-- 遊戲對戰區 -->
     <div id="game-area">
         <div id="waiting-msg" style="display:none; font-size:20px; color:#f1c40f; font-weight:900; background: rgba(0,0,0,0.6); padding: 30px; border-radius: 20px; border: 4px dashed #f1c40f;">
-            房間建立成功！<br>請在左下角聊天室告訴對手房號：
+            房間建立成功！<br>系統已在聊天室發布廣播：
             <div id="display-room-code" class="room-code-display">0000</div>
             等待對手加入中... ⏳<br>
-            <span style="font-size: 14px; color:#bdc3c7; margin-top: 10px; display: block;">(對手加入後會自動開始)</span>
+            <span style="font-size: 14px; color:#bdc3c7; margin-top: 10px; display: block;">(如果取消返回，廣播會自動收回)</span>
         </div>
 
         <div id="battle-ui" style="display:none; width: 100%; flex-direction: column; align-items: center; position: relative;">
@@ -304,9 +320,12 @@
     <!-- 結算畫面 -->
     <div id="end-screen">
         <h1 id="win-msg" style="font-size: 50px; margin-bottom: 10px; line-height: 1.2;">🎉</h1>
-        <p style="font-size: 20px; color: #bdc3c7; font-weight: 700; margin-bottom: 30px;">成功奪得寶物！<br><span style="font-size: 16px; color: #f39c12;">(成績已自動上傳)</span></p>
-        <button class="btn btn-create" style="width: 250px; margin-bottom: 15px;" onclick="location.reload()">🔄 再戰一局</button>
-        <button class="btn" style="background:transparent; color:#bdc3c7; border: 2px solid #bdc3c7; width: 250px; box-shadow: none;" onclick="location.href='index.html'">🔙 回大廳休息</button>
+        <p style="font-size: 20px; color: #bdc3c7; font-weight: 700; margin-bottom: 25px;">成功奪得寶物！<br><span style="font-size: 16px; color: #f39c12;">(成績已自動上傳)</span></p>
+        
+        <!-- ✨ 再戰一局按鈕 ✨ -->
+        <button class="btn btn-create" id="btn-rematch" style="width: 280px; margin-bottom: 15px; font-size: 22px; padding: 15px;" onclick="requestRematch()">🔄 準備再戰 (維持原房)</button>
+        
+        <button class="btn" style="background:#636e72; border: none; width: 280px; box-shadow: 0 6px 0 #2d3436; font-size: 18px; padding: 12px;" onclick="leaveRoomAndReload()">🚪 離開並回大廳</button>
     </div>
 
     <script>
@@ -461,14 +480,18 @@
         let userIP = "Unknown";
         let hasLoggedIP = false;
 
+        // ✨ 聊天室變數 ✨
+        let currentChatRef = null;
+        let currentChatContext = 'global'; // 'global' or 'private'
+        let systemBroadcastKey = null;
+
         window.onload = function() {
-            // ✨ 一進來就抓取 IP ✨
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => { userIP = data.ip; })
                 .catch(err => console.log("無法獲取 IP"));
                 
-            initGlobalChat();
+            initChat('global');
         };
 
         function containsBadWord(text) {
@@ -476,9 +499,8 @@
             return badWords.some(bad => cleanText.includes(bad));
         }
 
-        // ✨ 記錄使用者行為與 IP 的函數 ✨
         function logUserActivity(actionType, themeInfo = "Login") {
-            if (hasLoggedIP && actionType !== "Chat") return; // 避免頻繁發送，但Chat可持續紀錄
+            if (hasLoggedIP && actionType !== "Chat") return; 
             if (!myName) return;
             
             fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(myName)}&score=0&time=${encodeURIComponent(actionType)}&theme=${encodeURIComponent(themeInfo)}&ip=${userIP}`)
@@ -495,7 +517,8 @@
             
             if (isChatOpen) {
                 chatCont.classList.remove('hidden');
-                toggleBtn.classList.remove('has-new'); // 消除紅點提示
+                toggleBtn.classList.remove('has-new'); 
+                document.getElementById('chat-tooltip').style.display = 'none'; // 永久隱藏提示
                 const chatBox = document.getElementById('chat-messages');
                 chatBox.scrollTop = chatBox.scrollHeight;
             } else {
@@ -503,29 +526,52 @@
             }
         }
 
-        function initGlobalChat() {
-            const chatRef = db.ref('global_chat_tug').limitToLast(30); 
+        // ✨ 初始化/切換聊天室 (全域/私人) ✨
+        function initChat(context, roomId = null) {
+            if (currentChatRef) currentChatRef.off(); // 移除舊監聽
+            document.getElementById('chat-messages').innerHTML = ''; // 清空畫面
+            currentChatContext = context;
             
-            chatRef.on('child_added', (snapshot) => {
+            if (context === 'global') {
+                document.getElementById('chat-header-text').innerText = "💬 全服約戰聊天室";
+                // ✨ 每日自動封存 (只抓取今天的訊息) ✨
+                const startOfDay = new Date().setHours(0, 0, 0, 0);
+                currentChatRef = db.ref('global_chat_tug').orderByChild('timestamp').startAt(startOfDay);
+            } else {
+                document.getElementById('chat-header-text').innerText = "🔒 私人對戰聊天室";
+                currentChatRef = db.ref('rooms/' + roomId + '/chat').orderByChild('timestamp');
+            }
+
+            currentChatRef.on('child_added', (snapshot) => {
                 const msg = snapshot.val();
                 const chatBox = document.getElementById('chat-messages');
                 const isMe = myName && msg.name === myName;
                 
                 const msgDiv = document.createElement('div');
+                msgDiv.id = `msg-${snapshot.key}`; // 綁定 ID 以便刪除
                 msgDiv.className = `chat-msg ${isMe ? 'my-msg' : ''}`;
                 
                 const safeName = msg.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 const safeText = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 
-                msgDiv.innerHTML = `<span class="chat-name">${safeName}</span>: ${safeText}`;
+                // ✨ 格式化時間戳記 ✨
+                const date = new Date(msg.timestamp || Date.now());
+                const timeStr = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+                
+                msgDiv.innerHTML = `<span class="chat-name">${safeName}</span>: ${safeText} <span class="chat-time">${timeStr}</span>`;
                 chatBox.appendChild(msgDiv);
                 
                 if (isChatOpen) {
                     chatBox.scrollTop = chatBox.scrollHeight;
                 } else if (msg.name !== "📢 系統廣播" && !isMe) {
-                    // 如果聊天室沒開，且不是自己也不是系統發的，讓按鈕跳動
                     document.getElementById('chat-toggle-btn').classList.add('has-new');
                 }
+            });
+
+            // 監聽訊息刪除 (用於自動收回廣播)
+            currentChatRef.on('child_removed', (snapshot) => {
+                const msgDiv = document.getElementById(`msg-${snapshot.key}`);
+                if (msgDiv) msgDiv.remove();
             });
         }
 
@@ -537,7 +583,7 @@
             const msgText = msgInputEl.value.trim();
             
             if(!tempName) {
-                alert("⚠️ 請先在大廳中央輸入你的『戰鬥代號』才能聊天喔！");
+                alert("⚠️ 請先在畫面中央輸入你的『戰鬥代號』才能聊天喔！");
                 nameInputEl.focus();
                 return;
             }
@@ -556,12 +602,14 @@
             window.lastMsgTime = Date.now();
             
             myName = tempName;
-            logUserActivity('Chat', 'Chat Log'); // ✨ 聊天時順便記錄 IP ✨
+            logUserActivity('Chat', 'Chat Log');
 
-            db.ref('global_chat_tug').push({
+            // 依據當前環境推播訊息
+            const targetRef = currentChatContext === 'global' ? db.ref('global_chat_tug') : db.ref('rooms/' + currentRoomId + '/chat');
+            targetRef.push({
                 name: tempName,
                 text: msgText,
-                ip: userIP, // ✨ 直接把 IP 也塞進 Firebase 聊天紀錄裡 ✨
+                ip: userIP,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
             
@@ -574,6 +622,13 @@
             bgm.volume = 0.4; bgm.play().catch(e => console.log(e));
         }
 
+        function removeSystemBroadcast() {
+            if (systemBroadcastKey) {
+                db.ref('global_chat_tug/' + systemBroadcastKey).remove();
+                systemBroadcastKey = null;
+            }
+        }
+
         function createRoom() {
             myName = document.getElementById('player-name').value.trim();
             if(!myName) return alert("請輸入戰鬥代號！");
@@ -584,7 +639,7 @@
             currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
             myRole = 'p1';
 
-            logUserActivity('Host Room', selectedTheme); // ✨ 開房時記錄 IP ✨
+            logUserActivity('Host Room', selectedTheme);
 
             roomRef = db.ref('rooms/' + currentRoomId);
             currentQuestions = questionBanks[selectedTheme];
@@ -593,6 +648,7 @@
                 p1: myName, p2: '',
                 status: 'waiting', score: 50, theme: selectedTheme,
                 p1Combo: 0, p2Combo: 0, winner: '',
+                p1Ready: false, p2Ready: false,
                 qIdx: Math.floor(Math.random() * currentQuestions.length)
             });
 
@@ -600,15 +656,22 @@
             document.getElementById('game-area').style.display = 'flex';
             document.getElementById('waiting-msg').style.display = 'block';
             document.getElementById('display-room-code').innerText = currentRoomId;
+            document.getElementById('chat-tooltip').style.display = 'none'; // 隱藏提示
 
-            roomRef.onDisconnect().remove();
-            listenToRoom();
-            
-            db.ref('global_chat_tug').push({
+            // 切換至私人聊天室
+            initChat('private', currentRoomId);
+
+            // ✨ 發布廣播，並設定中斷連線時自動刪除 ✨
+            const newBroadcastRef = db.ref('global_chat_tug').push({
                 name: "📢 系統廣播",
                 text: `${myName} 建立了一個房間，房號是【 ${currentRoomId} 】！`,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
+            systemBroadcastKey = newBroadcastRef.key;
+            newBroadcastRef.onDisconnect().remove(); // 如果房主直接關掉網頁，廣播自動消失
+
+            roomRef.onDisconnect().remove();
+            listenToRoom();
         }
 
         function joinRoom() {
@@ -621,7 +684,7 @@
             currentRoomId = code;
             myRole = 'p2';
             
-            logUserActivity('Join Room', code); // ✨ 加房時記錄 IP ✨
+            logUserActivity('Join Room', code);
 
             roomRef = db.ref('rooms/' + currentRoomId);
 
@@ -634,6 +697,14 @@
                     
                     document.getElementById('lobby').style.display = 'none';
                     document.getElementById('game-area').style.display = 'flex';
+                    document.getElementById('chat-tooltip').style.display = 'none';
+                    
+                    // 切換至私人聊天室
+                    initChat('private', currentRoomId);
+                    
+                    // P2 斷線處理 (清除名字)
+                    roomRef.child('p2').onDisconnect().set('');
+
                     listenToRoom();
                 } else {
                     alert("找不到房間或遊戲已開始！請確認房號。");
@@ -643,15 +714,42 @@
 
         function listenToRoom() {
             roomRef.on('value', (snapshot) => {
-                if(!snapshot.exists()) return;
+                if(!snapshot.exists()) {
+                    // 房間被刪除 (通常是 P1 離開了)
+                    if (myRole === 'p2') {
+                        alert("房主已離開遊戲，房間已關閉！");
+                        location.reload();
+                    }
+                    return;
+                }
+                
                 const data = snapshot.val();
 
+                // ✨ 再戰一局的重置邏輯 ✨
+                if (data.p1Ready && data.p2Ready && myRole === 'p1') {
+                    roomRef.update({
+                        status: 'playing', score: 50, p1Combo: 0, p2Combo: 0, winner: '',
+                        p1Ready: false, p2Ready: false,
+                        qIdx: Math.floor(Math.random() * currentQuestions.length)
+                    });
+                    return; // 讓下一次 snapshot 再處理 UI
+                }
+
                 if(data.status === 'playing') {
+                    // ✨ 成功開局，房主主動收回全服廣播 ✨
+                    if (myRole === 'p1') removeSystemBroadcast();
+                    
                     document.getElementById('waiting-msg').style.display = 'none';
+                    document.getElementById('end-screen').style.display = 'none'; // 從再戰回來時隱藏結算畫面
                     document.getElementById('battle-ui').style.display = 'flex';
+                    document.getElementById('game-area').style.display = 'flex';
+                    
+                    // 重置視覺效果
+                    isStunned = false; myCombo = 0;
+                    document.getElementById('battle-ui').classList.remove('stunned');
                     
                     document.getElementById('name-p1').innerText = data.p1;
-                    document.getElementById('name-p2').innerText = data.p2;
+                    document.getElementById('name-p2').innerText = data.p2 || "對手斷線中...";
 
                     renderCombo('p1', data.p1, data.p1Combo || 0);
                     renderCombo('p2', data.p2, data.p2Combo || 0);
@@ -667,32 +765,71 @@
                     document.getElementById('game-area').style.display = 'none';
                     document.getElementById('end-screen').style.display = 'flex';
                     bgm.pause();
-                    if(!isAudioMuted) sfxWin.play().catch(e=>{});
-
-                    let winText = "";
-                    let winColor = "";
-                    let myFinalScore = 20; 
-
-                    if (data.winner === 'p1' || data.score <= 10) { 
-                        winText = `🔴 恭喜<br>${data.p1} 獲勝！`;
-                        winColor = 'var(--primary)';
-                        if(myRole === 'p1') myFinalScore = 100;
-                    } else if (data.winner === 'p2' || data.score >= 90) { 
-                        winText = `🔵 恭喜<br>${data.p2} 獲勝！`;
-                        winColor = 'var(--secondary)';
-                        if(myRole === 'p2') myFinalScore = 100;
-                    }
                     
-                    const winMsg = document.getElementById('win-msg');
-                    winMsg.innerHTML = winText;
-                    winMsg.style.color = winColor;
+                    // 重置按鈕狀態
+                    const rematchBtn = document.getElementById('btn-rematch');
+                    rematchBtn.innerText = "🔄 準備再戰 (維持原房)";
+                    rematchBtn.disabled = false;
+                    
+                    // 偵測對手是否落跑
+                    if ((myRole === 'p1' && data.p2 === '') || (myRole === 'p2' && data.p1 === '')) {
+                        rematchBtn.innerText = "對手已離開";
+                        rematchBtn.disabled = true;
+                    } else if ((myRole === 'p1' && data.p2Ready) || (myRole === 'p2' && data.p1Ready)) {
+                        rematchBtn.innerText = "🔄 準備再戰 (對手已準備!)";
+                    } else if ((myRole === 'p1' && data.p1Ready) || (myRole === 'p2' && data.p2Ready)) {
+                        rematchBtn.innerText = "⏳ 等待對方中...";
+                        rematchBtn.disabled = true;
+                    }
 
-                    fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(myName)}&score=${myFinalScore}&time=PvP_End&theme=${data.theme}&ip=${userIP}`)
-                        .catch(err => console.log("對戰成績上傳失敗", err));
+                    // 確保勝利音效與上傳只執行一次 (利用本地變數防重複)
+                    if (!window.hasFinishedHandled) {
+                        window.hasFinishedHandled = true;
+                        if(!isAudioMuted) sfxWin.play().catch(e=>{});
 
-                    roomRef.off(); 
+                        let winText = ""; let winColor = ""; let myFinalScore = 20; 
+
+                        if (data.winner === 'p1' || data.score <= 10) { 
+                            winText = `🔴 恭喜<br>${data.p1} 獲勝！`;
+                            winColor = 'var(--primary)';
+                            if(myRole === 'p1') myFinalScore = 100;
+                        } else if (data.winner === 'p2' || data.score >= 90) { 
+                            winText = `🔵 恭喜<br>${data.p2} 獲勝！`;
+                            winColor = 'var(--secondary)';
+                            if(myRole === 'p2') myFinalScore = 100;
+                        }
+                        
+                        const winMsg = document.getElementById('win-msg');
+                        winMsg.innerHTML = winText;
+                        winMsg.style.color = winColor;
+
+                        fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(myName)}&score=${myFinalScore}&time=PvP_End&theme=${data.theme}&ip=${userIP}`)
+                            .catch(err => console.log("對戰成績上傳失敗", err));
+                    }
+                } else {
+                    window.hasFinishedHandled = false; // 不在 finished 狀態時解開鎖定
                 }
             });
+        }
+
+        // ✨ 要求再戰 ✨
+        function requestRematch() {
+            document.getElementById('btn-rematch').innerText = "⏳ 等待對方中...";
+            document.getElementById('btn-rematch').disabled = true;
+            roomRef.update({ [myRole + 'Ready']: true });
+        }
+
+        // ✨ 離開房間並刷新 ✨
+        function leaveRoomAndReload() {
+            if (roomRef) {
+                if (myRole === 'p1') {
+                    removeSystemBroadcast(); // 如果是在大廳取消，收回廣播
+                    roomRef.remove(); // 房主離開，銷毀房間
+                } else {
+                    roomRef.update({ p2: '', p2Ready: false }); // 挑戰者離開
+                }
+            }
+            location.reload();
         }
 
         function renderCombo(targetRole, pName, comboVal) {
