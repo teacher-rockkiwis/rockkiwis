@@ -6,7 +6,7 @@
     <title>Dr. ROCK - 1v1 文法拔河戰</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
     
-    <!-- 引入 Firebase 實時連線套件 -->
+    <!-- 引入 Firebase 實時連線套件 (Compat CDN 版本) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
@@ -15,8 +15,13 @@
         * { box-sizing: border-box; touch-action: manipulation; outline: none; }
         body { background-color: var(--bg); margin: 0; font-family: 'Quicksand', sans-serif; color: white; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
         
-        #intro-screen, #lobby, #game-area, #end-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; text-align: center; }
-        #intro-screen { display: flex; background: rgba(45, 52, 54, 0.95); z-index: 100000; position: fixed; top: 0; left: 0; width: 100%; height: 100%;}
+        #intro-screen, #lobby, #game-area, #end-screen { display: none; flex-direction: column; align-items: center; height: 100%; padding: 20px; text-align: center; }
+        
+        /* ✨ 確保大廳在手機上可以滑動，不會被截斷 ✨ */
+        #lobby { display: flex; justify-content: flex-start; overflow-y: auto; padding-top: 30px; padding-bottom: 50px; }
+        #game-area, #end-screen { justify-content: center; }
+        
+        #intro-screen { display: flex; background: rgba(45, 52, 54, 0.95); z-index: 100000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center;}
         
         /* 📚 圖卡式教學設計 */
         .tutorial-card { background: white; color: #2d3436; padding: 30px; border-radius: 25px; max-width: 90%; width: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 5px solid var(--gold); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -25,11 +30,11 @@
         .step-text h3 { margin: 0 0 5px 0; color: var(--primary); font-size: 20px; }
         .step-text p { margin: 0; font-size: 15px; color: #636e72; font-weight: 700; line-height: 1.4; }
         
-        h1 { font-size: 40px; color: var(--gold); margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .input-box { font-size: 20px; padding: 12px; border-radius: 10px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 300px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+        h1 { font-size: 40px; color: var(--gold); margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); flex-shrink: 0;}
+        .input-box { font-size: 20px; padding: 12px; border-radius: 10px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 300px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2); flex-shrink: 0;}
         select.theme-select { font-size: 16px; padding: 10px; border-radius: 10px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; margin-bottom: 10px; color: #2c3e50;}
         
-        .btn { padding: 15px 30px; font-size: 22px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand';}
+        .btn { padding: 15px 30px; font-size: 22px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand'; flex-shrink: 0;}
         .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
         .btn-create { background: var(--primary); }
         .btn-join { background: var(--secondary); }
@@ -37,15 +42,51 @@
 
         .room-code-display { font-size: 45px; color: #00cec9; font-weight: 900; margin: 15px 0; letter-spacing: 8px; background: rgba(0,0,0,0.5); padding: 10px 30px; border-radius: 15px; border: 3px dashed #00cec9;}
 
-        /* ⚔️ 豪華對戰拔河區 */
-        #tug-container { width: 100%; max-width: 800px; position: relative; height: 100px; background: #1e272e; border-radius: 50px; margin: 10px 0 20px 0; display: flex; align-items: center; border: 4px solid #636e72; overflow: hidden; box-shadow: inset 0 10px 20px rgba(0,0,0,0.5); }
+        /* ✨ 實時約戰聊天室 UI 設計 ✨ */
+        #global-chat-container {
+            width: 100%; max-width: 350px; background: rgba(0,0,0,0.4); border-radius: 15px; 
+            border: 2px solid #636e72; display: flex; flex-direction: column; height: 220px; 
+            margin-bottom: 15px; flex-shrink: 0; box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .chat-header {
+            background: #636e72; padding: 8px; border-radius: 13px 13px 0 0; font-weight: 900; font-size: 16px;
+        }
+        #chat-messages {
+            flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px;
+            text-align: left; font-size: 15px;
+        }
+        #chat-messages::-webkit-scrollbar { width: 6px; } 
+        #chat-messages::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
+        .chat-msg { background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 10px; word-break: break-word; line-height: 1.4;}
+        .chat-name { font-weight: 900; color: #f1c40f; margin-right: 5px;}
+        .my-msg { background: rgba(9, 132, 227, 0.2); border-left: 4px solid var(--secondary);}
+        .my-msg .chat-name { color: #81ecec; }
+        .system-msg { color: var(--success); font-weight: 900; text-align: center; background: transparent; font-size: 14px;}
         
+        #chat-input-area {
+            display: flex; padding: 8px; border-top: 1px solid rgba(255,255,255,0.1); gap: 5px; background: rgba(0,0,0,0.2); border-radius: 0 0 13px 13px;
+        }
+        #chat-input {
+            flex-grow: 1; background: rgba(255,255,255,0.9); border: none; border-radius: 8px; 
+            padding: 8px 10px; font-family: 'Quicksand'; font-weight: 700; outline: none; font-size: 16px;
+        }
+        #chat-send-btn {
+            background: var(--success); color: white; border: none; border-radius: 8px; 
+            font-weight: 900; cursor: pointer; padding: 0 15px; font-family: 'Quicksand'; transition: 0.1s; font-size: 16px;
+        }
+        #chat-send-btn:active { transform: scale(0.9); }
+
+        /* ⚔️ 豪華對戰拔河區 */
+        #tug-container { width: 100%; max-width: 800px; position: relative; height: 100px; background: #1e272e; border-radius: 50px; margin: 10px 0 20px 0; display: flex; align-items: center; border: 4px solid #636e72; overflow: hidden; box-shadow: inset 0 10px 20px rgba(0,0,0,0.5); flex-shrink: 0;}
+        
+        /* 雙色雷射光束設計 */
         #beam-p1 { position: absolute; left: 0; height: 20px; background: linear-gradient(90deg, var(--primary), #fd79a8); box-shadow: 0 0 15px var(--primary); transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #beam-p2 { position: absolute; right: 0; height: 20px; background: linear-gradient(-90deg, var(--secondary), #74b9ff); box-shadow: 0 0 15px var(--secondary); transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
         #marker { font-size: 55px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 0 10px white); }
         .player-avatar { position: absolute; top: 50%; transform: translateY(-50%); font-size: 55px; z-index: 5; transition: 0.2s; }
         
+        /* 修正法師對齊 */
         #avatar-p1 { left: 10px; filter: drop-shadow(0 0 15px var(--primary)); }
         #avatar-p2 { right: 10px; filter: drop-shadow(0 0 15px var(--secondary)); transform: translateY(-50%) scaleX(-1); }
         
@@ -53,16 +94,16 @@
         #name-p1 { left: 15px; color: #fd79a8; border: 2px solid var(--primary); }
         #name-p2 { right: 15px; color: #74b9ff; border: 2px solid var(--secondary); }
 
-        /* ✨ 更新的連擊狀態列設計 (顯示名字) ✨ */
-        .status-bar { display: flex; justify-content: space-between; width: 100%; max-width: 800px; padding: 0 10px; margin-bottom: 5px;}
+        /* 狀態列設計 */
+        .status-bar { display: flex; justify-content: space-between; width: 100%; max-width: 800px; padding: 0 10px; margin-bottom: 5px; flex-shrink: 0;}
         .combo-badge { font-size: 16px; font-weight: 900; padding: 6px 15px; border-radius: 12px; background: rgba(0,0,0,0.6); color: white; transition: 0.2s; white-space: nowrap; border: 1px solid rgba(255,255,255,0.2); }
         .combo-badge.active { background: var(--gold); color: #2d3436; transform: scale(1.1); box-shadow: 0 0 15px var(--gold); border-color: #fff;}
 
         /* 題目區設計 */
-        #question-box { background: white; color: #2d3436; padding: 20px; border-radius: 20px; font-size: 32px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 5px solid var(--gold); transition: 0.2s;}
+        #question-box { background: white; color: #2d3436; padding: 20px; border-radius: 20px; font-size: 32px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 5px solid var(--gold); transition: 0.2s; flex-shrink: 0;}
         .blank-space { color: var(--error); border-bottom: 4px solid var(--error); padding: 0 15px; display: inline-block; min-width: 80px; margin: 0 5px; }
 
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 800px; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 800px; flex-shrink: 0;}
         .opt-btn { background: #636e72; color: white; border: none; padding: 18px; font-size: 24px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #2d3436; transition: 0.1s; font-family: 'Quicksand'; position: relative; overflow: hidden;}
         .opt-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #2d3436; }
         
@@ -91,6 +132,7 @@
             .opt-btn { font-size: 18px; padding: 12px; }
             .room-code-display { font-size: 35px; padding: 10px; }
             .combo-badge { font-size: 13px; padding: 5px 8px; }
+            #lobby { padding-top: 15px; }
         }
     </style>
 </head>
@@ -119,7 +161,7 @@
                 <div class="step-icon">🏠</div>
                 <div class="step-text">
                     <h3>STEP 2：創建與加入房間</h3>
-                    <p>房主：點擊「創建房間」並選擇題庫，告訴朋友你的 4 碼房號。<br>好友：輸入該房號並點擊「加入房間」。</p>
+                    <p>房主：點擊「創建房間」並選擇題庫，<strong style="color:var(--primary);">在下方聊天室貼出你的 4 碼房號！</strong><br>好友：看聊天室輸入房號並點擊加入。</p>
                 </div>
             </div>
 
@@ -152,17 +194,39 @@
         
         // Google Sheet 接收端 API 網址
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
+        
+        // ✨ 終極髒話防禦系統 ✨
+        const badWords = [
+            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
+            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
+            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
+            "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
+            "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
+            "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
+        ];
     </script>
 
     <!-- 登入大廳 -->
     <div id="lobby">
         <h1>🏆 Grammar Tug-of-War</h1>
-        <p style="color: #bdc3c7; margin-bottom: 15px; font-weight: 700;">兩人對戰，一決高下！</p>
+        <p style="color: #bdc3c7; margin-bottom: 15px; font-weight: 700; flex-shrink: 0;">兩人對戰，一決高下！</p>
         
-        <input type="text" id="player-name" class="input-box" placeholder="請輸入你的戰鬥代號..." maxlength="10">
+        <input type="text" id="player-name" class="input-box" placeholder="請先輸入你的戰鬥代號..." maxlength="10">
         
+        <!-- ✨ 實時約戰聊天室 ✨ -->
+        <div id="global-chat-container">
+            <div class="chat-header">💬 全服約戰聊天室</div>
+            <div id="chat-messages">
+                <div class="system-msg">歡迎來到拔河大廳！大家可以在這裡約戰或分享房號喔！</div>
+            </div>
+            <div id="chat-input-area">
+                <input type="text" id="chat-input" placeholder="輸入訊息..." maxlength="30" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                <button id="chat-send-btn" onclick="sendChatMessage()">送出</button>
+            </div>
+        </div>
+
         <!-- 房主專區 -->
-        <div style="background: rgba(232, 67, 147, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 15px; border: 2px solid var(--primary);">
+        <div style="background: rgba(232, 67, 147, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 15px; border: 2px solid var(--primary); flex-shrink: 0;">
             <div style="color:var(--primary); font-weight: 900; margin-bottom: 10px;">👑 房主專區 (建立遊戲)</div>
             <select id="theme-select" class="theme-select">
                 <option value="g4-l1">📍 四年級 L1: Where are you?</option>
@@ -174,19 +238,19 @@
         </div>
 
         <!-- 好友加入專區 -->
-        <div style="background: rgba(9, 132, 227, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 10px; border: 2px solid var(--secondary);">
+        <div style="background: rgba(9, 132, 227, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 10px; border: 2px solid var(--secondary); flex-shrink: 0;">
             <div style="color:var(--secondary); font-weight: 900; margin-bottom: 10px;">🚀 挑戰者專區 (加入遊戲)</div>
             <input type="text" id="room-code-input" class="input-box" placeholder="輸入 4 碼房間號" maxlength="4" style="margin-bottom: 10px; font-weight: 900; letter-spacing: 5px;">
             <button class="btn btn-join" style="width: 100%; margin: 0;" onclick="joinRoom()">加入對戰</button>
         </div>
         
-        <button class="btn" style="background:transparent; color:#bdc3c7; border: 2px solid #bdc3c7; box-shadow: none; margin-top: 10px;" onclick="location.href='index.html'">🔙 放棄並回大廳</button>
+        <button class="btn" style="background:transparent; color:#bdc3c7; border: 2px solid #bdc3c7; box-shadow: none; margin-top: 10px;" onclick="location.href='index.html'">🔙 返回遊戲大廳</button>
     </div>
 
     <!-- 遊戲對戰區 -->
     <div id="game-area">
         <div id="waiting-msg" style="display:none; font-size:20px; color:#f1c40f; font-weight:900; background: rgba(0,0,0,0.6); padding: 30px; border-radius: 20px; border: 4px dashed #f1c40f;">
-            房間建立成功！<br>請告訴對手這個號碼：
+            房間建立成功！<br>請在聊天室告訴對手這個號碼：
             <div id="display-room-code" class="room-code-display">0000</div>
             等待對手加入中... ⏳<br>
             <span style="font-size: 14px; color:#bdc3c7; margin-top: 10px; display: block;">(對手加入後會自動開始)</span>
@@ -235,6 +299,7 @@
 
     <!-- 題庫與核心遊戲邏輯 -->
     <script>
+        // 題庫資料
         const questionBanks = {
             "g4-l1": [
                 { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
@@ -266,17 +331,7 @@
                 { q: "____ she in the dining room?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
                 { q: "____ they in the kitchen?", opts: ["Are", "Is", "Am", "Do"], ans: "Are" },
                 { q: "____ the dog in the house?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
-                { q: "Yes, I ____.", opts: ["am", "is", "are", "do"], ans: "am" },
-                { q: "Yes, he ____.", opts: ["is", "am", "are", "does"], ans: "is" },
-                { q: "Yes, they ____.", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Yes, we ____.", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "No, he ____ not.", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "No, she ____ not.", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "No, they ____ not.", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "No, I ____ not.", opts: ["am", "is", "are", "do"], ans: "am" },
-                { q: "____ it in the bathroom?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
-                { q: "Where ____ the teacher?", opts: ["is", "are", "am", "do"], ans: "is" },
-                { q: "Where ____ the students?", opts: ["are", "is", "am", "do"], ans: "are" }
+                { q: "Yes, I ____.", opts: ["am", "is", "are", "do"], ans: "am" }
             ],
             "g4-l2": [
                 { q: "What ____ you doing?", opts: ["are", "is", "am", "do"], ans: "are" },
@@ -391,6 +446,82 @@
         const sfxWrong = document.getElementById('sfx-wrong');
         const sfxWin = document.getElementById('sfx-win');
         let isAudioMuted = false;
+        
+        // ✨ 加入實時聊天初始化 ✨
+        window.onload = function() {
+            initGlobalChat();
+        };
+
+        // 檢查髒話函數
+        function containsBadWord(text) {
+            let cleanText = text.toLowerCase().replace(/\s+/g, '');
+            return badWords.some(bad => cleanText.includes(bad));
+        }
+
+        // ✨ 聊天室核心邏輯 ✨
+        function initGlobalChat() {
+            const chatRef = db.ref('global_chat_tug').limitToLast(30); // 只顯示最新 30 筆，避免手機卡頓
+            
+            chatRef.on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                const chatBox = document.getElementById('chat-messages');
+                
+                // 判斷是不是自己發的訊息 (以名字來分)
+                const isMe = myName && msg.name === myName;
+                
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `chat-msg ${isMe ? 'my-msg' : ''}`;
+                
+                // 防止 HTML 注入攻擊 (XSS)
+                const safeName = msg.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const safeText = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                
+                msgDiv.innerHTML = `<span class="chat-name">${safeName}</span>: ${safeText}`;
+                
+                chatBox.appendChild(msgDiv);
+                // 自動捲動到最底
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        function sendChatMessage() {
+            const nameInputEl = document.getElementById('player-name');
+            const msgInputEl = document.getElementById('chat-input');
+            
+            const tempName = nameInputEl.value.trim();
+            const msgText = msgInputEl.value.trim();
+            
+            if(!tempName) {
+                alert("⚠️ 請先在上方輸入你的『戰鬥代號』才能聊天喔！");
+                nameInputEl.focus();
+                return;
+            }
+            if(!msgText) return; // 空訊息不處理
+            
+            if(containsBadWord(tempName) || containsBadWord(msgText)) {
+                alert("⚠️ 偵測到不雅字眼！請保持禮貌喔！😇");
+                msgInputEl.value = "";
+                return;
+            }
+            
+            // 簡單防洗頻 (2秒內不能連續發送)
+            if(window.lastMsgTime && Date.now() - window.lastMsgTime < 2000) {
+                alert("⏳ 說話太快囉！請休息兩秒再發送。"); 
+                return;
+            }
+            window.lastMsgTime = Date.now();
+            
+            // 更新目前的名字 (讓聊天室判定是不是自己的訊息)
+            myName = tempName;
+
+            db.ref('global_chat_tug').push({
+                name: tempName,
+                text: msgText,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            msgInputEl.value = "";
+        }
 
         function closeIntro() {
             document.getElementById('intro-screen').style.display = 'none';
@@ -401,6 +532,7 @@
         function createRoom() {
             myName = document.getElementById('player-name').value.trim();
             if(!myName) return alert("請輸入戰鬥代號！");
+            if(containsBadWord(myName)) return alert("⚠️ 請保持禮貌喔！😇");
             if(myName.length > 8) return alert("名字太長囉！");
 
             let selectedTheme = document.getElementById('theme-select').value;
@@ -410,7 +542,6 @@
             roomRef = db.ref('rooms/' + currentRoomId);
             currentQuestions = questionBanks[selectedTheme];
 
-            // 初始化時設定好 Combo 和 Winner
             roomRef.set({
                 p1: myName, p2: '',
                 status: 'waiting', score: 50, theme: selectedTheme,
@@ -425,12 +556,20 @@
 
             roomRef.onDisconnect().remove();
             listenToRoom();
+            
+            // ✨ 開房後自動在聊天室廣播 ✨
+            db.ref('global_chat_tug').push({
+                name: "📢 系統廣播",
+                text: `${myName} 建立了一個房間，房號是【 ${currentRoomId} 】！`,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
         }
 
         function joinRoom() {
             myName = document.getElementById('player-name').value.trim();
             const code = document.getElementById('room-code-input').value.trim();
             if(!myName) return alert("請輸入戰鬥代號！");
+            if(containsBadWord(myName)) return alert("⚠️ 請保持禮貌喔！😇");
             if(code.length !== 4) return alert("請輸入正確的 4 碼房號！");
 
             currentRoomId = code;
@@ -465,7 +604,6 @@
                     document.getElementById('name-p1').innerText = data.p1;
                     document.getElementById('name-p2').innerText = data.p2;
 
-                    // ✨ 即時同步渲染連擊狀態與玩家名字 ✨
                     renderCombo('p1', data.p1, data.p1Combo || 0);
                     renderCombo('p2', data.p2, data.p2Combo || 0);
 
@@ -484,9 +622,8 @@
 
                     let winText = "";
                     let winColor = "";
-                    let myFinalScore = 20; // 參加獎 20 分
+                    let myFinalScore = 20; 
 
-                    // ✨ 嚴謹的結算判斷：以 winner 欄位為主，避免剛好等於 10 的誤判 ✨
                     if (data.winner === 'p1' || data.score <= 10) { 
                         winText = `🔴 恭喜<br>${data.p1} 獲勝！`;
                         winColor = 'var(--primary)';
@@ -501,7 +638,6 @@
                     winMsg.innerHTML = winText;
                     winMsg.style.color = winColor;
 
-                    // 上傳成績
                     fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(myName)}&score=${myFinalScore}&time=PvP&theme=${data.theme}&ip=PvP`)
                         .catch(err => console.log("對戰成績上傳失敗", err));
 
@@ -510,7 +646,6 @@
             });
         }
 
-        // ✨ 渲染並同步連擊 UI ✨
         function renderCombo(targetRole, pName, comboVal) {
             const badgeId = targetRole === 'p1' ? 'combo-p1' : 'combo-p2';
             const badge = document.getElementById(badgeId);
@@ -563,11 +698,9 @@
             if (isStunned) return;
 
             if(selected === currentQuestion.ans) {
-                // ⭕ 答對
                 if(!isAudioMuted) { sfxHit.currentTime = 0; sfxHit.play().catch(e=>{}); }
                 
                 myCombo++;
-                // ✨ 將自己的連擊數更新到資料庫，讓對手也能看到 ✨
                 roomRef.update({ [myRole + 'Combo']: myCombo });
                 
                 let pullPower = 5; 
@@ -578,14 +711,12 @@
                 const rect = event.target.getBoundingClientRect();
                 showFloatText(rect.left + rect.width/2, rect.top, `HIT!`, textColor);
 
-                // ✨ 嚴謹的結算交易 ✨
                 roomRef.child('score').transaction((currentScore) => {
                     if (currentScore === null) return 50;
                     return myRole === 'p1' ? currentScore - pullPower : currentScore + pullPower;
                 }).then((result) => {
                     if (result.committed) {
                         let finalScore = result.snapshot.val();
-                        // 設定明確的 winner 欄位，徹底解決 A贏變B贏 的 Bug
                         if (finalScore <= 10) {
                             roomRef.update({ status: 'finished', winner: 'p1' });
                         } else if (finalScore >= 90) {
@@ -597,10 +728,9 @@
                 roomRef.update({ qIdx: Math.floor(Math.random() * currentQuestions.length) });
 
             } else {
-                // ❌ 答錯：暈眩懲罰並中斷連擊
                 if(!isAudioMuted) { sfxWrong.currentTime = 0; sfxWrong.play().catch(e=>{}); }
                 myCombo = 0;
-                roomRef.update({ [myRole + 'Combo']: myCombo }); // 歸零同步
+                roomRef.update({ [myRole + 'Combo']: myCombo });
                 stunPlayer();
             }
         }
