@@ -17,7 +17,6 @@
         
         #intro-screen, #lobby, #game-area, #end-screen { display: none; flex-direction: column; align-items: center; height: 100%; padding: 20px; text-align: center; }
         
-        /* ✨ 確保大廳在手機上可以滑動，不會被截斷 ✨ */
         #lobby { display: flex; justify-content: flex-start; overflow-y: auto; padding-top: 30px; padding-bottom: 50px; }
         #game-area, #end-screen { justify-content: center; }
         
@@ -42,33 +41,50 @@
 
         .room-code-display { font-size: 45px; color: #00cec9; font-weight: 900; margin: 15px 0; letter-spacing: 8px; background: rgba(0,0,0,0.5); padding: 10px 30px; border-radius: 15px; border: 3px dashed #00cec9;}
 
-        /* ✨ 實時約戰聊天室 UI 設計 ✨ */
+        /* ✨ 懸浮聊天室 UI 設計 ✨ */
+        #chat-toggle-btn {
+            position: fixed; bottom: 20px; left: 20px; width: 65px; height: 65px;
+            border-radius: 50%; background: var(--secondary); color: white; font-size: 32px;
+            border: 3px solid white; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            z-index: 50000; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        #chat-toggle-btn:hover { transform: scale(1.1); }
+        #chat-toggle-btn:active { transform: scale(0.9); }
+        #chat-toggle-btn.has-new { animation: jumpShake 0.6s infinite; background: var(--error); }
+
         #global-chat-container {
-            width: 100%; max-width: 350px; background: rgba(0,0,0,0.4); border-radius: 15px; 
-            border: 2px solid #636e72; display: flex; flex-direction: column; height: 220px; 
-            margin-bottom: 15px; flex-shrink: 0; box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);
+            position: fixed; bottom: 95px; left: 20px; width: 350px; max-width: calc(100vw - 40px);
+            background: rgba(45, 52, 54, 0.95); border-radius: 15px; border: 2px solid var(--secondary);
+            display: flex; flex-direction: column; height: 350px; z-index: 50000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+            transform-origin: bottom left;
         }
+        #global-chat-container.hidden { transform: scale(0); opacity: 0; pointer-events: none; }
+        
         .chat-header {
-            background: #636e72; padding: 8px; border-radius: 13px 13px 0 0; font-weight: 900; font-size: 16px;
+            background: var(--secondary); padding: 12px 15px; border-radius: 12px 12px 0 0;
+            font-weight: 900; font-size: 16px; color: white; display: flex; justify-content: space-between; align-items: center;
         }
+        .close-chat { background: none; border: none; color: white; font-size: 20px; cursor: pointer; font-weight: bold; padding: 0;}
+        
         #chat-messages {
             flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px;
             text-align: left; font-size: 15px;
         }
         #chat-messages::-webkit-scrollbar { width: 6px; } 
         #chat-messages::-webkit-scrollbar-thumb { background: #b2bec3; border-radius: 10px; }
-        .chat-msg { background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 10px; word-break: break-word; line-height: 1.4;}
+        .chat-msg { background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 12px; word-break: break-word; line-height: 1.4;}
         .chat-name { font-weight: 900; color: #f1c40f; margin-right: 5px;}
         .my-msg { background: rgba(9, 132, 227, 0.2); border-left: 4px solid var(--secondary);}
         .my-msg .chat-name { color: #81ecec; }
         .system-msg { color: var(--success); font-weight: 900; text-align: center; background: transparent; font-size: 14px;}
         
         #chat-input-area {
-            display: flex; padding: 8px; border-top: 1px solid rgba(255,255,255,0.1); gap: 5px; background: rgba(0,0,0,0.2); border-radius: 0 0 13px 13px;
+            display: flex; padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); gap: 5px; background: rgba(0,0,0,0.2); border-radius: 0 0 13px 13px;
         }
         #chat-input {
             flex-grow: 1; background: rgba(255,255,255,0.9); border: none; border-radius: 8px; 
-            padding: 8px 10px; font-family: 'Quicksand'; font-weight: 700; outline: none; font-size: 16px;
+            padding: 10px 10px; font-family: 'Quicksand'; font-weight: 700; outline: none; font-size: 16px;
         }
         #chat-send-btn {
             background: var(--success); color: white; border: none; border-radius: 8px; 
@@ -79,14 +95,12 @@
         /* ⚔️ 豪華對戰拔河區 */
         #tug-container { width: 100%; max-width: 800px; position: relative; height: 100px; background: #1e272e; border-radius: 50px; margin: 10px 0 20px 0; display: flex; align-items: center; border: 4px solid #636e72; overflow: hidden; box-shadow: inset 0 10px 20px rgba(0,0,0,0.5); flex-shrink: 0;}
         
-        /* 雙色雷射光束設計 */
         #beam-p1 { position: absolute; left: 0; height: 20px; background: linear-gradient(90deg, var(--primary), #fd79a8); box-shadow: 0 0 15px var(--primary); transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #beam-p2 { position: absolute; right: 0; height: 20px; background: linear-gradient(-90deg, var(--secondary), #74b9ff); box-shadow: 0 0 15px var(--secondary); transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
         #marker { font-size: 55px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 0 10px white); }
         .player-avatar { position: absolute; top: 50%; transform: translateY(-50%); font-size: 55px; z-index: 5; transition: 0.2s; }
         
-        /* 修正法師對齊 */
         #avatar-p1 { left: 10px; filter: drop-shadow(0 0 15px var(--primary)); }
         #avatar-p2 { right: 10px; filter: drop-shadow(0 0 15px var(--secondary)); transform: translateY(-50%) scaleX(-1); }
         
@@ -94,12 +108,10 @@
         #name-p1 { left: 15px; color: #fd79a8; border: 2px solid var(--primary); }
         #name-p2 { right: 15px; color: #74b9ff; border: 2px solid var(--secondary); }
 
-        /* 狀態列設計 */
         .status-bar { display: flex; justify-content: space-between; width: 100%; max-width: 800px; padding: 0 10px; margin-bottom: 5px; flex-shrink: 0;}
         .combo-badge { font-size: 16px; font-weight: 900; padding: 6px 15px; border-radius: 12px; background: rgba(0,0,0,0.6); color: white; transition: 0.2s; white-space: nowrap; border: 1px solid rgba(255,255,255,0.2); }
         .combo-badge.active { background: var(--gold); color: #2d3436; transform: scale(1.1); box-shadow: 0 0 15px var(--gold); border-color: #fff;}
 
-        /* 題目區設計 */
         #question-box { background: white; color: #2d3436; padding: 20px; border-radius: 20px; font-size: 32px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 5px solid var(--gold); transition: 0.2s; flex-shrink: 0;}
         .blank-space { color: var(--error); border-bottom: 4px solid var(--error); padding: 0 15px; display: inline-block; min-width: 80px; margin: 0 5px; }
 
@@ -107,16 +119,14 @@
         .opt-btn { background: #636e72; color: white; border: none; padding: 18px; font-size: 24px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #2d3436; transition: 0.1s; font-family: 'Quicksand'; position: relative; overflow: hidden;}
         .opt-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #2d3436; }
         
-        /* 暈眩特效 */
         .stunned { filter: grayscale(1) brightness(0.5); pointer-events: none; }
         #stun-msg { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; z-index: 100; animation: popIn 0.2s; text-shadow: 0 0 20px yellow;}
 
-        /* 動畫特效 */
         .shake { animation: shake 0.3s; }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
         @keyframes popIn { 0%{transform:translate(-50%, -50%) scale(0);} 80%{transform:translate(-50%, -50%) scale(1.2);} 100%{transform:translate(-50%, -50%) scale(1);} }
+        @keyframes jumpShake { 0%, 100% { transform: translateY(0) scale(1); } 25% { transform: translateY(-10px) rotate(-10deg) scale(1.1); } 75% { transform: translateY(-10px) rotate(10deg) scale(1.1); } }
 
-        /* 特效粒子 */
         .hit-particle { position: fixed; font-size: 30px; font-weight: 900; pointer-events: none; z-index: 5000; animation: floatUp 0.8s forwards; text-shadow: 2px 2px 0px white;}
         @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
 
@@ -133,18 +143,18 @@
             .room-code-display { font-size: 35px; padding: 10px; }
             .combo-badge { font-size: 13px; padding: 5px 8px; }
             #lobby { padding-top: 15px; }
+            #chat-toggle-btn { width: 55px; height: 55px; font-size: 28px; bottom: 15px; left: 15px; }
+            #global-chat-container { bottom: 80px; left: 15px; width: 300px; height: 300px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 音效區 -->
     <audio id="bgm" src="defender_bgm.mp3" loop></audio>
     <audio id="sfx-hit" src="shoot.mp3"></audio>
     <audio id="sfx-wrong" src="damage.mp3"></audio>
     <audio id="sfx-win" src="victory.mp3"></audio>
 
-    <!-- 📖 圖卡式新手教學 (強制最先顯示) -->
     <div id="intro-screen">
         <div class="tutorial-card">
             <h2 style="color:var(--gold); font-size: 32px; margin: 0 0 20px 0; text-align: center; text-shadow: 0 2px 5px rgba(0,0,0,0.3);">⚔️ 1v1 寶物爭奪戰</h2>
@@ -158,10 +168,10 @@
             </div>
             
             <div class="tutorial-step">
-                <div class="step-icon">🏠</div>
+                <div class="step-icon">💬</div>
                 <div class="step-text">
-                    <h3>STEP 2：創建與加入房間</h3>
-                    <p>房主：點擊「創建房間」並選擇題庫，<strong style="color:var(--primary);">在下方聊天室貼出你的 4 碼房號！</strong><br>好友：看聊天室輸入房號並點擊加入。</p>
+                    <h3>STEP 2：在左下角約戰</h3>
+                    <p>房主：點擊「創建房間」並選擇題庫，<strong style="color:var(--primary);">點左下角聊天室貼出房號！</strong><br>好友：看聊天室輸入房號並點擊加入。</p>
                 </div>
             </div>
 
@@ -195,7 +205,6 @@
         // Google Sheet 接收端 API 網址
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
         
-        // ✨ 終極髒話防禦系統 ✨
         const badWords = [
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
             "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
@@ -206,24 +215,28 @@
         ];
     </script>
 
+    <!-- ✨ 懸浮聊天室與按鈕 (全域存在) ✨ -->
+    <button id="chat-toggle-btn" onclick="toggleChat()">💬</button>
+    <div id="global-chat-container" class="hidden">
+        <div class="chat-header">
+            <span>💬 全服約戰聊天室</span>
+            <button class="close-chat" onclick="toggleChat()">✖</button>
+        </div>
+        <div id="chat-messages">
+            <div class="system-msg">歡迎來到拔河大廳！大家可以在這裡約戰或分享房號喔！</div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="輸入訊息..." maxlength="30" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+            <button id="chat-send-btn" onclick="sendChatMessage()">送出</button>
+        </div>
+    </div>
+
     <!-- 登入大廳 -->
     <div id="lobby">
         <h1>🏆 Grammar Tug-of-War</h1>
         <p style="color: #bdc3c7; margin-bottom: 15px; font-weight: 700; flex-shrink: 0;">兩人對戰，一決高下！</p>
         
         <input type="text" id="player-name" class="input-box" placeholder="請先輸入你的戰鬥代號..." maxlength="10">
-        
-        <!-- ✨ 實時約戰聊天室 ✨ -->
-        <div id="global-chat-container">
-            <div class="chat-header">💬 全服約戰聊天室</div>
-            <div id="chat-messages">
-                <div class="system-msg">歡迎來到拔河大廳！大家可以在這裡約戰或分享房號喔！</div>
-            </div>
-            <div id="chat-input-area">
-                <input type="text" id="chat-input" placeholder="輸入訊息..." maxlength="30" onkeypress="if(event.key === 'Enter') sendChatMessage()">
-                <button id="chat-send-btn" onclick="sendChatMessage()">送出</button>
-            </div>
-        </div>
 
         <!-- 房主專區 -->
         <div style="background: rgba(232, 67, 147, 0.1); padding: 15px 20px; border-radius: 20px; width: 100%; max-width: 350px; margin-bottom: 15px; border: 2px solid var(--primary); flex-shrink: 0;">
@@ -250,7 +263,7 @@
     <!-- 遊戲對戰區 -->
     <div id="game-area">
         <div id="waiting-msg" style="display:none; font-size:20px; color:#f1c40f; font-weight:900; background: rgba(0,0,0,0.6); padding: 30px; border-radius: 20px; border: 4px dashed #f1c40f;">
-            房間建立成功！<br>請在聊天室告訴對手這個號碼：
+            房間建立成功！<br>請在左下角聊天室告訴對手房號：
             <div id="display-room-code" class="room-code-display">0000</div>
             等待對手加入中... ⏳<br>
             <span style="font-size: 14px; color:#bdc3c7; margin-top: 10px; display: block;">(對手加入後會自動開始)</span>
@@ -271,7 +284,6 @@
                 <div id="beam-p1" style="width: 50%;"></div>
                 <div id="beam-p2" style="width: 50%;"></div>
                 
-                <!-- 中心寶物 -->
                 <div id="marker" style="left: 50%;">🏆</div>
                 
                 <div class="player-avatar" id="avatar-p2">🧙‍♂️</div>
@@ -297,9 +309,7 @@
         <button class="btn" style="background:transparent; color:#bdc3c7; border: 2px solid #bdc3c7; width: 250px; box-shadow: none;" onclick="location.href='index.html'">🔙 回大廳休息</button>
     </div>
 
-    <!-- 題庫與核心遊戲邏輯 -->
     <script>
-        // 題庫資料
         const questionBanks = {
             "g4-l1": [
                 { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
@@ -447,40 +457,75 @@
         const sfxWin = document.getElementById('sfx-win');
         let isAudioMuted = false;
         
-        // ✨ 加入實時聊天初始化 ✨
+        // ✨ IP 追蹤變數 ✨
+        let userIP = "Unknown";
+        let hasLoggedIP = false;
+
         window.onload = function() {
+            // ✨ 一進來就抓取 IP ✨
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => { userIP = data.ip; })
+                .catch(err => console.log("無法獲取 IP"));
+                
             initGlobalChat();
         };
 
-        // 檢查髒話函數
         function containsBadWord(text) {
             let cleanText = text.toLowerCase().replace(/\s+/g, '');
             return badWords.some(bad => cleanText.includes(bad));
         }
 
-        // ✨ 聊天室核心邏輯 ✨
+        // ✨ 記錄使用者行為與 IP 的函數 ✨
+        function logUserActivity(actionType, themeInfo = "Login") {
+            if (hasLoggedIP && actionType !== "Chat") return; // 避免頻繁發送，但Chat可持續紀錄
+            if (!myName) return;
+            
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(myName)}&score=0&time=${encodeURIComponent(actionType)}&theme=${encodeURIComponent(themeInfo)}&ip=${userIP}`)
+                .catch(e => console.log("活動紀錄上傳失敗"));
+            hasLoggedIP = true;
+        }
+
+        // ✨ 懸浮聊天室展開/收合控制 ✨
+        let isChatOpen = false;
+        function toggleChat() {
+            isChatOpen = !isChatOpen;
+            const chatCont = document.getElementById('global-chat-container');
+            const toggleBtn = document.getElementById('chat-toggle-btn');
+            
+            if (isChatOpen) {
+                chatCont.classList.remove('hidden');
+                toggleBtn.classList.remove('has-new'); // 消除紅點提示
+                const chatBox = document.getElementById('chat-messages');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                chatCont.classList.add('hidden');
+            }
+        }
+
         function initGlobalChat() {
-            const chatRef = db.ref('global_chat_tug').limitToLast(30); // 只顯示最新 30 筆，避免手機卡頓
+            const chatRef = db.ref('global_chat_tug').limitToLast(30); 
             
             chatRef.on('child_added', (snapshot) => {
                 const msg = snapshot.val();
                 const chatBox = document.getElementById('chat-messages');
-                
-                // 判斷是不是自己發的訊息 (以名字來分)
                 const isMe = myName && msg.name === myName;
                 
                 const msgDiv = document.createElement('div');
                 msgDiv.className = `chat-msg ${isMe ? 'my-msg' : ''}`;
                 
-                // 防止 HTML 注入攻擊 (XSS)
                 const safeName = msg.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 const safeText = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 
                 msgDiv.innerHTML = `<span class="chat-name">${safeName}</span>: ${safeText}`;
-                
                 chatBox.appendChild(msgDiv);
-                // 自動捲動到最底
-                chatBox.scrollTop = chatBox.scrollHeight;
+                
+                if (isChatOpen) {
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                } else if (msg.name !== "📢 系統廣播" && !isMe) {
+                    // 如果聊天室沒開，且不是自己也不是系統發的，讓按鈕跳動
+                    document.getElementById('chat-toggle-btn').classList.add('has-new');
+                }
             });
         }
 
@@ -492,11 +537,11 @@
             const msgText = msgInputEl.value.trim();
             
             if(!tempName) {
-                alert("⚠️ 請先在上方輸入你的『戰鬥代號』才能聊天喔！");
+                alert("⚠️ 請先在大廳中央輸入你的『戰鬥代號』才能聊天喔！");
                 nameInputEl.focus();
                 return;
             }
-            if(!msgText) return; // 空訊息不處理
+            if(!msgText) return; 
             
             if(containsBadWord(tempName) || containsBadWord(msgText)) {
                 alert("⚠️ 偵測到不雅字眼！請保持禮貌喔！😇");
@@ -504,19 +549,19 @@
                 return;
             }
             
-            // 簡單防洗頻 (2秒內不能連續發送)
             if(window.lastMsgTime && Date.now() - window.lastMsgTime < 2000) {
                 alert("⏳ 說話太快囉！請休息兩秒再發送。"); 
                 return;
             }
             window.lastMsgTime = Date.now();
             
-            // 更新目前的名字 (讓聊天室判定是不是自己的訊息)
             myName = tempName;
+            logUserActivity('Chat', 'Chat Log'); // ✨ 聊天時順便記錄 IP ✨
 
             db.ref('global_chat_tug').push({
                 name: tempName,
                 text: msgText,
+                ip: userIP, // ✨ 直接把 IP 也塞進 Firebase 聊天紀錄裡 ✨
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
             
@@ -539,6 +584,8 @@
             currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
             myRole = 'p1';
 
+            logUserActivity('Host Room', selectedTheme); // ✨ 開房時記錄 IP ✨
+
             roomRef = db.ref('rooms/' + currentRoomId);
             currentQuestions = questionBanks[selectedTheme];
 
@@ -557,7 +604,6 @@
             roomRef.onDisconnect().remove();
             listenToRoom();
             
-            // ✨ 開房後自動在聊天室廣播 ✨
             db.ref('global_chat_tug').push({
                 name: "📢 系統廣播",
                 text: `${myName} 建立了一個房間，房號是【 ${currentRoomId} 】！`,
@@ -574,6 +620,9 @@
 
             currentRoomId = code;
             myRole = 'p2';
+            
+            logUserActivity('Join Room', code); // ✨ 加房時記錄 IP ✨
+
             roomRef = db.ref('rooms/' + currentRoomId);
 
             roomRef.once('value').then((snapshot) => {
@@ -638,7 +687,7 @@
                     winMsg.innerHTML = winText;
                     winMsg.style.color = winColor;
 
-                    fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(myName)}&score=${myFinalScore}&time=PvP&theme=${data.theme}&ip=PvP`)
+                    fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(myName)}&score=${myFinalScore}&time=PvP_End&theme=${data.theme}&ip=${userIP}`)
                         .catch(err => console.log("對戰成績上傳失敗", err));
 
                     roomRef.off(); 
