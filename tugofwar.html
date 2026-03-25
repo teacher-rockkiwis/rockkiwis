@@ -53,6 +53,12 @@
         #chat-toggle-btn:active { transform: scale(0.9); }
         #chat-toggle-btn.has-new { animation: jumpShake 0.6s infinite; background: var(--error); }
 
+        #unread-badge {
+            position: absolute; top: -5px; right: -5px; background: var(--error); color: white;
+            font-size: 14px; font-weight: 900; padding: 2px 8px; border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid white; display: none;
+        }
+
         #chat-tooltip {
             position: fixed; bottom: 35px; left: 95px; background: var(--error); color: white;
             padding: 8px 15px; border-radius: 15px; font-weight: 900; font-size: 14px;
@@ -64,6 +70,15 @@
             border-width: 6px 8px 6px 0; border-style: solid; border-color: transparent var(--error) transparent transparent;
         }
         @keyframes bounceX { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
+
+        #chat-toast {
+            position: fixed; bottom: 95px; left: 20px; background: rgba(0,0,0,0.85); color: white;
+            padding: 10px 15px; border-radius: 15px; font-size: 15px; font-weight: 900;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 49000; transition: 0.3s;
+            max-width: 300px; word-wrap: break-word; pointer-events: none; opacity: 0; transform: translateY(10px);
+            border: 2px solid var(--secondary);
+        }
+        #chat-toast.show { opacity: 1; transform: translateY(0); }
 
         #global-chat-container {
             position: fixed; bottom: 95px; left: 20px; width: 350px; max-width: calc(100vw - 40px);
@@ -91,7 +106,7 @@
         .chat-time { font-size: 11px; color: #b2bec3; float: right; margin-left: 10px; margin-top: 3px; font-weight: 700;}
         .my-msg { background: rgba(9, 132, 227, 0.2); border-left: 4px solid var(--secondary);}
         .my-msg .chat-name { color: #81ecec; }
-        .system-msg { color: var(--success); font-weight: 900; text-align: center; background: transparent; font-size: 14px;}
+        .system-msg { color: var(--success); font-weight: 900; text-align: center; background: transparent; font-size: 14px; margin: 10px 0;}
         
         #chat-input-area {
             display: flex; padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); gap: 5px; background: rgba(0,0,0,0.2); border-radius: 0 0 13px 13px;
@@ -159,6 +174,7 @@
             #lobby { padding-top: 15px; }
             #chat-toggle-btn { width: 55px; height: 55px; font-size: 28px; bottom: 15px; left: 15px; }
             #global-chat-container { bottom: 80px; left: 15px; width: 300px; height: 300px; }
+            #chat-toast { bottom: 80px; left: 15px; font-size: 14px; max-width: 280px; }
             #chat-tooltip { bottom: 25px; left: 80px; font-size: 12px; padding: 6px 10px; }
         }
     </style>
@@ -232,7 +248,8 @@
 
     <!-- ✨ 懸浮聊天室與提示 (全域存在) ✨ -->
     <div id="chat-tooltip">按此來和同學聊天約戰！</div>
-    <button id="chat-toggle-btn" onclick="toggleChat()">💬</button>
+    <div id="chat-toast"></div>
+    <button id="chat-toggle-btn" onclick="toggleChat()">💬<div id="unread-badge">0</div></button>
     <div id="global-chat-container" class="hidden">
         <div class="chat-header">
             <span id="chat-header-text">💬 全服約戰聊天室</span>
@@ -484,6 +501,9 @@
         let currentChatRef = null;
         let currentChatContext = 'global'; // 'global' or 'private'
         let systemBroadcastKey = null;
+        let unreadCount = 0;
+        let isInitialLoad = true;
+        let toastTimeout = null;
 
         window.onload = function() {
             fetch('https://api.ipify.org?format=json')
@@ -508,6 +528,16 @@
             hasLoggedIP = true;
         }
 
+        function showToast(name, text) {
+            const toast = document.getElementById('chat-toast');
+            const safeName = name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            toast.innerHTML = `<span style="color:#f1c40f;">${safeName}</span>: ${safeText}`;
+            toast.classList.add('show');
+            if(toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
         // ✨ 懸浮聊天室展開/收合控制 ✨
         let isChatOpen = false;
         function toggleChat() {
@@ -519,6 +549,12 @@
                 chatCont.classList.remove('hidden');
                 toggleBtn.classList.remove('has-new'); 
                 document.getElementById('chat-tooltip').style.display = 'none'; // 永久隱藏提示
+                
+                // 重置未讀提示
+                unreadCount = 0;
+                document.getElementById('unread-badge').style.display = 'none';
+                document.getElementById('chat-toast').classList.remove('show');
+
                 const chatBox = document.getElementById('chat-messages');
                 chatBox.scrollTop = chatBox.scrollHeight;
             } else {
@@ -531,6 +567,9 @@
             if (currentChatRef) currentChatRef.off(); // 移除舊監聽
             document.getElementById('chat-messages').innerHTML = ''; // 清空畫面
             currentChatContext = context;
+            isInitialLoad = true;
+            unreadCount = 0;
+            document.getElementById('unread-badge').style.display = 'none';
             
             if (context === 'global') {
                 document.getElementById('chat-header-text').innerText = "💬 全服約戰聊天室";
@@ -563,9 +602,19 @@
                 
                 if (isChatOpen) {
                     chatBox.scrollTop = chatBox.scrollHeight;
-                } else if (msg.name !== "📢 系統廣播" && !isMe) {
+                } else if (!isInitialLoad && msg.name !== "📢 系統廣播" && !isMe) {
+                    // 顯示未讀提示
+                    unreadCount++;
+                    const badge = document.getElementById('unread-badge');
+                    badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                    badge.style.display = 'block';
                     document.getElementById('chat-toggle-btn').classList.add('has-new');
+                    showToast(msg.name, msg.text);
                 }
+            });
+
+            currentChatRef.once('value').then(() => {
+                isInitialLoad = false;
             });
 
             // 監聽訊息刪除 (用於自動收回廣播)
@@ -658,9 +707,6 @@
             document.getElementById('display-room-code').innerText = currentRoomId;
             document.getElementById('chat-tooltip').style.display = 'none'; // 隱藏提示
 
-            // 切換至私人聊天室
-            initChat('private', currentRoomId);
-
             // ✨ 發布廣播，並設定中斷連線時自動刪除 ✨
             const newBroadcastRef = db.ref('global_chat_tug').push({
                 name: "📢 系統廣播",
@@ -699,9 +745,6 @@
                     document.getElementById('game-area').style.display = 'flex';
                     document.getElementById('chat-tooltip').style.display = 'none';
                     
-                    // 切換至私人聊天室
-                    initChat('private', currentRoomId);
-                    
                     // P2 斷線處理 (清除名字)
                     roomRef.child('p2').onDisconnect().set('');
 
@@ -738,6 +781,19 @@
                 if(data.status === 'playing') {
                     // ✨ 成功開局，房主主動收回全服廣播 ✨
                     if (myRole === 'p1') removeSystemBroadcast();
+                    
+                    // ✨ 遊戲開始才切換為私人對話 ✨
+                    if (currentChatContext !== 'private') {
+                        initChat('private', currentRoomId);
+                        setTimeout(() => {
+                            const chatBox = document.getElementById('chat-messages');
+                            const msgDiv = document.createElement('div');
+                            msgDiv.className = 'system-msg';
+                            msgDiv.innerHTML = "🔒 遊戲開始！已切換至兩人專屬私人對戰聊天室";
+                            chatBox.appendChild(msgDiv);
+                            if(isChatOpen) chatBox.scrollTop = chatBox.scrollHeight;
+                        }, 500);
+                    }
                     
                     document.getElementById('waiting-msg').style.display = 'none';
                     document.getElementById('end-screen').style.display = 'none'; // 從再戰回來時隱藏結算畫面
