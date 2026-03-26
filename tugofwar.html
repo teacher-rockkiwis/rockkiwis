@@ -486,6 +486,7 @@
         
         let myCombo = 0;
         let isStunned = false;
+        let isAnswering = false; // ✨ 新增：防止連點的安全鎖 ✨
 
         const bgm = document.getElementById('bgm');
         const sfxHit = document.getElementById('sfx-hit');
@@ -918,6 +919,8 @@
         }
 
         function loadQuestion(idx) {
+            isAnswering = false; // ✨ 新題目載入完成，解開安全鎖 ✨
+            
             currentQuestion = currentQuestions[idx];
             let parts = currentQuestion.q.split('____');
             let html = parts[0] + "<span class='blank-space'></span>" + (parts[1] || "");
@@ -937,7 +940,10 @@
         }
 
         function checkAnswer(selected, event) {
-            if (isStunned) return;
+            // ✨ 如果正在暈眩，或正在等待新題目(安全鎖已鎖上)，就不執行任何動作 ✨
+            if (isStunned || isAnswering) return;
+            
+            isAnswering = true; // ✨ 點擊後立刻鎖上安全鎖 ✨
 
             if(selected === currentQuestion.ans) {
                 if(!isAudioMuted) { sfxHit.currentTime = 0; sfxHit.play().catch(e=>{}); }
@@ -968,12 +974,14 @@
                 });
 
                 roomRef.update({ qIdx: Math.floor(Math.random() * currentQuestions.length) });
+                // 答對時，安全鎖會一直鎖著，直到 loadQuestion() 被呼叫才會解開
 
             } else {
                 if(!isAudioMuted) { sfxWrong.currentTime = 0; sfxWrong.play().catch(e=>{}); }
                 myCombo = 0;
                 roomRef.update({ [myRole + 'Combo']: myCombo });
                 stunPlayer();
+                isAnswering = false; // ✨ 因為答錯不會換題，所以交給 stunPlayer 的暈眩來限制，這邊可以先解鎖 ✨
             }
         }
 
