@@ -31,15 +31,34 @@
         /* 👑 老師端大螢幕 (Host) 樣式 */
         #host-game { justify-content: flex-start; padding-top: 40px; position: relative;}
         .room-code-box { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; border: 2px dashed var(--secondary); }
-        .player-count-box { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; color: #3498db; }
+        .player-count-box { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; color: #3498db; z-index: 100;}
         
+        /* ✨ 巨龍外觀升級特效 ✨ */
         .dragon-area { display: flex; flex-direction: column; align-items: center; margin-top: 20px; position: relative; }
-        .dragon-emoji { font-size: 150px; filter: drop-shadow(0 20px 20px rgba(0,0,0,0.8)); transition: 0.2s; }
+        .dragon-emoji { transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: inline-block; filter: drop-shadow(0 20px 20px rgba(0,0,0,0.8)); }
+        .dragon-lv1 { font-size: 110px; filter: drop-shadow(0 0 30px #2ecc71); animation: float 2s infinite ease-in-out; }
+        .dragon-lv2 { font-size: 150px; filter: drop-shadow(0 0 40px #f1c40f); animation: float 1.5s infinite ease-in-out; }
+        .dragon-lv3 { font-size: 210px; filter: drop-shadow(0 0 80px #e74c3c); animation: giantBreath 2s infinite alternate; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes giantBreath {
+            0% { transform: scale(1); filter: drop-shadow(0 0 40px #c0392b) brightness(1); }
+            100% { transform: scale(1.05); filter: drop-shadow(0 0 80px #e74c3c) brightness(1.2); }
+        }
         
         .hp-bar-container { width: 600px; max-width: 90%; height: 40px; background: #2c3e50; border-radius: 20px; border: 4px solid #7f8c8d; overflow: hidden; margin-top: 20px; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .hp-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.5s ease-out; }
         .hp-text { position: absolute; width: 100%; text-align: center; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 900; color: white; text-shadow: 2px 2px 0 black; }
         
+        /* ✨ 實時等待區與名牌樣式 ✨ */
+        #host-waiting-area { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 25px; border: 4px dashed var(--secondary); margin-top: 30px; width: 90%; max-width: 900px; display: flex; flex-direction: column; align-items: center; z-index: 50;}
+        .waiting-content { display: flex; gap: 40px; align-items: stretch; width: 100%; justify-content: center; margin-bottom: 20px;}
+        .qr-box { background: white; padding: 15px; border-radius: 15px; text-align: center;}
+        .qr-box img { width: 180px; height: 180px; }
+        .qr-box p { color: var(--dark); font-weight: 900; margin: 10px 0 0 0; font-size: 18px;}
+        .player-list-container { flex-grow: 1; text-align: left; background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; max-height: 230px; overflow-y: auto;}
+        .player-badge { background: #3498db; color: white; padding: 8px 15px; border-radius: 20px; font-size: 20px; font-weight: 900; box-shadow: 0 4px 0 #2980b9; margin: 5px; display: inline-block; animation: popIn 0.3s; }
+
         .host-question-box { background: white; color: var(--dark); padding: 30px; border-radius: 25px; font-size: 45px; font-weight: 900; width: 90%; max-width: 900px; text-align: center; margin-top: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); border: 6px solid var(--secondary); }
         .host-timer { font-size: 60px; font-weight: 900; color: var(--secondary); margin-top: 20px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.5); font-variant-numeric: tabular-nums; }
         
@@ -65,7 +84,7 @@
         .shake { animation: shake 0.4s; }
         .hit-anim { animation: hitFlash 0.3s; }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
-        @keyframes hitFlash { 0% { filter: brightness(1) drop-shadow(0 20px 20px rgba(0,0,0,0.8)); } 50% { filter: brightness(3) drop-shadow(0 0 50px red); transform: scale(0.9); } 100% { filter: brightness(1) drop-shadow(0 20px 20px rgba(0,0,0,0.8)); } }
+        @keyframes hitFlash { 0% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(0.8); filter: brightness(2) hue-rotate(-50deg); } 100% { transform: scale(1); filter: brightness(1); } }
         @keyframes popIn { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
 
         @media (max-width: 768px) {
@@ -77,16 +96,114 @@
             .opt-btn { height: 100px; font-size: 24px; }
             .host-result-title { font-size: 40px; }
             .host-result-dmg { font-size: 60px; }
+            .waiting-content { flex-direction: column; align-items: center; gap: 20px;}
         }
     </style>
 </head>
 <body>
 
-    <!-- 音效 -->
-    <audio id="sfx-hit" src="shoot.mp3"></audio>
-    <audio id="sfx-wrong" src="damage.mp3"></audio>
-    <audio id="sfx-win" src="victory.mp3"></audio>
-    <audio id="bgm" src="bossraid.mp3" loop></audio>
+    <!-- 音效 (已修正為上層目錄的路徑) -->
+    <audio id="sfx-hit" src="../shoot.mp3"></audio>
+    <audio id="sfx-wrong" src="../damage.mp3"></audio>
+    <audio id="sfx-win" src="../victory.mp3"></audio>
+    <audio id="bgm" src="../bossraid.mp3" loop></audio>
+
+    <!-- 💡 主選單 -->
+    <div id="main-menu" class="screen active-screen">
+        <h1>🐉 Boss Raid 巨龍討伐戰</h1>
+        <p class="subtitle">全班共鬥！打敗時態破壞龍！</p>
+        <button class="btn btn-host" onclick="showHostLobby()">👑 我是大螢幕 (老師開房)</button>
+        <button class="btn btn-player" onclick="showPlayerLobby()">📱 我是討伐隊員 (學生加入)</button>
+        <button class="btn" style="background:#7f8c8d; margin-top:30px;" onclick="location.href='../teacher.html'">🔙 回老師專區</button>
+    </div>
+
+    <!-- 👑 老師端：開房大廳 -->
+    <div id="host-lobby" class="screen">
+        <h1>👑 建立討伐戰</h1>
+        <select id="host-theme" class="theme-select">
+            <option value="g4-l1">📍 四年級 L1: Where are you?</option>
+            <option value="g4-l2">🏃‍♂️ 四年級 L2: What are you doing?</option>
+            <option value="g5-l1">🤕 五年級 L1: hurt vs hurts</option>
+            <option value="g5-l2">🤒 五年級 L2: have vs has</option>
+        </select>
+        <select id="host-hp" class="theme-select">
+            <option value="10000">🟢 幼龍 (血量: 10,000 / 適合小班級)</option>
+            <option value="50000" selected>🟡 飛龍 (血量: 50,000 / 適合中班級)</option>
+            <option value="100000">🔴 遠古巨龍 (血量: 100,000 / 適合全班大亂鬥)</option>
+        </select>
+        <button class="btn btn-host" onclick="createRoom()">建立房間</button>
+        <button class="btn" style="background:transparent; border: 2px solid white;" onclick="location.reload()">取消</button>
+    </div>
+
+    <!-- 📱 學生端：加入大廳 -->
+    <div id="player-lobby" class="screen">
+        <h1>📱 加入討伐小隊</h1>
+        <input type="text" id="player-name" class="input-box" placeholder="輸入隊員姓名..." maxlength="10">
+        <input type="text" id="room-code" class="input-box" placeholder="輸入4碼房間號" maxlength="4" style="letter-spacing: 5px;">
+        <button class="btn btn-player" onclick="joinRoom()">加入房間</button>
+        <button class="btn" style="background:transparent; border: 2px solid white;" onclick="location.reload()">取消</button>
+    </div>
+
+    <!-- 👑 老師端：遊戲畫面 -->
+    <div id="host-game" class="screen">
+        <div class="room-code-box">房號：<span id="display-room-code" style="color:var(--gold);">0000</span></div>
+        <div class="player-count-box">隊員人數：<span id="player-count">0</span></div>
+        
+        <div class="dragon-area">
+            <div class="dragon-emoji" id="dragon-emoji">🐉</div>
+            <div class="hp-bar-container">
+                <div class="hp-bar-fill" id="host-hp-fill"></div>
+                <div class="hp-text" id="host-hp-text">100,000 / 100,000</div>
+            </div>
+        </div>
+
+        <!-- ✨ 實時等待區 (顯示 QR Code 與加入玩家名單) ✨ -->
+        <div id="host-waiting-area">
+            <h2 style="color: var(--gold); margin-top: 0; font-size: 32px; margin-bottom: 20px;">⚔️ 等待討伐隊員集結...</h2>
+            <div class="waiting-content">
+                <div class="qr-box">
+                    <img id="qr-code-img" src="" alt="掃描加入房間">
+                    <p>掃描極速加入</p>
+                </div>
+                <div class="player-list-container">
+                    <div style="color: #bdc3c7; font-weight: 900; margin-bottom: 10px; font-size: 18px;">
+                        已報到的勇者 (<span id="player-count-waiting" style="color:var(--success);">0</span> 人)
+                    </div>
+                    <div id="host-player-list">
+                        <!-- 玩家名牌將會動態生成在這裡 -->
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-host" onclick="startRound()" style="font-size: 28px; width: 100%; margin: 0; box-shadow: 0 6px 0 #922b21;">⚔️ 全員到齊，開始討伐！</button>
+        </div>
+
+        <div class="host-question-box" id="host-question" style="display: none;">等待隊員加入...</div>
+        <div class="host-timer" id="host-timer" style="display: none;">15</div>
+
+        <!-- 老師端回合結算特效 -->
+        <div id="host-result-overlay" class="host-result-overlay">
+            <div class="host-result-title" id="host-result-title">討伐結算</div>
+            <div class="subtitle" id="host-result-desc" style="font-size: 30px; font-weight: 900; margin-bottom: 0;"></div>
+            <div class="host-result-dmg" id="host-result-dmg">- 0</div>
+        </div>
+    </div>
+
+    <!-- 📱 學生端：遊戲畫面 -->
+    <div id="player-game" class="screen">
+        <div class="player-hud">
+            <div class="player-hp" id="player-hp-display">❤️❤️❤️</div>
+            <div class="player-status" id="player-status-display">待命準備中...</div>
+        </div>
+        
+        <div class="wait-msg" id="player-wait-msg">請看大螢幕，等待題目出現！👀</div>
+
+        <div class="options-grid" id="player-options" style="display: none;">
+            <button class="opt-btn color-A" id="btn-opt-0" onclick="submitAnswer(0)">A</button>
+            <button class="opt-btn color-B" id="btn-opt-1" onclick="submitAnswer(1)">B</button>
+            <button class="opt-btn color-C" id="btn-opt-2" onclick="submitAnswer(2)">C</button>
+            <button class="opt-btn color-D" id="btn-opt-3" onclick="submitAnswer(3)">D</button>
+        </div>
+    </div>
 
     <script>
         // 老師的 Firebase 金鑰
@@ -102,7 +219,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 題庫 (與拔河戰相同)
+        // 題庫
         const questionBanks = {
             "g4-l1": [
                 { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
@@ -133,7 +250,7 @@
                 { q: "____ he in the bedroom?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
                 { q: "____ she in the dining room?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
                 { q: "____ they in the kitchen?", opts: ["Are", "Is", "Am", "Do"], ans: "Are" },
-                { q: "____ the dog in the house?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
+                { q: "____ the dog in the house?", opts: ["Is", "Are", "Am", "Does"], "ans": "Is" },
                 { q: "Yes, I ____.", opts: ["am", "is", "are", "do"], ans: "am" }
             ],
             "g4-l2": [
@@ -234,14 +351,14 @@
             ]
         };
 
-        let role = ''; // 'host' or 'player'
+        let role = ''; 
         let roomId = '';
         let roomRef = null;
         let myName = '';
         
-        // 遊戲變數
         let maxDragonHp = 100000;
         let currentDragonHp = 100000;
+        let currentDragonType = 2; // 1:幼龍, 2:飛龍, 3:遠古巨龍
         let currentTheme = '';
         let questions = [];
         let currentQData = null;
@@ -257,6 +374,16 @@
         const sfxWin = document.getElementById('sfx-win');
         const bgm = document.getElementById('bgm');
 
+        // ✨ 網址參數解析 (掃描 QR Code 帶入) ✨
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            if (roomParam) {
+                showPlayerLobby();
+                document.getElementById('room-code').value = roomParam;
+            }
+        };
+
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
             document.getElementById(screenId).classList.add('active-screen');
@@ -265,15 +392,17 @@
         function showHostLobby() { switchScreen('host-lobby'); }
         function showPlayerLobby() { switchScreen('player-lobby'); }
 
-        // ==========================================
-        // 👑 老師端邏輯 (Host)
-        // ==========================================
         function createRoom() {
             role = 'host';
             currentTheme = document.getElementById('host-theme').value;
             maxDragonHp = parseInt(document.getElementById('host-hp').value);
             currentDragonHp = maxDragonHp;
             
+            // 決定龍的型態
+            if (maxDragonHp <= 10000) currentDragonType = 1;
+            else if (maxDragonHp <= 50000) currentDragonType = 2;
+            else currentDragonType = 3;
+
             roomId = Math.floor(1000 + Math.random() * 9000).toString();
             questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
 
@@ -282,6 +411,7 @@
                 status: 'lobby',
                 dragonMaxHp: maxDragonHp,
                 dragonHp: currentDragonHp,
+                dragonType: currentDragonType,
                 question: null,
                 timestamp: Date.now()
             });
@@ -291,21 +421,51 @@
             switchScreen('host-game');
             document.getElementById('display-room-code').innerText = roomId;
             updateHostHpBar();
+            updateDragonVisuals(currentDragonType);
             
             bgm.volume = 0.4; bgm.play().catch(e=>{});
 
-            // 監聽玩家加入
+            // ✨ 生成專屬 QR Code (使用 QRCode API) ✨
+            const currentUrlBase = window.location.href.split('?')[0];
+            const joinUrl = currentUrlBase + "?room=" + roomId;
+            document.getElementById('qr-code-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(joinUrl);
+
+            // 監聽玩家加入並實時更新名牌
             db.ref('raid_rooms/' + roomId + '/players').on('value', snap => {
-                let count = snapshotToArray(snap).length;
-                document.getElementById('player-count').innerText = count;
+                let players = snapshotToArray(snap);
+                document.getElementById('player-count').innerText = players.length;
+                let waitingCount = document.getElementById('player-count-waiting');
+                if (waitingCount) waitingCount.innerText = players.length;
+                
+                let listHtml = players.map(p => `<span class="player-badge">${p.name}</span>`).join('');
+                let hostPlayerList = document.getElementById('host-player-list');
+                if(hostPlayerList) hostPlayerList.innerHTML = listHtml;
             });
         }
 
+        function updateDragonVisuals(type) {
+            const dragonEl = document.getElementById('dragon-emoji');
+            dragonEl.className = 'dragon-emoji'; // 清除舊狀態
+
+            if (type === 1) {
+                dragonEl.innerText = "🦖"; // 幼龍
+                dragonEl.classList.add('dragon-lv1');
+            } else if (type === 2) {
+                dragonEl.innerText = "🐉"; // 飛龍
+                dragonEl.classList.add('dragon-lv2');
+            } else if (type === 3) {
+                dragonEl.innerText = "🐲"; // 遠古巨龍
+                dragonEl.classList.add('dragon-lv3');
+            }
+        }
+
         function startRound() {
-            document.getElementById('btn-start-raid').style.display = 'none';
+            // 隱藏等待區，顯示大螢幕題目
+            let waitingArea = document.getElementById('host-waiting-area');
+            if(waitingArea) waitingArea.style.display = 'none';
+            document.getElementById('host-question').style.display = 'block';
             
             if (questions.length === 0) {
-                // 如果題目用完，重新打亂
                 questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
             }
             
@@ -323,7 +483,6 @@
                 </div>
             `;
 
-            // 清空所有玩家的上一回合答案
             db.ref('raid_rooms/' + roomId + '/players').once('value').then(snap => {
                 let updates = {};
                 snapshotToArray(snap).forEach(p => {
@@ -339,7 +498,7 @@
                 question: { text: qText, opts: currentOptions }
             });
 
-            timeLeft = 12; // 每題 12 秒
+            timeLeft = 12; 
             document.getElementById('host-timer').innerText = timeLeft;
             document.getElementById('host-timer').style.display = 'block';
 
@@ -362,7 +521,7 @@
                 let updates = {};
 
                 players.forEach(p => {
-                    if (p.hp <= 0) return; // 死掉的不算
+                    if (p.hp <= 0) return; 
                     if (p.ans === correctAnswerIdx) {
                         correctCount++;
                         updates[p.id + '/lastResult'] = 'correct';
@@ -376,11 +535,10 @@
                     db.ref('raid_rooms/' + roomId + '/players').update(updates);
                 }
 
-                // 計算傷害
                 let baseDmg = correctCount * 100;
                 let multiplier = 1;
                 
-                // 針對最大 27 人的班級調整的合體加成門檻
+                // ✨ 針對最大 27 人的班級調整的合體加成門檻 ✨
                 if (correctCount >= 24) multiplier = 5;
                 else if (correctCount >= 18) multiplier = 4;
                 else if (correctCount >= 12) multiplier = 3;
@@ -445,15 +603,18 @@
         function showHostVictory() {
             bgm.pause(); sfxWin.play().catch(e=>{});
             document.getElementById('host-question').innerText = "🎉 巨龍討伐成功！世界恢復了和平！";
+            document.getElementById('host-question').style.display = 'block';
             document.getElementById('host-question').style.color = "var(--success)";
             document.getElementById('host-timer').style.display = 'none';
-            document.getElementById('dragon-emoji').innerText = "💀";
+            
+            const dragonEl = document.getElementById('dragon-emoji');
+            dragonEl.innerText = "💀";
+            dragonEl.className = 'dragon-emoji'; // 移除發光與動畫特效
+            dragonEl.style.filter = "grayscale(1) opacity(0.5)"; // 變成黑白半透明
+
             roomRef.update({ status: 'victory' });
         }
 
-        // ==========================================
-        // 📱 學生端邏輯 (Player)
-        // ==========================================
         function joinRoom() {
             role = 'player';
             myName = document.getElementById('player-name').value.trim();
@@ -475,22 +636,19 @@
                         lastResult: ''
                     });
 
-                    // 斷線時刪除自己
                     myRef.onDisconnect().remove();
 
-                    // 監聽房間狀態
                     roomRef.on('value', roomSnap => {
                         let data = roomSnap.val();
                         if(!data) {
                             alert("房間已關閉！");
-                            location.reload();
+                            window.location.href = '../index.html'; // 斷線或找不到房間導回大廳
                             return;
                         }
 
                         if (data.status === 'playing') {
                             document.getElementById('player-wait-msg').style.display = 'none';
                             
-                            // 更新按鈕文字
                             if (data.question && data.question.opts) {
                                 for(let i=0; i<4; i++) {
                                     let btn = document.getElementById(`btn-opt-${i}`);
@@ -510,11 +668,10 @@
                         if (data.status === 'victory') {
                             document.getElementById('player-options').style.display = 'none';
                             document.getElementById('player-wait-msg').style.display = 'block';
-                            document.getElementById('player-wait-msg').innerHTML = "🎉 討伐成功！<br><br><button class='btn btn-player' onclick='location.reload()'>回大廳</button>";
+                            document.getElementById('player-wait-msg').innerHTML = "🎉 討伐成功！<br><br><button class='btn btn-player' onclick='location.href=\"../index.html\"'>回大廳</button>";
                         }
                     });
 
-                    // 監聽自己的血量與結算狀態
                     myRef.on('value', mySnap => {
                         let me = mySnap.val();
                         if(!me) return;
@@ -544,7 +701,6 @@
         function submitAnswer(idx) {
             if (playerHp <= 0) return;
             
-            // 鎖定所有按鈕
             for(let i=0; i<4; i++) {
                 document.getElementById(`btn-opt-${i}`).disabled = true;
             }
@@ -553,7 +709,6 @@
             document.getElementById('player-wait-msg').style.display = 'block';
             document.getElementById('player-wait-msg').innerText = "🏹 攻擊蓄力中！等待隊友...";
 
-            // 尋找自己的 ID 並更新答案
             db.ref('raid_rooms/' + roomId + '/players').orderByChild('name').equalTo(myName).once('value').then(snap => {
                 snap.forEach(child => {
                     child.ref.update({ ans: idx });
@@ -561,7 +716,6 @@
             });
         }
 
-        // Helper
         function snapshotToArray(snapshot) {
             var returnArr = [];
             snapshot.forEach(function(childSnapshot) {
