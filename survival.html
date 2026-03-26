@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr. ROCK - Grammar Survival</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --primary: #e67e22; --secondary: #d35400; --success: #27ae60; --error: #c0392b; --text: #ecf0f1; --dark: #2c3e50; }
+        * { box-sizing: border-box; touch-action: manipulation; outline: none; }
+        body { background-color: #1e272e; margin: 0; font-family: 'Quicksand', sans-serif; color: var(--text); display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+        
+        .screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; width: 100%; }
+        .active-screen { display: flex !important; }
+
+        h1 { font-size: 45px; color: #f1c40f; text-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 10px; text-align: center; }
+        .subtitle { font-size: 18px; color: #bdc3c7; margin-bottom: 25px; text-align: center; }
+        
+        .btn { padding: 15px 30px; font-size: 24px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand'; width: 100%; max-width: 350px;}
+        .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
+        .btn-host { background: var(--primary); box-shadow: 0 6px 0 var(--secondary); }
+        .btn-player { background: #3498db; box-shadow: 0 6px 0 #2980b9; }
+        
+        .input-box { font-size: 20px; padding: 15px; border-radius: 15px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 350px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+        select.theme-select { font-size: 18px; padding: 12px; border-radius: 15px; border: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; max-width: 350px; margin-bottom: 15px; color: #2c3e50; }
+
+        /* 👑 老師端大螢幕 (Host) 樣式 - 岩漿特效 */
+        #host-game {
+            justify-content: flex-start; padding-top: 20px; position: relative;
+            background: linear-gradient(45deg, #d35400, #c0392b, #e67e22, #8e44ad);
+            background-size: 400% 400%; animation: lavaPulse 6s ease infinite;
+        }
+        @keyframes lavaPulse { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        
+        .room-code-box { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; border: 2px dashed #f1c40f; z-index: 100; }
+        .player-count-box { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; color: #3498db; z-index: 100; }
+        
+        .host-question-box { background: white; color: var(--dark); padding: 20px 30px; border-radius: 20px; font-size: 40px; font-weight: 900; width: 90%; max-width: 900px; text-align: center; margin-top: 60px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); border: 6px solid #f1c40f; z-index: 10; }
+        .host-timer { font-size: 70px; font-weight: 900; color: white; margin-top: 10px; text-shadow: 0 0 20px #f1c40f, 0 0 40px #e74c3c; font-variant-numeric: tabular-nums; z-index: 10; transition: transform 0.2s;}
+        .timer-warning { color: #e74c3c !important; transform: scale(1.2); animation: shake 0.3s infinite; }
+
+        /* 石板區域 */
+        .platforms-container { display: flex; justify-content: center; gap: 20px; width: 95%; max-width: 1000px; margin-top: 20px; z-index: 10; flex-wrap: wrap;}
+        .platform {
+            background: #95a5a6; border: 6px solid #7f8c8d; border-radius: 15px; width: 22%; min-width: 180px; height: 250px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3), 0 20px 30px rgba(0,0,0,0.8);
+            transition: transform 0.8s cubic-bezier(0.36, 0, 0.66, -0.56), opacity 0.8s;
+            position: relative;
+        }
+        .platform-title { font-size: 28px; font-weight: 900; color: white; text-shadow: 0 2px 4px black; margin-bottom: 10px; text-align: center; width: 100%; border-bottom: 2px dashed rgba(255,255,255,0.3); padding-bottom: 5px;}
+        .platform-avatars { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 5px; width: 100%; height: 100%; overflow: hidden; }
+        
+        .platform.falling { transform: translateY(100vh) rotate(25deg) scale(0.5); opacity: 0; pointer-events: none; }
+        .platform.safe { border-color: #2ecc71; box-shadow: inset 0 0 30px rgba(46, 211, 113, 0.5), 0 20px 30px rgba(0,0,0,0.8); }
+
+        .start-zone { width: 40%; height: 120px; background: #34495e; border-color: #2c3e50; margin-top: 20px; }
+        .start-zone .platform-title { font-size: 20px; color: #f1c40f; }
+
+        .avatar { background: #3498db; color: white; padding: 4px 8px; border-radius: 8px; font-weight: 900; font-size: 14px; box-shadow: 0 3px 0 #2980b9; transition: all 0.3s ease; animation: popIn 0.3s; white-space: nowrap; }
+        .avatar.dead { background: #7f8c8d; box-shadow: 0 3px 0 #34495e; opacity: 0.5; text-decoration: line-through; }
+
+        /* 📱 學生端手機 (Player) 樣式 */
+        .player-status-hud { font-size: 24px; font-weight: 900; background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 20px; margin-bottom: 20px; border: 2px solid var(--primary); text-align: center;}
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; }
+        .opt-btn { height: 100px; color: white; border: none; font-size: 28px; font-weight: 900; border-radius: 20px; cursor: pointer; box-shadow: 0 8px 0 rgba(0,0,0,0.3); transition: 0.1s; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;}
+        .opt-btn:active { transform: translateY(8px); box-shadow: 0 0 0 rgba(0,0,0,0.3); filter: brightness(1.2);}
+        .opt-btn:disabled { filter: grayscale(0.8); opacity: 0.5; cursor: not-allowed; transform: translateY(8px); box-shadow: none; }
+        .opt-btn.selected { border: 4px solid white; box-shadow: 0 0 20px white, 0 8px 0 rgba(0,0,0,0.3); transform: scale(1.05); z-index: 10;}
+        .opt-btn.selected:active { transform: scale(1.05) translateY(8px); box-shadow: 0 0 20px white; }
+
+        .opt-label { font-size: 16px; opacity: 0.8; margin-bottom: -5px; }
+
+        .color-0 { background: #e74c3c; box-shadow: 0 8px 0 #c0392b;} 
+        .color-1 { background: #3498db; box-shadow: 0 8px 0 #2980b9;} 
+        .color-2 { background: #f1c40f; color: var(--dark); box-shadow: 0 8px 0 #f39c12;} 
+        .color-3 { background: #2ecc71; box-shadow: 0 8px 0 #27ae60;}
+
+        .wait-msg { font-size: 24px; font-weight: 900; color: #bdc3c7; text-align: center; margin-top: 50px; }
+
+        /* 結算特效 */
+        .host-result-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .host-result-title { font-size: 70px; font-weight: 900; margin-bottom: 20px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); color: #f1c40f; text-align: center;}
+        
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
+        @keyframes popIn { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
+
+        @media (max-width: 768px) {
+            .host-question-box { font-size: 28px; padding: 15px; border-width: 4px; margin-top: 80px;}
+            .host-timer { font-size: 50px; }
+            .room-code-box, .player-count-box { font-size: 16px; padding: 8px 12px; }
+            .platform { width: 45%; height: 150px; min-width: auto; }
+            .start-zone { width: 95%; height: 80px; }
+            .platform-title { font-size: 18px; }
+            .opt-btn { height: 80px; font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="sfx-jump" src="shoot.mp3"></audio>
+    <audio id="sfx-fall" src="damage.mp3"></audio>
+    <audio id="sfx-win" src="victory.mp3"></audio>
+    <audio id="bgm" src="arcade.mp3" loop></audio>
+
+    <!-- 💡 主選單 -->
+    <div id="main-menu" class="screen active-screen">
+        <h1>🌋 Grammar Survival</h1>
+        <p class="subtitle">大逃殺岩漿生存戰！選錯直接掉下去！</p>
+        <button class="btn btn-host" onclick="showHostLobby()">👑 我是大螢幕 (老師開房)</button>
+        <button class="btn btn-player" onclick="showPlayerLobby()">📱 我是生存者 (學生加入)</button>
+        <button class="btn" style="background:#7f8c8d; margin-top:30px;" onclick="location.href='index.html'">🔙 回遊戲大廳</button>
+    </div>
+
+    <!-- 👑 老師端：開房大廳 -->
+    <div id="host-lobby" class="screen">
+        <h1>👑 建立生存戰</h1>
+        <select id="host-theme" class="theme-select">
+            <option value="g4-l1">📍 四年級 L1: Where are you?</option>
+            <option value="g4-l2">🏃‍♂️ 四年級 L2: What are you doing?</option>
+            <option value="g5-l1">🤕 五年級 L1: hurt vs hurts</option>
+            <option value="g5-l2">🤒 五年級 L2: have vs has</option>
+        </select>
+        <select id="host-rounds" class="theme-select">
+            <option value="5">⏳ 短局生存 (5 題)</option>
+            <option value="10" selected>🔥 標準生存 (10 題)</option>
+            <option value="999">💀 死鬥模式 (直到剩1人為止)</option>
+        </select>
+        <button class="btn btn-host" onclick="createRoom()">建立房間</button>
+        <button class="btn" style="background:transparent; border: 2px solid white;" onclick="location.reload()">取消</button>
+    </div>
+
+    <!-- 📱 學生端：加入大廳 -->
+    <div id="player-lobby" class="screen">
+        <h1>📱 加入生存戰</h1>
+        <input type="text" id="player-name" class="input-box" placeholder="輸入生存者姓名..." maxlength="8">
+        <input type="text" id="room-code" class="input-box" placeholder="輸入4碼房間號" maxlength="4" style="letter-spacing: 5px;">
+        <button class="btn btn-player" onclick="joinRoom()">加入房間</button>
+        <button class="btn" style="background:transparent; border: 2px solid white;" onclick="location.reload()">取消</button>
+    </div>
+
+    <!-- 👑 老師端：遊戲畫面 -->
+    <div id="host-game" class="screen">
+        <div class="room-code-box">房號：<span id="display-room-code" style="color:#f1c40f;">0000</span></div>
+        <div class="player-count-box">倖存者：<span id="survivor-count">0</span> / <span id="total-count">0</span></div>
+        
+        <!-- ✨ 新增：實時等待區 (顯示 QR Code) ✨ -->
+        <div id="host-waiting-area" style="background: rgba(0,0,0,0.8); padding: 20px; border-radius: 20px; border: 4px dashed #f1c40f; text-align: center; margin-top: 60px; z-index: 10; width: 90%; max-width: 600px;">
+            <h2 style="color: #f1c40f; margin: 0 0 15px 0;">🌋 等待生存者加入...</h2>
+            <div style="background: white; padding: 10px; border-radius: 10px; display: inline-block;">
+                <img id="qr-code-img" src="" alt="QR Code" style="width: 150px; height: 150px;">
+            </div>
+            <p style="color: white; font-weight: 900; margin: 10px 0 0 0;">請同學掃描加入，或輸入房號 <span id="display-room-code-large" style="color: #3498db; font-size: 24px;">0000</span></p>
+        </div>
+
+        <div class="host-question-box" id="host-question" style="display: none;">等待玩家加入...</div>
+        <div class="host-timer" id="host-timer" style="display: none;">10</div>
+
+        <!-- 石板區 (移除 display: none 讓等待時就能看到學生掉落) -->
+        <div class="platforms-container" id="platforms-container">
+            <div class="platform" id="plat-0"><div class="platform-title">A</div><div class="platform-avatars" id="avatars-0"></div></div>
+            <div class="platform" id="plat-1"><div class="platform-title">B</div><div class="platform-avatars" id="avatars-1"></div></div>
+            <div class="platform" id="plat-2"><div class="platform-title">C</div><div class="platform-avatars" id="avatars-2"></div></div>
+            <div class="platform" id="plat-3"><div class="platform-title">D</div><div class="platform-avatars" id="avatars-3"></div></div>
+            
+            <div class="platform start-zone" id="plat--1">
+                <div class="platform-title">出發區 (倒數結束會掉落！)</div>
+                <div class="platform-avatars" id="avatars--1"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-host" id="btn-start-game" onclick="startGame()" style="margin-top: 30px; font-size: 30px; width: 400px; max-width: 90%; z-index: 100;">⚔️ 全員到齊，開始遊戲！</button>
+
+        <div id="host-result-overlay" class="host-result-overlay">
+            <div class="host-result-title" id="host-result-title">結算</div>
+            <button class="btn btn-host" onclick="location.reload()" style="margin-top: 20px;">回大廳</button>
+        </div>
+    </div>
+
+    <!-- 📱 學生端：遊戲畫面 -->
+    <div id="player-game" class="screen">
+        <div class="player-status-hud" id="player-status-hud" style="color: #f1c40f;">🟢 準備中</div>
+        
+        <div class="wait-msg" id="player-wait-msg">等待老師開始遊戲...👀</div>
+
+        <div class="options-grid" id="player-options" style="display: none;">
+            <button class="opt-btn color-0" id="btn-opt-0" onclick="selectPlatform(0)"><span class="opt-label">A</span><span id="opt-text-0"></span></button>
+            <button class="opt-btn color-1" id="btn-opt-1" onclick="selectPlatform(1)"><span class="opt-label">B</span><span id="opt-text-1"></span></button>
+            <button class="opt-btn color-2" id="btn-opt-2" onclick="selectPlatform(2)"><span class="opt-label">C</span><span id="opt-text-2"></span></button>
+            <button class="opt-btn color-3" id="btn-opt-3" onclick="selectPlatform(3)"><span class="opt-label">D</span><span id="opt-text-3"></span></button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
+            authDomain: "rockgames-48853.firebaseapp.com",
+            databaseURL: "https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rockgames-48853",
+            storageBucket: "rockgames-48853.firebasestorage.app",
+            messagingSenderId: "313395129447",
+            appId: "1:313395129447:web:618531167064c7afdd38c2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const questionBanks = {
+            "g4-l1": [
+                { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ he?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ she?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ they?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ I?", opts: ["am", "is", "are", "does"], ans: "am" },
+                { q: "I ____ in the bedroom.", opts: ["am", "is", "are", "be"], ans: "am" },
+                { q: "You ____ in the kitchen.", opts: ["are", "is", "am", "be"], ans: "are" },
+                { q: "He ____ in the yard.", opts: ["is", "are", "am", "be"], ans: "is" },
+                { q: "She ____ in the dining room.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "They ____ in the kitchen.", opts: ["are", "is", "am", "do"], ans: "are" }
+            ],
+            "g4-l2": [
+                { q: "What ____ you doing?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "What ____ he doing?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "What is he ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
+                { q: "I am ____.", opts: ["running", "run", "runs", "ran"], ans: "running" },
+                { q: "She is ____ TV.", opts: ["watching", "watch", "watches", "watched"], ans: "watching" },
+                { q: "They are ____.", opts: ["eating", "eat", "eats", "ate"], ans: "eating" },
+                { q: "Where ____ you going?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where is she ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
+                { q: "I am going ____ the park.", opts: ["to", "in", "on", "at"], ans: "to" },
+                { q: "We ____ going to the shop.", opts: ["are", "is", "am", "be"], ans: "are" }
+            ],
+            "g5-l1": [
+                { q: "What's ____?", opts: ["wrong", "matter", "bad", "problem"], ans: "wrong" },
+                { q: "My head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My nose ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My ears ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His arms ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Her leg ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His teeth ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Tom's eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" }
+            ],
+            "g5-l2": [
+                { q: "____ you have a fever?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
+                { q: "____ he have a stomachache?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ Tom have a cough?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "Yes, I ____.", opts: ["do", "does", "am", "are"], ans: "do" },
+                { q: "Yes, he ____.", opts: ["does", "do", "is", "has"], ans: "does" },
+                { q: "No, I ____.", opts: ["don't", "doesn't", "not", "no"], ans: "don't" },
+                { q: "No, she ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
+                { q: "I ____ a runny nose.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "He ____ a sore throat.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "Tom ____ a toothache.", opts: ["has", "have", "having", "had"], ans: "has" }
+            ]
+        };
+
+        let role = ''; 
+        let roomId = '';
+        let roomRef = null;
+        let myName = '';
+        let myId = '';
+        
+        let questions = [];
+        let correctAnswerIdx = -1;
+        let hostTimerInterval = null;
+        let maxRounds = 10;
+        let currentRound = 0;
+
+        const sfxJump = document.getElementById('sfx-jump');
+        const sfxFall = document.getElementById('sfx-fall');
+        const sfxWin = document.getElementById('sfx-win');
+        const bgm = document.getElementById('bgm');
+
+        // ✨ 網址參數解析 (檢查是否有掃碼帶入的房間號) ✨
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            if (roomParam) {
+                showPlayerLobby();
+                document.getElementById('room-code').value = roomParam;
+            }
+        };
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        function showHostLobby() { switchScreen('host-lobby'); }
+        function showPlayerLobby() { switchScreen('player-lobby'); }
+
+        // ==========================================
+        // 👑 老師端邏輯 (Host)
+        // ==========================================
+        function createRoom() {
+            role = 'host';
+            let currentTheme = document.getElementById('host-theme').value;
+            maxRounds = parseInt(document.getElementById('host-rounds').value);
+            
+            roomId = Math.floor(1000 + Math.random() * 9000).toString();
+            questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
+
+            roomRef = db.ref('survival_rooms/' + roomId);
+            roomRef.set({
+                status: 'lobby',
+                question: null,
+                deadline: 0
+            });
+
+            roomRef.onDisconnect().remove();
+
+            switchScreen('host-game');
+            document.getElementById('display-room-code').innerText = roomId;
+            
+            // ✨ 顯示放大版房號與生成專屬 QR Code ✨
+            document.getElementById('display-room-code-large').innerText = roomId;
+            const currentUrlBase = window.location.href.split('?')[0];
+            const joinUrl = currentUrlBase + "?room=" + roomId;
+            document.getElementById('qr-code-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(joinUrl);
+
+            bgm.volume = 0.4; bgm.play().catch(e=>{});
+
+            // 監聽玩家加入與移動
+            db.ref('survival_rooms/' + roomId + '/players').on('value', snap => {
+                let players = snapshotToArray(snap);
+                document.getElementById('total-count').innerText = players.length;
+                
+                let survivors = players.filter(p => p.isAlive).length;
+                document.getElementById('survivor-count').innerText = survivors;
+                
+                renderAvatars(players);
+            });
+        }
+
+        function renderAvatars(players) {
+            for(let i = -1; i < 4; i++) {
+                let container = document.getElementById(`avatars-${i}`);
+                if (container) container.innerHTML = '';
+            }
+            
+            players.forEach(p => {
+                if (!p.isAlive) return; // 死掉的不渲染在地圖上
+                let container = document.getElementById(`avatars-${p.platform}`);
+                if (container) {
+                    let av = document.createElement('div');
+                    av.className = 'avatar';
+                    av.innerText = p.name;
+                    container.appendChild(av);
+                }
+            });
+        }
+
+        function startGame() {
+            document.getElementById('btn-start-game').style.display = 'none';
+            document.getElementById('host-waiting-area').style.display = 'none'; // ✨ 遊戲開始時隱藏等待區 ✨
+            document.getElementById('host-question').style.display = 'block';    // ✨ 遊戲開始時顯示題目區 ✨
+            currentRound = 0;
+            startRound();
+        }
+
+        function startRound() {
+            currentRound++;
+            
+            // 恢復所有石板
+            for(let i=-1; i<4; i++) {
+                let plat = document.getElementById(`plat-${i}`);
+                plat.className = i === -1 ? 'platform start-zone' : 'platform';
+            }
+
+            // 強制所有人回出發區
+            db.ref('survival_rooms/' + roomId + '/players').once('value').then(snap => {
+                let updates = {};
+                snapshotToArray(snap).forEach(p => {
+                    if (p.isAlive) updates[p.id + '/platform'] = -1;
+                });
+                if(Object.keys(updates).length > 0) {
+                    db.ref('survival_rooms/' + roomId + '/players').update(updates);
+                }
+            });
+
+            if (questions.length === 0) {
+                // 如果題目用完，重新打亂
+                let currentTheme = document.getElementById('host-theme').value;
+                questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
+            }
+            
+            let q = questions.pop();
+            let currentOptions = [...q.opts].sort(() => Math.random() - 0.5);
+            correctAnswerIdx = currentOptions.indexOf(q.ans);
+            
+            let qText = q.q.replace('____', '_____');
+            document.getElementById('host-question').innerHTML = `Q${currentRound}: ${qText}`;
+            
+            // 更新石板文字
+            for(let i=0; i<4; i++) {
+                let labels = ['A', 'B', 'C', 'D'];
+                document.getElementById(`plat-${i}`).querySelector('.platform-title').innerText = `${labels[i]}: ${currentOptions[i]}`;
+            }
+
+            // 設定倒數計時 10 秒
+            let deadline = Date.now() + 10000;
+            
+            roomRef.update({
+                status: 'playing',
+                question: { opts: currentOptions },
+                deadline: deadline
+            });
+
+            document.getElementById('host-timer').style.display = 'block';
+            document.getElementById('host-timer').classList.remove('timer-warning');
+            
+            clearInterval(hostTimerInterval);
+            hostTimerInterval = setInterval(() => {
+                let remaining = Math.ceil((deadline - Date.now()) / 1000);
+                if (remaining <= 3) {
+                    document.getElementById('host-timer').classList.add('timer-warning');
+                }
+                
+                if (remaining <= 0) {
+                    clearInterval(hostTimerInterval);
+                    document.getElementById('host-timer').innerText = "0";
+                    evaluateRound();
+                } else {
+                    document.getElementById('host-timer').innerText = remaining;
+                }
+            }, 100);
+        }
+
+        function evaluateRound() {
+            roomRef.update({ status: 'revealing' });
+            
+            // 掉落錯誤的石板
+            for(let i=-1; i<4; i++) {
+                if (i !== correctAnswerIdx) {
+                    document.getElementById(`plat-${i}`).classList.add('falling');
+                } else {
+                    document.getElementById(`plat-${i}`).classList.add('safe');
+                }
+            }
+            
+            sfxFall.currentTime = 0; sfxFall.play().catch(e=>{});
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 500);
+
+            // 結算玩家生死
+            db.ref('survival_rooms/' + roomId + '/players').once('value').then(snap => {
+                let players = snapshotToArray(snap);
+                let updates = {};
+                let survivorsCount = 0;
+
+                players.forEach(p => {
+                    if (!p.isAlive) return;
+                    if (p.platform !== correctAnswerIdx) {
+                        updates[p.id + '/isAlive'] = false; // 淘汰
+                    } else {
+                        survivorsCount++;
+                    }
+                });
+
+                if(Object.keys(updates).length > 0) {
+                    db.ref('survival_rooms/' + roomId + '/players').update(updates);
+                }
+
+                // 停頓 3 秒後看是否結束
+                setTimeout(() => {
+                    if (survivorsCount <= 1 || currentRound >= maxRounds) {
+                        endGame(survivorsCount, players, updates);
+                    } else {
+                        startRound();
+                    }
+                }, 3000);
+            });
+        }
+
+        function endGame(survivorsCount, players, updates) {
+            roomRef.update({ status: 'finished' });
+            bgm.pause(); sfxWin.play().catch(e=>{});
+            
+            const overlay = document.getElementById('host-result-overlay');
+            const title = document.getElementById('host-result-title');
+            
+            if (survivorsCount === 0) {
+                title.innerText = "💀 全軍覆沒！";
+                title.style.color = "#e74c3c";
+            } else {
+                // 找出倖存者名字
+                // 由於 updates 可能剛執行完，直接過濾原陣列並排除剛死掉的
+                let survivorNames = players.filter(p => p.isAlive && !updates[p.id + '/isAlive']).map(p => p.name).join(', ');
+                title.innerHTML = `🏆 生存冠軍<br><span style="font-size:40px; color:white;">${survivorNames}</span>`;
+            }
+            
+            overlay.style.display = 'flex';
+        }
+
+        // ==========================================
+        // 📱 學生端邏輯 (Player)
+        // ==========================================
+        function joinRoom() {
+            role = 'player';
+            myName = document.getElementById('player-name').value.trim();
+            roomId = document.getElementById('room-code').value.trim();
+            
+            if(!myName || roomId.length !== 4) return alert("請輸入姓名與4碼房號！");
+
+            roomRef = db.ref('survival_rooms/' + roomId);
+            roomRef.once('value').then(snap => {
+                if(snap.exists()) {
+                    switchScreen('player-game');
+                    
+                    let myRef = db.ref('survival_rooms/' + roomId + '/players').push();
+                    myId = myRef.key;
+                    myRef.set({
+                        name: myName,
+                        platform: -1,
+                        isAlive: true
+                    });
+
+                    myRef.onDisconnect().remove();
+
+                    // 監聽房間狀態
+                    roomRef.on('value', roomSnap => {
+                        let data = roomSnap.val();
+                        if(!data) {
+                            alert("房間已關閉！");
+                            window.location.href = 'index.html'; // ✨ 避免掃碼進入的學生一直卡在房號網址 ✨
+                            return;
+                        }
+
+                        if (data.status === 'playing') {
+                            document.getElementById('player-wait-msg').style.display = 'none';
+                            
+                            // 更新按鈕文字
+                            if (data.question && data.question.opts) {
+                                for(let i=0; i<4; i++) {
+                                    let btn = document.getElementById(`btn-opt-${i}`);
+                                    document.getElementById(`opt-text-${i}`).innerText = data.question.opts[i];
+                                    btn.disabled = false;
+                                    btn.classList.remove('selected'); // 清除選取狀態
+                                }
+                            }
+                            
+                            document.getElementById('player-options').style.display = 'grid';
+                        }
+                        
+                        if (data.status === 'revealing') {
+                            // 鎖定按鈕
+                            for(let i=0; i<4; i++) {
+                                document.getElementById(`btn-opt-${i}`).disabled = true;
+                            }
+                        }
+
+                        if (data.status === 'finished') {
+                            document.getElementById('player-options').style.display = 'none';
+                            document.getElementById('player-wait-msg').style.display = 'block';
+                            document.getElementById('player-wait-msg').innerHTML = "🎉 遊戲結束！請看大螢幕！<br><br><button class='btn btn-player' onclick='location.reload()'>回大廳</button>";
+                        }
+                    });
+
+                    // 監聽自己的生死狀態
+                    myRef.on('value', mySnap => {
+                        let me = mySnap.val();
+                        if(!me) return;
+                        
+                        let hud = document.getElementById('player-status-hud');
+                        if (!me.isAlive) {
+                            hud.innerText = "💀 淘汰觀戰中";
+                            hud.style.color = "#e74c3c";
+                            hud.style.borderColor = "#c0392b";
+                            document.getElementById('player-options').style.display = 'none';
+                            document.getElementById('player-wait-msg').style.display = 'block';
+                            document.getElementById('player-wait-msg').innerText = "你已掉入岩漿 💀";
+                        } else {
+                            hud.innerText = "🔥 存活！";
+                            hud.style.color = "#2ecc71";
+                            hud.style.borderColor = "#27ae60";
+                        }
+                    });
+
+                } else {
+                    alert("找不到這個房間喔！");
+                }
+            });
+        }
+
+        function selectPlatform(idx) {
+            // 視覺更新
+            for(let i=0; i<4; i++) {
+                document.getElementById(`btn-opt-${i}`).classList.remove('selected');
+            }
+            document.getElementById(`btn-opt-${idx}`).classList.add('selected');
+            
+            sfxJump.currentTime = 0; sfxJump.play().catch(e=>{});
+
+            // 更新資料庫
+            db.ref('survival_rooms/' + roomId + '/players/' + myId).update({
+                platform: idx
+            });
+        }
+
+        // Helper
+        function snapshotToArray(snapshot) {
+            var returnArr = [];
+            snapshot.forEach(function(childSnapshot) {
+                var item = childSnapshot.val();
+                item.id = childSnapshot.key;
+                returnArr.push(item);
+            });
+            return returnArr;
+        }
+    </script>
+</body>
+</html>
