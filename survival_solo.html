@@ -119,7 +119,7 @@
     <!-- 🌟 匹配等待畫面 -->
     <div id="solo-matchmaking" class="screen" style="justify-content: center;">
         <h2 style="color: #3498db; font-size: 32px; margin-bottom: 10px;">尋找對手中...</h2>
-        <p style="color: #bdc3c7; font-size: 16px; margin: 0;">預估等待時間：<span id="wait-timer" style="color: white; font-weight: bold;">60</span> 秒</p>
+        <p style="color: #bdc3c7; font-size: 16px; margin: 0;">預估等待時間：<span id="wait-timer" style="color: white; font-weight: bold;">15</span> 秒</p>
         
         <div class="match-pulse">🌍</div>
         
@@ -346,8 +346,8 @@
             
             listenToMatch();
             
-            // 主機負責 60 秒倒數，然後塞入機器人開局
-            let countdown = 60;
+            // 主機負責 15 秒倒數，然後塞入機器人開局
+            let countdown = 15;
             matchInterval = setInterval(() => {
                 countdown--;
                 document.getElementById('wait-timer').innerText = countdown;
@@ -373,7 +373,7 @@
                     let realCount = Object.keys(data.players || {}).length;
                     // 為了擬真，視覺上的人數會加上虛擬的進度 (最多不超過 30)
                     // 這裡簡單處理，如果是主機，時間快到時會顯示越來越多人
-                    let visualCount = realCount + Math.floor((60 - parseInt(document.getElementById('wait-timer').innerText || 60)) / 2.5);
+                    let visualCount = realCount + Math.floor((15 - parseInt(document.getElementById('wait-timer').innerText || 15)) * 2);
                     if (visualCount > 30) visualCount = 30;
                     document.getElementById('match-count').innerText = Math.max(realCount, visualCount);
                 }
