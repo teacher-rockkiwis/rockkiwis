@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr. ROCK - Grammar Survival (Ranked)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --primary: #e67e22; --secondary: #d35400; --success: #27ae60; --error: #c0392b; --text: #ecf0f1; --dark: #2c3e50; --gold: #f1c40f;}
+        * { box-sizing: border-box; touch-action: manipulation; outline: none; }
+        body { background-color: #1e272e; margin: 0; font-family: 'Quicksand', sans-serif; color: var(--text); display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+        
+        .screen { display: none; flex-direction: column; align-items: center; justify-content: flex-start; height: 100%; padding: 15px; width: 100%; overflow-y: auto; overflow-x: hidden; }
+        .active-screen { display: flex !important; }
+
+        h1 { font-size: 40px; color: var(--gold); text-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 5px; text-align: center; }
+        .subtitle { font-size: 16px; color: #bdc3c7; margin-bottom: 20px; text-align: center; line-height: 1.5; }
+        
+        .btn { padding: 15px 30px; font-size: 22px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand'; width: 100%; max-width: 350px; flex-shrink: 0;}
+        .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
+        .btn-solo { background: #8e44ad; box-shadow: 0 6px 0 #6c3483; }
+        
+        .input-box { font-size: 20px; padding: 15px; border-radius: 15px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 350px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2); flex-shrink: 0;}
+        select.theme-select { font-size: 18px; padding: 12px; border-radius: 15px; border: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; max-width: 350px; margin-bottom: 15px; color: #2c3e50; flex-shrink: 0;}
+
+        /* 遊戲主畫面 (結合版) */
+        #game-screen {
+            background: linear-gradient(45deg, #d35400, #c0392b, #e67e22, #8e44ad);
+            background-size: 400% 400%; animation: lavaPulse 6s ease infinite;
+            padding: 10px;
+        }
+        @keyframes lavaPulse { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        
+        /* 頂部資訊列 */
+        .hud-bar { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; border: 2px solid var(--gold); flex-shrink: 0;}
+        .hud-item { font-size: 18px; font-weight: 900; }
+        .survivor-count { color: #3498db; }
+        .round-timer { font-size: 24px; color: white; text-shadow: 0 0 10px var(--gold); font-variant-numeric: tabular-nums; transition: 0.2s;}
+        .timer-warning { color: #e74c3c !important; transform: scale(1.2); animation: shake 0.3s infinite; }
+
+        /* 題目區 */
+        .question-box { background: white; color: var(--dark); padding: 15px; border-radius: 15px; font-size: 24px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); flex-shrink: 0;}
+
+        /* 2x2 石板區域 */
+        .platforms-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 800px; flex-grow: 1; min-height: 200px; margin-bottom: 10px;}
+        .platform {
+            background: #95a5a6; border: 4px solid #7f8c8d; border-radius: 15px; 
+            display: flex; flex-direction: column; align-items: center; padding: 5px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.6);
+            transition: transform 0.6s cubic-bezier(0.36, 0, 0.66, -0.56), opacity 0.6s;
+            position: relative; overflow: hidden;
+        }
+        .platform-title { font-size: 18px; font-weight: 900; color: white; text-shadow: 0 2px 4px black; margin-bottom: 5px; text-align: center; width: 100%; border-bottom: 2px dashed rgba(255,255,255,0.3); padding-bottom: 2px;}
+        .platform-avatars { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 4px; width: 100%; height: 100%; overflow: hidden; }
+        
+        .platform.falling { transform: translateY(50vh) rotate(15deg) scale(0.5); opacity: 0; }
+        .platform.safe { border-color: #2ecc71; box-shadow: inset 0 0 30px rgba(46, 211, 113, 0.5), 0 10px 20px rgba(0,0,0,0.8); }
+
+        .start-zone { grid-column: span 2; height: 80px; background: #34495e; border-color: #2c3e50; }
+        .start-zone .platform-title { font-size: 16px; color: var(--gold); }
+
+        .avatar { background: #3498db; color: white; padding: 2px 6px; border-radius: 6px; font-weight: 900; font-size: 12px; box-shadow: 0 2px 0 #2980b9; transition: all 0.3s ease; white-space: nowrap; }
+        .avatar.is-me { background: var(--gold); color: var(--dark); box-shadow: 0 2px 0 #d4ac0d; border: 1px solid white; transform: scale(1.1); z-index: 10;}
+
+        /* 下方操作按鈕 */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 800px; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom);}
+        .opt-btn { height: 70px; color: white; border: none; font-size: 20px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;}
+        .opt-btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); filter: brightness(1.2);}
+        .opt-btn:disabled { filter: grayscale(0.8); opacity: 0.6; cursor: not-allowed; transform: translateY(6px); box-shadow: none; }
+        .opt-btn.selected { border: 3px solid white; box-shadow: 0 0 15px white, 0 6px 0 rgba(0,0,0,0.3); transform: scale(1.05); z-index: 10;}
+
+        .color-0 { background: #e74c3c; box-shadow: 0 6px 0 #c0392b;} 
+        .color-1 { background: #3498db; box-shadow: 0 6px 0 #2980b9;} 
+        .color-2 { background: #f1c40f; color: var(--dark); box-shadow: 0 6px 0 #f39c12;} 
+        .color-3 { background: #2ecc71; box-shadow: 0 6px 0 #27ae60;}
+
+        /* 匹配中特效 */
+        .match-pulse { font-size: 60px; margin: 20px 0; animation: pulse 1s infinite alternate; }
+        @keyframes pulse { 0% { transform: scale(1); filter: drop-shadow(0 0 10px var(--gold)); } 100% { transform: scale(1.2); filter: drop-shadow(0 0 30px var(--gold)); } }
+
+        /* 結算特效 */
+        .result-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;}
+        .result-title { font-size: 50px; font-weight: 900; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); color: var(--gold); }
+        .result-desc { font-size: 20px; color: white; margin-bottom: 30px; line-height: 1.5;}
+        
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
+        @keyframes popIn { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
+    </style>
+</head>
+<body>
+
+    <audio id="sfx-jump" src="shoot.mp3"></audio>
+    <audio id="sfx-fall" src="damage.mp3"></audio>
+    <audio id="sfx-win" src="victory.mp3"></audio>
+    <audio id="bgm" src="arcade.mp3" loop></audio>
+
+    <!-- 🌟 單人排位大廳 -->
+    <div id="solo-lobby" class="screen active-screen" style="justify-content: center;">
+        <h1>🏆 Grammar Survival<br><span style="font-size: 24px; color: white;">全球排位賽</span></h1>
+        <p class="subtitle">將與線上 29 名玩家進行匹配廝殺，<br>活到最後的生存者將獲得最高榮耀！</p>
+        
+        <input type="text" id="solo-player-name" class="input-box" placeholder="輸入你的專屬暱稱..." maxlength="8">
+        <select id="solo-theme" class="theme-select">
+            <option value="g4-l1">📍 四年級 L1: Where are you?</option>
+            <option value="g4-l2">🏃‍♂️ 四年級 L2: What are you doing?</option>
+            <option value="g5-l1">🤕 五年級 L1: hurt vs hurts</option>
+            <option value="g5-l2">🤒 五年級 L2: have vs has</option>
+        </select>
+        
+        <button class="btn btn-solo" onclick="startSoloMatchmaking()">🔍 開始匹配 (Find Match)</button>
+        <button class="btn" style="background:transparent; border: 2px solid white; font-size: 18px; padding: 10px 20px;" onclick="location.href='index.html'">🔙 離開排位賽</button>
+    </div>
+
+    <!-- 🌟 匹配等待畫面 -->
+    <div id="solo-matchmaking" class="screen" style="justify-content: center;">
+        <h2 style="color: #3498db; font-size: 32px; margin-bottom: 10px;">尋找對手中...</h2>
+        <p style="color: #bdc3c7; font-size: 16px; margin: 0;">預估等待時間：<span id="wait-timer" style="color: white; font-weight: bold;">60</span> 秒</p>
+        
+        <div class="match-pulse">🌍</div>
+        
+        <div style="background: rgba(0,0,0,0.5); padding: 15px 30px; border-radius: 15px; border: 2px solid #3498db;">
+            <div style="font-size: 24px; font-weight: 900; color: var(--gold);">
+                已就緒：<span id="match-count">1</span> / 30
+            </div>
+            <div style="font-size: 14px; color: #bdc3c7; margin-top: 5px;">(滿 30 人或倒數結束即開戰)</div>
+        </div>
+    </div>
+
+    <!-- 🎮 遊戲核心畫面 -->
+    <div id="game-screen" class="screen">
+        <div class="hud-bar">
+            <div class="hud-item">生存者: <span class="survivor-count" id="survivor-count">30</span></div>
+            <div class="hud-item round-timer" id="round-timer">10</div>
+            <div class="hud-item" style="color: #bdc3c7;">Round <span id="round-num" style="color: white;">1</span></div>
+        </div>
+
+        <div class="question-box" id="question-box">等待開始...</div>
+
+        <!-- 石板區 (2x2 + Start) -->
+        <div class="platforms-container" id="platforms-container">
+            <div class="platform" id="plat-0"><div class="platform-title" id="title-0">A</div><div class="platform-avatars" id="avatars-0"></div></div>
+            <div class="platform" id="plat-1"><div class="platform-title" id="title-1">B</div><div class="platform-avatars" id="avatars-1"></div></div>
+            <div class="platform" id="plat-2"><div class="platform-title" id="title-2">C</div><div class="platform-avatars" id="avatars-2"></div></div>
+            <div class="platform" id="plat-3"><div class="platform-title" id="title-3">D</div><div class="platform-avatars" id="avatars-3"></div></div>
+            
+            <div class="platform start-zone" id="plat--1">
+                <div class="platform-title">出發區 (請盡速離開！)</div>
+                <div class="platform-avatars" id="avatars--1"></div>
+            </div>
+        </div>
+
+        <!-- 玩家操作按鈕 -->
+        <div class="options-grid" id="player-options">
+            <button class="opt-btn color-0" id="btn-opt-0" onclick="selectPlatform(0)"><span class="opt-label">A</span><span id="opt-text-0"></span></button>
+            <button class="opt-btn color-1" id="btn-opt-1" onclick="selectPlatform(1)"><span class="opt-label">B</span><span id="opt-text-1"></span></button>
+            <button class="opt-btn color-2" id="btn-opt-2" onclick="selectPlatform(2)"><span class="opt-label">C</span><span id="opt-text-2"></span></button>
+            <button class="opt-btn color-3" id="btn-opt-3" onclick="selectPlatform(3)"><span class="opt-label">D</span><span id="opt-text-3"></span></button>
+        </div>
+    </div>
+
+    <!-- 結算特效 Overlay -->
+    <div id="result-overlay" class="result-overlay">
+        <div class="result-title" id="result-title">結算</div>
+        <div class="result-desc" id="result-desc"></div>
+        <button class="btn btn-solo" onclick="location.reload()" style="margin-top: 20px;">🔄 再次匹配</button>
+        <button class="btn" style="background:transparent; border: 2px solid white; font-size: 18px;" onclick="location.href='index.html'">🔙 回遊戲大廳</button>
+    </div>
+
+    <script>
+        // 老師的 Firebase 金鑰
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
+            authDomain: "rockgames-48853.firebaseapp.com",
+            databaseURL: "https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rockgames-48853",
+            storageBucket: "rockgames-48853.firebasestorage.app",
+            messagingSenderId: "313395129447",
+            appId: "1:313395129447:web:618531167064c7afdd38c2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 題庫
+        const questionBanks = {
+            "g4-l1": [
+                { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ he?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ she?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "Where ____ they?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where ____ I?", opts: ["am", "is", "are", "does"], ans: "am" },
+                { q: "I ____ in the bedroom.", opts: ["am", "is", "are", "be"], ans: "am" },
+                { q: "You ____ in the kitchen.", opts: ["are", "is", "am", "be"], ans: "are" },
+                { q: "He ____ in the yard.", opts: ["is", "are", "am", "be"], ans: "is" },
+                { q: "She ____ in the dining room.", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "They ____ in the kitchen.", opts: ["are", "is", "am", "do"], ans: "are" }
+            ],
+            "g4-l2": [
+                { q: "What ____ you doing?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "What ____ he doing?", opts: ["is", "are", "am", "does"], ans: "is" },
+                { q: "What is he ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
+                { q: "I am ____.", opts: ["running", "run", "runs", "ran"], ans: "running" },
+                { q: "She is ____ TV.", opts: ["watching", "watch", "watches", "watched"], ans: "watching" },
+                { q: "They are ____.", opts: ["eating", "eat", "eats", "ate"], ans: "eating" },
+                { q: "Where ____ you going?", opts: ["are", "is", "am", "do"], ans: "are" },
+                { q: "Where is she ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
+                { q: "I am going ____ the park.", opts: ["to", "in", "on", "at"], ans: "to" },
+                { q: "We ____ going to the shop.", opts: ["are", "is", "am", "be"], ans: "are" }
+            ],
+            "g5-l1": [
+                { q: "What's ____?", opts: ["wrong", "matter", "bad", "problem"], ans: "wrong" },
+                { q: "My head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My nose ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "My ears ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His arms ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Her leg ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
+                { q: "My feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "His teeth ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
+                { q: "Tom's eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" }
+            ],
+            "g5-l2": [
+                { q: "____ you have a fever?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
+                { q: "____ he have a stomachache?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "____ Tom have a cough?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
+                { q: "Yes, I ____.", opts: ["do", "does", "am", "are"], ans: "do" },
+                { q: "Yes, he ____.", opts: ["does", "do", "is", "has"], ans: "does" },
+                { q: "No, I ____.", opts: ["don't", "doesn't", "not", "no"], ans: "don't" },
+                { q: "No, she ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
+                { q: "I ____ a runny nose.", opts: ["have", "has", "having", "had"], ans: "have" },
+                { q: "He ____ a sore throat.", opts: ["has", "have", "having", "had"], ans: "has" },
+                { q: "Tom ____ a toothache.", opts: ["has", "have", "having", "had"], ans: "has" }
+            ]
+        };
+
+        // 🤖 逼真的虛擬玩家名稱庫 (各國常見拼音)
+        const botNames = [
+            "Leo", "Mia", "Tony", "Amy", "Kevin", "Lucy", "Jerry", "Alice", "Jason", "Betty", 
+            "David", "Cindy", "Peter", "Anna", "Tom", "Maggie", "Jack", "Lily", "Eric", "Ruby", 
+            "John", "Sandy", "Sam", "Nina", "Hank", "Tina", "Ryan", "Emma", "Max", "Rita", 
+            "Ray", "Zoe", "Alex", "Chloe", "Ben", "Kelly", "Gary", "Eva", "Owen", "Fiona", 
+            "Jim", "Grace", "Andy", "Ivy", "Kyle", "Jane", "Nick", "Iris", "Luke", "Sarah",
+            "Ian", "Eason", "Peggy", "Yoyo", "Roy", "Ken", "Jay", "Amber", "Winnie", "Vicky"
+        ];
+
+        let roomId = '';
+        let roomRef = null;
+        let myName = '';
+        let myUid = '';
+        let isHost = false; // 是否為本場遊戲的運算主機
+        
+        let currentTheme = '';
+        let questions = [];
+        let correctAnswerIdx = -1;
+        
+        let matchInterval = null;
+        let roundInterval = null;
+        let botTimers = []; // 儲存機器人移動的 timeout
+        
+        let currentRound = 0;
+        let maxRounds = 10;
+        let myStatus = 'alive'; // 'alive' or 'dead'
+
+        const sfxJump = document.getElementById('sfx-jump');
+        const sfxFall = document.getElementById('sfx-fall');
+        const sfxWin = document.getElementById('sfx-win');
+        const bgm = document.getElementById('bgm');
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        // ==========================================
+        // 🚀 排位賽匹配系統 (Matchmaking)
+        // ==========================================
+        function startSoloMatchmaking() {
+            const inputName = document.getElementById('solo-player-name').value.trim();
+            if(!inputName) return alert("請輸入你的專屬暱稱！");
+            if(inputName.length > 8) return alert("名字太長囉！請限制在 8 個字以內。");
+            
+            myName = inputName;
+            currentTheme = document.getElementById('solo-theme').value;
+
+            switchScreen('solo-matchmaking');
+            
+            // 隨機產生一個暫時 UID
+            myUid = 'p_' + Math.random().toString(36).substr(2, 9);
+            
+            // 尋找可用的房間
+            const queueRef = db.ref('ranked_matches').orderByChild('theme_status').equalTo(`${currentTheme}_recruiting`);
+            
+            queueRef.once('value').then(snap => {
+                let matchFound = false;
+                if (snap.exists()) {
+                    // 找到可用的房間，加入
+                    snap.forEach(child => {
+                        if (!matchFound) {
+                            roomId = child.key;
+                            roomRef = db.ref('ranked_matches/' + roomId);
+                            
+                            // 加入玩家列表
+                            roomRef.child('players/' + myUid).set({
+                                name: myName, platform: -1, isAlive: true, isReal: true, accuracy: 1.0
+                            });
+                            
+                            matchFound = true;
+                            listenToMatch();
+                        }
+                    });
+                }
+                
+                if (!matchFound) {
+                    // 沒找到，自己創建一個當主機
+                    createRankedMatch();
+                }
+            });
+        }
+
+        function createRankedMatch() {
+            isHost = true;
+            roomId = 'match_' + Math.random().toString(36).substr(2, 9);
+            roomRef = db.ref('ranked_matches/' + roomId);
+            
+            questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
+
+            let initialData = {
+                status: 'recruiting',
+                theme_status: `${currentTheme}_recruiting`,
+                startTime: firebase.database.ServerValue.TIMESTAMP,
+                hostUid: myUid,
+                round: 0,
+                players: {}
+            };
+            
+            initialData.players[myUid] = {
+                name: myName, platform: -1, isAlive: true, isReal: true, accuracy: 1.0
+            };
+
+            roomRef.set(initialData);
+            roomRef.onDisconnect().remove(); // 主機斷線就銷毀房間
+            
+            listenToMatch();
+            
+            // 主機負責 60 秒倒數，然後塞入機器人開局
+            let countdown = 60;
+            matchInterval = setInterval(() => {
+                countdown--;
+                document.getElementById('wait-timer').innerText = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(matchInterval);
+                    fillBotsAndStart();
+                }
+            }, 1000);
+        }
+
+        function listenToMatch() {
+            roomRef.on('value', snap => {
+                let data = snap.val();
+                if (!data) {
+                    alert("連線中斷或伺服器已關閉。");
+                    location.reload();
+                    return;
+                }
+
+                // 處理匹配中畫面
+                if (data.status === 'recruiting') {
+                    let realCount = Object.keys(data.players || {}).length;
+                    // 為了擬真，視覺上的人數會加上虛擬的進度 (最多不超過 30)
+                    // 這裡簡單處理，如果是主機，時間快到時會顯示越來越多人
+                    let visualCount = realCount + Math.floor((60 - parseInt(document.getElementById('wait-timer').innerText || 60)) / 2.5);
+                    if (visualCount > 30) visualCount = 30;
+                    document.getElementById('match-count').innerText = Math.max(realCount, visualCount);
+                }
+
+                // 遊戲開始
+                if (data.status === 'playing') {
+                    if (document.getElementById('solo-matchmaking').classList.contains('active-screen')) {
+                        switchScreen('game-screen');
+                        bgm.volume = 0.4; bgm.play().catch(e=>{});
+                    }
+                    
+                    updateUI(data);
+                }
+                
+                // 結算開獎
+                if (data.status === 'revealing') {
+                    revealPlatforms(data.ansIdx);
+                    updateUI(data); // 更新死傷狀態
+                }
+                
+                // 遊戲結束
+                if (data.status === 'finished') {
+                    showEndScreen(data);
+                }
+            });
+        }
+
+        // ==========================================
+        // 🤖 機器人與回合邏輯 (僅 Host 執行)
+        // ==========================================
+        function fillBotsAndStart() {
+            roomRef.once('value').then(snap => {
+                let data = snap.val();
+                let players = data.players || {};
+                let currentCount = Object.keys(players).length;
+                
+                let shuffledNames = [...botNames].sort(() => Math.random() - 0.5);
+                let nameIdx = 0;
+                
+                while (currentCount < 30) {
+                    let botUid = 'bot_' + Math.random().toString(36).substr(2, 9);
+                    
+                    // ✨ 階梯式 AI 難度設定 ✨
+                    let acc = 0;
+                    let rand = Math.random();
+                    if (rand > 0.9) acc = 0.95;       // 星耀/王者 (10%)
+                    else if (rand > 0.3) acc = 0.80;  // 白銀/黃金 (60%)
+                    else acc = 0.30;                  // 青銅 (30%) 容易死
+                    
+                    players[botUid] = {
+                        name: shuffledNames[nameIdx], platform: -1, isAlive: true, isReal: false, accuracy: acc
+                    };
+                    nameIdx++;
+                    currentCount++;
+                }
+
+                roomRef.update({
+                    status: 'playing',
+                    theme_status: 'locked', // 關閉匹配
+                    players: players
+                });
+                
+                startHostRound();
+            });
+        }
+
+        function startHostRound() {
+            if (questions.length === 0) questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
+            
+            let q = questions.pop();
+            let currentOptions = [...q.opts].sort(() => Math.random() - 0.5);
+            let ansIdx = currentOptions.indexOf(q.ans);
+            currentRound++;
+            
+            // 將所有存活者移回出發區
+            roomRef.once('value').then(snap => {
+                let players = snap.val().players;
+                let updates = {};
+                for (let uid in players) {
+                    if (players[uid].isAlive) updates[`players/${uid}/platform`] = -1;
+                }
+                updates['question'] = { text: q.q, opts: currentOptions };
+                updates['ansIdx'] = ansIdx;
+                updates['round'] = currentRound;
+                updates['status'] = 'playing';
+                
+                roomRef.update(updates).then(() => {
+                    scheduleBotMovements(players, ansIdx);
+                    
+                    // 10秒倒數
+                    let time = 10;
+                    roomRef.update({ timer: time });
+                    
+                    roundInterval = setInterval(() => {
+                        time--;
+                        roomRef.update({ timer: time });
+                        
+                        if (time <= 0) {
+                            clearInterval(roundInterval);
+                            evaluateHostRound(ansIdx);
+                        }
+                    }, 1000);
+                });
+            });
+        }
+
+        function scheduleBotMovements(players, ansIdx) {
+            // 清除之前的計時器
+            botTimers.forEach(t => clearTimeout(t));
+            botTimers = [];
+            
+            for (let uid in players) {
+                let p = players[uid];
+                if (!p.isReal && p.isAlive) {
+                    // 讓機器人在 2 ~ 9 秒之間隨機決定最終位置，製造跟風感
+                    let delay = 2000 + Math.random() * 7000;
+                    
+                    let t = setTimeout(() => {
+                        let finalPlat = -1;
+                        if (Math.random() < p.accuracy) {
+                            finalPlat = ansIdx; // 答對
+                        } else {
+                            let wrongs = [0,1,2,3].filter(x => x !== ansIdx);
+                            finalPlat = wrongs[Math.floor(Math.random() * 3)]; // 答錯
+                        }
+                        roomRef.child('players/' + uid).update({ platform: finalPlat });
+                    }, delay);
+                    
+                    botTimers.push(t);
+                }
+            }
+        }
+
+        function evaluateHostRound(ansIdx) {
+            roomRef.update({ status: 'revealing' });
+            
+            roomRef.once('value').then(snap => {
+                let players = snap.val().players;
+                let updates = {};
+                let aliveCount = 0;
+                
+                for (let uid in players) {
+                    let p = players[uid];
+                    if (p.isAlive) {
+                        if (p.platform !== ansIdx) {
+                            updates[`players/${uid}/isAlive`] = false; // 淘汰
+                        } else {
+                            aliveCount++;
+                        }
+                    }
+                }
+                
+                if (Object.keys(updates).length > 0) {
+                    roomRef.update(updates);
+                }
+                
+                setTimeout(() => {
+                    if (aliveCount <= 1 || currentRound >= maxRounds) {
+                        roomRef.update({ status: 'finished' });
+                    } else {
+                        startHostRound();
+                    }
+                }, 3500); // 開獎展示時間
+            });
+        }
+
+        // ==========================================
+        // 🎮 用戶端渲染與操作 (UI & Controls)
+        // ==========================================
+        function updateUI(data) {
+            if (!data.question) return;
+            
+            // 更新狀態列
+            document.getElementById('round-num').innerText = data.round;
+            let timerEl = document.getElementById('round-timer');
+            if (data.timer !== undefined) {
+                timerEl.innerText = data.timer;
+                if (data.timer <= 3) timerEl.classList.add('timer-warning');
+                else timerEl.classList.remove('timer-warning');
+            }
+            
+            // 更新題目與選項
+            let qText = data.question.text.replace('____', '_____');
+            document.getElementById('question-box').innerHTML = qText;
+            
+            let labels = ['A', 'B', 'C', 'D'];
+            for(let i=0; i<4; i++) {
+                document.getElementById(`opt-text-${i}`).innerText = data.question.opts[i];
+                document.getElementById(`title-${i}`).innerText = `${labels[i]}: ${data.question.opts[i]}`;
+                
+                // 回復石板外觀
+                if (data.status === 'playing') {
+                    let plat = document.getElementById(`plat-${i}`);
+                    plat.className = 'platform';
+                    document.getElementById(`btn-opt-${i}`).disabled = false;
+                }
+            }
+
+            // 更新自己狀態
+            if (data.players[myUid] && !data.players[myUid].isAlive && myStatus === 'alive') {
+                myStatus = 'dead';
+                // 鎖定按鈕
+                for(let i=0; i<4; i++) document.getElementById(`btn-opt-${i}`).disabled = true;
+                // 自己死掉的提示
+                document.getElementById('question-box').innerHTML = "💀 你已掉入岩漿，切換為觀戰模式";
+                document.getElementById('question-box').style.color = "#c0392b";
+            }
+
+            // 渲染所有存活玩家
+            let survivors = 0;
+            for(let i=-1; i<4; i++) document.getElementById(`avatars-${i}`).innerHTML = '';
+            
+            for (let uid in data.players) {
+                let p = data.players[uid];
+                if (p.isAlive) {
+                    survivors++;
+                    let container = document.getElementById(`avatars-${p.platform}`);
+                    if (container) {
+                        let av = document.createElement('div');
+                        av.className = uid === myUid ? 'avatar is-me' : 'avatar';
+                        av.innerText = p.name;
+                        container.appendChild(av);
+                    }
+                }
+            }
+            document.getElementById('survivor-count').innerText = survivors;
+        }
+
+        function selectPlatform(idx) {
+            if (myStatus === 'dead') return;
+            
+            // 視覺更新
+            for(let i=0; i<4; i++) document.getElementById(`btn-opt-${i}`).classList.remove('selected');
+            document.getElementById(`btn-opt-${idx}`).classList.add('selected');
+            
+            sfxJump.currentTime = 0; sfxJump.play().catch(e=>{});
+
+            // 更新資料庫 (因為是自己的節點，不會蓋掉別人)
+            roomRef.child('players/' + myUid).update({ platform: idx });
+        }
+
+        function revealPlatforms(ansIdx) {
+            // 鎖定按鈕
+            for(let i=0; i<4; i++) document.getElementById(`btn-opt-${i}`).disabled = true;
+            
+            // 掉落錯誤的石板
+            for(let i=-1; i<4; i++) {
+                if (i !== ansIdx) document.getElementById(`plat-${i}`).classList.add('falling');
+                else document.getElementById(`plat-${i}`).classList.add('safe');
+            }
+            
+            sfxFall.currentTime = 0; sfxFall.play().catch(e=>{});
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 500);
+        }
+
+        function showEndScreen(data) {
+            bgm.pause(); sfxWin.play().catch(e=>{});
+            
+            let players = data.players || {};
+            let survivorNames = [];
+            let myPlacement = 0;
+            
+            for (let uid in players) {
+                if (players[uid].isAlive) survivorNames.push(players[uid].name);
+            }
+            
+            const overlay = document.getElementById('result-overlay');
+            const title = document.getElementById('result-title');
+            const desc = document.getElementById('result-desc');
+            
+            if (survivorNames.length === 0) {
+                title.innerText = "💀 全軍覆沒！";
+                title.style.color = "#e74c3c";
+                desc.innerHTML = "沒有人活過最後一輪！";
+            } else {
+                title.innerText = "🏆 生存冠軍";
+                desc.innerHTML = `<span style="font-size:32px; color:white; font-weight:900;">${survivorNames.join(', ')}</span><br><br>成功撐過 ${data.round} 輪考驗！`;
+            }
+            
+            overlay.style.display = 'flex';
+            roomRef.onDisconnect().cancel(); // 取消斷線銷毀
+        }
+
+    </script>
+</body>
+</html>
