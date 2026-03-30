@@ -9,7 +9,16 @@
         :root {
             --bg: #2d3436; --text: #ecf0f1; --gold: #f1c40f; --card-bg: #34495e;
         }
-        .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #c0392b; }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        /* ✨ 這裡修復了遺失的字體與排版設定 ✨ */
+        body {
+            background-color: var(--bg); margin: 0; padding: 0;
+            min-height: 100dvh; font-family: 'Quicksand', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            color: var(--text); overflow-x: hidden; padding-bottom: 50px;
+        }
 
         /* ✨ 賽季跑馬燈樣式 ✨ */
         .season-marquee-container {
@@ -37,10 +46,10 @@
         }
 
         .header-title {
-            text-align: center; margin-bottom: 40px; animation: float 3s ease-in-out infinite; margin-top: 80px;
+            text-align: center; margin-bottom: 40px; animation: float 3s ease-in-out infinite; margin-top: 60px;
         }
         .header-title h1 {
-            font-size: 50px; color: var(--primary); margin: 0; text-shadow: 2px 2px 0px #dfe6e9;
+            font-size: 50px; color: var(--gold); margin: 0; text-shadow: 2px 2px 0px #dfe6e9;
         }
         .header-title p {
             font-size: 20px; color: #636e72; margin-top: 10px; font-weight: 700;
@@ -53,7 +62,7 @@
         }
 
         .game-container {
-            display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1200px; padding: 0 20px; z-index: 10;
+            display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1200px; padding: 0 20px; z-index: 10; margin-bottom: 50px;
         }
 
         /* 遊戲卡片設計 */
@@ -85,7 +94,7 @@
             border-radius: 50%; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .game-title { font-size: 28px; font-weight: 900; margin: 0 0 10px 0; }
+        .game-title { font-size: 28px; font-weight: 900; margin: 0 0 10px 0; color: #2d3436; }
         .game-desc { font-size: 16px; color: #636e72; font-weight: 700; margin-bottom: 25px; line-height: 1.5; flex-grow: 1; }
         
         .new-update-text { color: #e74c3c; font-weight: 900; display: block; margin-top: 5px; }
@@ -98,7 +107,7 @@
 
         /* ✨ 老師上課專區按鈕樣式 ✨ */
         .teacher-zone-btn {
-            margin-top: 60px; background: #2d3436; color: #f1c40f; padding: 15px 40px;
+            margin-bottom: 60px; background: #2d3436; color: #f1c40f; padding: 15px 40px;
             border-radius: 50px; display: flex; align-items: center; gap: 15px; cursor: pointer;
             box-shadow: 0 8px 0 #1e272e; border: 4px solid #f1c40f; transition: 0.1s; z-index: 10;
         }
@@ -133,15 +142,19 @@
 
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
+        .sound-toggle {
+            position: fixed; top: 12px; right: 15px; background: white; border: 3px solid #2ecc71; border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: #2d3436; box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 50000; transition: 0.2s;
+        }
+
         @media (max-width: 768px) {
             .sound-toggle { top: 10px; right: 10px; font-size: 14px; padding: 8px 15px; }
             .header-title { margin-top: 60px; }
             .header-title h1 { font-size: 40px; }
-            .game-container { flex-direction: column; align-items: center; gap: 20px; }
+            .game-container { flex-direction: column; align-items: center; gap: 20px; margin-bottom: 30px; }
             .game-card { width: 100%; max-width: 350px; padding: 25px; }
             .game-icon { font-size: 50px; width: 100px; height: 100px; line-height: 100px; }
             .modal-content { padding: 30px 20px; }
-            .teacher-zone-btn { padding: 12px 25px; }
+            .teacher-zone-btn { padding: 12px 25px; margin-bottom: 40px; }
             .teacher-icon { font-size: 30px; }
             .teacher-text { font-size: 20px; }
         }
@@ -155,12 +168,15 @@
     </div>
 
     <button id="sound-btn" class="sound-toggle" onclick="toggleSound()">🔊 音效：開</button>
+
+    <div class="header-title">
+        <h1>🎮 ROCK 老師的英文遊戲廳</h1>
         <p>Choose your challenge! 選擇你要挑戰的關卡</p>
     </div>
 
     <div class="game-container">
         
-        <!-- ✨ 1v1 拔河對戰 卡片 (第一順位) ✨ -->
+        <!-- ✨ 1v1 拔河對戰 卡片 ✨ -->
         <a href="javascript:void(0)" onclick="checkTugAccess(event)" class="game-card" style="border-color: #e84393;" onmouseover="this.style.borderColor='#0984e3'" onmouseout="this.style.borderColor='transparent'">
             <div class="game-icon" style="background: linear-gradient(135deg, #e84393, #0984e3); color: white; filter: drop-shadow(0 0 10px rgba(232, 67, 147, 0.5));">⚔️</div>
             <h2 class="game-title">Tug-of-War</h2>
@@ -172,7 +188,7 @@
             <div class="play-btn" style="background: linear-gradient(90deg, #e84393, #0984e3);">PLAY NOW</div>
         </a>
 
-        <!-- ✨ 新增：大逃殺生存戰 卡片 ✨ -->
+        <!-- ✨ 大逃殺生存戰 卡片 ✨ -->
         <a href="javascript:void(0)" onclick="checkSurvivalAccess(event)" class="game-card" style="border-color: #e67e22;" onmouseover="this.style.borderColor='#d35400'" onmouseout="this.style.borderColor='transparent'">
             <div class="game-icon" style="background: linear-gradient(135deg, #e67e22, #d35400); color: white; filter: drop-shadow(0 0 10px rgba(230, 126, 34, 0.5));">🌋</div>
             <h2 class="game-title">Grammar Survival</h2>
@@ -192,6 +208,17 @@
                 <span style="color:#e74c3c;">計算上線時間中...</span>
             </p>
             <div class="play-btn">PLAY NOW</div>
+        </a>
+
+        <!-- ✨ 跑酷遊戲 卡片 ✨ -->
+        <a href="runner.html" class="game-card card-9" style="border-color: #3498db;" onmouseover="this.style.borderColor='#2980b9'" onmouseout="this.style.borderColor='transparent'">
+            <div class="game-icon" style="background: #3498db; color: white; filter: drop-shadow(0 0 10px rgba(52, 152, 219, 0.5));">🏃‍♂️</div>
+            <h2 class="game-title">Grammar Runner</h2>
+            <p class="game-desc">
+                文法跑酷冒險！<br>滑動切換跑道，撞破正確的單字閘門！滿 10 Combo 進入無敵衝刺！<br>
+                <span class="new-update-text">🔥 全新跑酷模式刺激上線！</span>
+            </p>
+            <div class="play-btn" style="background: #3498db;">PLAY NOW</div>
         </a>
 
         <a href="defender.html" class="game-card card-9">
@@ -279,6 +306,8 @@
         <div class="teacher-text">老師上課專區</div>
     </div>
 
+    <audio id="bgm" src="arcade.mp3" loop></audio>
+
     <!-- ✨ 老師專區密碼鎖彈窗 ✨ -->
     <div id="teacher-modal" class="overlay-modal">
         <div class="pwd-box">
@@ -309,7 +338,7 @@
         </div>
     </div>
 
-    <!-- ✨ 新增：大逃殺生存戰彈窗 ✨ -->
+    <!-- ✨ 大逃殺生存戰彈窗 ✨ -->
     <div id="survival-modal" class="overlay-modal">
         <div class="modal-content" style="border-color: #e67e22;">
             <h2 style="color:#e67e22; font-size:32px; margin-top:0; margin-bottom:10px;">🌋 戰場準備中...</h2>
