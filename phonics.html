@@ -112,9 +112,11 @@
                 <option value="" disabled selected hidden>▼ 請先選擇特訓關卡...</option>
                 <optgroup label="四年級 (Grade 4)">
                     <option value="g4-th-voiceless-f">👅 L1: 無聲 [th] 與 [f] (易混淆)</option>
-                    <option value="g4-th-voiced">🗣️ L2: 有聲 [th] 與 無聲 [th]</option>
+                    <option value="g4-th-voiced">🗣️ L1: 有聲 [th] 與 無聲 [th]</option>
+                    <option value="g4-ng-nk">🎵 L2: [ng] 與 [nk] 尾音辨識</option>
                 </optgroup>
                 <optgroup label="五年級 (Grade 5)">
+                    <option value="g5-th">👅 L2: 有聲與無聲 [th] 終極特訓</option>
                     <option value="g5-wh-ph">🐳 L3: [wh] 與 [ph] 發音挑戰</option>
                 </optgroup>
             </select>
@@ -167,9 +169,11 @@
         ];
 
         const wordBanks = {
-            "g4-th-voiceless-f": ["thin", "fish", "thick", "four", "think", "five", "three", "foot", "bath", "half", "math", "leaf", "tooth", "fan", "face", "mouth"],
-            "g4-th-voiced": ["this", "thin", "that", "thick", "these", "three", "those", "bath", "they", "math", "brother", "mother", "father", "mouth", "then", "tooth"],
-            "g5-wh-ph": ["what", "phone", "when", "photo", "where", "white", "elephant", "whale", "dolphin", "who", "alphabet", "wheel", "why", "graph", "which"]
+            "g4-th-voiceless-f": ["thin", "fish", "thick", "four", "think", "five", "three", "foot", "bath", "half", "math", "leaf", "tooth", "fan", "face", "mouth", "thank", "fast", "throw", "fall", "thumb", "feel", "thief", "fire", "north", "free", "south", "frog", "earth", "roof", "cloth", "beef", "moth", "safe"],
+            "g4-th-voiced": ["this", "thin", "that", "thick", "these", "three", "those", "bath", "they", "math", "brother", "mother", "father", "mouth", "then", "tooth", "them", "thank", "there", "throw", "weather", "thumb", "feather", "thief", "leather", "north", "gather", "south", "breathe", "earth", "bathe", "cloth", "together", "moth"],
+            "g4-ng-nk": ["ring", "pink", "sing", "sink", "king", "wink", "wing", "link", "spring", "drink", "string", "think", "swing", "bank", "bring", "tank", "long", "rank", "song", "blank", "strong", "honk", "wrong", "chunk", "bang", "junk", "hang", "trunk", "gang", "sunk", "fang", "dunk", "lung", "sung", "hung"],
+            "g5-th": ["thin", "thick", "think", "thank", "three", "throw", "thumb", "thief", "bath", "math", "path", "tooth", "teeth", "mouth", "south", "north", "earth", "this", "that", "these", "those", "they", "them", "then", "there", "brother", "mother", "father", "weather", "feather", "leather", "gather", "together", "smooth", "breathe", "bathe", "other", "another", "either", "neither"],
+            "g5-wh-ph": ["what", "phone", "when", "photo", "where", "white", "elephant", "whale", "dolphin", "who", "alphabet", "wheel", "why", "graph", "which", "wheat", "whip", "whisper", "whistle", "whisk", "nephew", "sphere", "trophy", "phantom", "phrase", "pharmacy", "physical", "triumph", "autograph", "water", "window", "wait", "walk", "wash", "watch", "wave", "hat", "house", "horse", "hand", "head", "heart"]
         };
 
         let score = 0, combo = 0, multiplier = 1, timeLeft = 60;
