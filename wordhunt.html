@@ -9,40 +9,40 @@
         :root { --primary: #6c5ce7; --success: #2ed573; --error: #ff4757; --wall-text: #2c3e50; --bank-bg: #f8f9fa; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { background-color: #ffffff; margin: 0; padding: 0; height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
+        
         .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: #2d3436; box-shadow: 0 5px 15px rgba(0,0,0,0.1); z-index: 50000; transition: 0.2s; }
         .sound-toggle:hover { transform: scale(1.05); } .sound-toggle:active { transform: scale(0.95); }
+        
         #header { height: 60px; background: white; border-bottom: 2px solid #dfe6e9; display: flex; justify-content: space-around; align-items: center; padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; }
         .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; }
         .exit-btn { background: #ff7675; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #d63031; }
         .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #d63031; }
+        
         #word-bank { background: var(--bank-bg); padding: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border-bottom: 3px solid #dfe6e9; flex-shrink: 0; visibility: hidden; max-height: 20vh; overflow-y: auto; }
         .bank-item { background: white; padding: 8px 12px; border-radius: 12px; font-size: 20px; color: #2c3e50; border: 2px solid #bdc3c7; text-align: center; font-weight: 900; }
         .bank-item.completed { background: var(--primary) !important; color: white !important; border-color: #f1c40f; animation: super-flip 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes super-flip { 0% { transform: scale(1); } 50% { transform: scale(1.6) rotateY(180deg); background-color: #f1c40f; box-shadow: 0 0 40px #f1c40f; } 100% { transform: scale(1.1) rotateY(360deg); } }
-        #game-area { flex-grow: 1; position: relative; padding: 15px 30px; font-size: 32px; line-height: 1.25; letter-spacing: 5px; word-break: break-all; color: var(--wall-text); text-align: justify; cursor: pointer; overflow: hidden; font-weight: 900; }
+        
+        /* ✨ 加入 touch-action: none; 防止多指操作時網頁跟著縮放或滑動 ✨ */
+        #game-area { flex-grow: 1; position: relative; padding: 15px 30px; font-size: 32px; line-height: 1.25; letter-spacing: 5px; word-break: break-all; color: var(--wall-text); text-align: justify; cursor: pointer; overflow: hidden; font-weight: 900; touch-action: none; }
+        
         .target { color: inherit; display: inline-block; transition: 0.2s; padding: 8px 3px; margin: -8px -3px; position: relative; z-index: 10; }
         .found { color: var(--primary) !important; font-weight: 900 !important; text-shadow: 0 0 12px rgba(108, 92, 231, 0.6); }
         .found-egg { color: #f1c40f !important; font-weight: 900 !important; text-shadow: 0 0 20px rgba(241, 196, 15, 0.8); }
+        
         #start-overlay, #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 20000; overflow-y: auto; padding: 30px 10px; }
         #start-overlay { background: var(--primary); color: white; } #end-msg { background: rgba(255,255,255,0.98); display: none; text-align: center; }
         #secret-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); color: white; padding: 30px 40px; border-radius: 20px; z-index: 40000; text-align: center; box-shadow: 0 0 40px #f1c40f; border: 4px solid #f1c40f; width: 80%; max-width: 400px; }
+        
         .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #2d3436; text-align: left; }
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
         #front-leaderboard-list { max-height: 180px; overflow-y: auto; padding-right: 5px; } #front-leaderboard-list::-webkit-scrollbar { width: 6px; } #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #front-leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
         .front-board-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; } .front-board-row:last-child { border-bottom: none; }
-        .name-input { font-size: 24px; padding: 12px 25px; border-radius: 20px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 300px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); outline: none; }
         
-        /* ✨ 終極修正：強制指定顏色與外觀，解決 iOS Safari 白底白字的問題 ✨ */
-        select.theme-select { 
-            width: 100%; font-size: 16px; padding: 12px 15px; border-radius: 10px; 
-            border: none; outline: none; font-family: 'Quicksand'; font-weight: 700;
-            color: #2c3e50; background-color: #ffffff; appearance: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px; margin-bottom: 20px;
-        }
+        .name-input { font-size: 24px; padding: 12px 25px; border-radius: 20px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 20px; width: 300px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); outline: none; }
+        select.theme-select { width: 100%; font-size: 16px; padding: 12px 15px; border-radius: 10px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; color: #2c3e50; background-color: #ffffff; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px; margin-bottom: 20px; }
         select.theme-select option, select.theme-select optgroup { color: #2c3e50; background-color: #ffffff; }
 
-        /* ✨ 新增錯誤提示訊息樣式 ✨ */
         #error-msg { display: none; color: #ffcccc; font-weight: 900; margin-bottom: 15px; background: rgba(255, 71, 87, 0.9); padding: 10px 20px; border-radius: 20px; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
         .start-btn { background: var(--success); color: white; border: none; padding: 15px 50px; font-size: 35px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #219150; transition: 0.1s; margin-bottom: 30px; }
@@ -52,13 +52,16 @@
         .leaderboard-title { font-size: 24px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; text-align: center; border-top: 2px dashed #ddd; padding-top: 15px; }
         #leaderboard-list { max-height: 200px; overflow-y: auto; padding-right: 5px; } #leaderboard-list::-webkit-scrollbar { width: 6px; } #leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } #leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
         .board-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #dfe6e9; font-size: 18px; font-weight: 700; color: #2d3436; } .board-row:last-child { border-bottom: none; }
+        
         .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 120px; z-index: 30000; text-shadow: 6px 6px 0px white, -6px -6px 0px white; animation: burst 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
         @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-50px); opacity: 1; } 100% { transform: scale(1.2) translateY(-250px); opacity: 0; } }
         .shake { animation: shake 0.3s linear; } @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
+        
         @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay { padding-top: 10px; } #start-overlay h1 { font-size: 40px !important; margin-bottom: 5px; } #start-overlay p { font-size: 16px !important; margin-bottom: 10px !important; } .front-leaderboard { width: 95%; padding: 10px; margin-bottom: 10px; } .name-input { width: 85%; font-size: 20px; padding: 10px; margin-bottom: 10px; } select.theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 10px !important; } .start-btn { font-size: 28px; padding: 10px 40px; margin-bottom: 10px; } .bank-item { font-size: 14px; padding: 5px 8px; } #game-area { font-size: 22px !important; letter-spacing: 2px !important; padding: 10px !important; line-height: 1.15 !important; } .float-num { font-size: 70px !important; } #end-title { font-size: 36px !important; } .result-panel { width: 95%; padding: 15px; } .score-breakdown { font-size: 16px; padding: 10px; } .final-score-display { font-size: 28px; } .board-row { font-size: 14px; padding: 6px; } }
     </style>
 </head>
-<body onclick="handleTap(event)">
+
+<body onpointerdown="handleTap(event)">
 
     <audio id="bgm" src="music.mp3" loop></audio>
     <audio id="secret-bgm" src="67.mp3"></audio>
@@ -253,17 +256,36 @@
         function getGarbage(len) { const chars = "abcdefghijklmnopqrstuvwxyz"; let res = ""; for(let i=0; i<len; i++) { let char = chars[Math.floor(Math.random()*26)]; if (res.endsWith('t') && char === 'v') char = 'x'; res += char; } return res; }
         function countUp() { seconds++; document.getElementById('timer-val').textContent = `${Math.floor(seconds/60).toString().padStart(2,'0')}m ${(seconds%60).toString().padStart(2,'0')}s`; }
 
+        // ✨ 核心升級：精準捕捉多指同時按下的操作 ✨
         function handleTap(e) {
-            if (e.target.closest('.sound-toggle') || e.target.closest('.exit-btn')) return;
+            // 防止誤觸其他按鈕
+            if (e.target.closest('.sound-toggle') || e.target.closest('.exit-btn') || e.target.closest('.start-btn') || e.target.closest('input') || e.target.closest('select')) return;
             if (foundCount >= currentVocab.length) return;
-            const isTarget = e.target.classList.contains('target'), isFound = e.target.classList.contains('found') || e.target.classList.contains('found-egg');
+            
+            const isTarget = e.target.classList.contains('target');
+            const isFound = e.target.classList.contains('found') || e.target.classList.contains('found-egg');
+            
             if (isTarget && !isFound) {
                 const w = e.target.getAttribute('data-word');
-                if (w === "ROCK") { e.target.classList.add('found-egg'); score += 100; document.getElementById('score-val').textContent = score; showBurst(e.clientX, e.clientY, "+100 🌟", "#f1c40f"); bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err)); const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => { modal.style.display = 'none'; }, 3000); return; }
-                e.target.classList.add('found'); score += 10; foundCount++; playSfx('success'); showBurst(e.clientX, e.clientY, "+10", "#2ed573"); document.getElementById('bank-' + w).classList.add('completed'); document.getElementById('score-val').textContent = score;
+                if (w === "ROCK") { 
+                    e.target.classList.add('found-egg'); 
+                    score += 100; document.getElementById('score-val').textContent = score; 
+                    showBurst(e.clientX, e.clientY, "+100 🌟", "#f1c40f"); 
+                    bgm.pause(); secretBgm.currentTime = 0; secretBgm.volume = 0.6; secretBgm.play().catch(err => console.log(err)); 
+                    const modal = document.getElementById('secret-modal'); modal.style.display = 'block'; setTimeout(() => { modal.style.display = 'none'; }, 3000); return; 
+                }
+                e.target.classList.add('found'); 
+                score += 10; foundCount++; 
+                playSfx('success'); showBurst(e.clientX, e.clientY, "+10", "#2ed573"); 
+                document.getElementById('bank-' + w).classList.add('completed'); document.getElementById('score-val').textContent = score;
+                
                 if(foundCount === currentVocab.length) { playSfx('celebration'); calculateAndEndGame(); }
             } else if (e.target.closest('#game-area') && !isTarget && !isFound) {
-                score = Math.max(0, score - 2); playSfx('error'); showBurst(e.clientX, e.clientY, "-2", "#ff4757"); document.body.classList.add('shake'); setTimeout(() => document.body.classList.remove('shake'), 300); document.getElementById('score-val').textContent = score;
+                // 如果是點錯的區域
+                score = Math.max(0, score - 2); 
+                playSfx('error'); showBurst(e.clientX, e.clientY, "-2", "#ff4757"); 
+                document.body.classList.add('shake'); setTimeout(() => document.body.classList.remove('shake'), 300); 
+                document.getElementById('score-val').textContent = score;
             }
         }
 
