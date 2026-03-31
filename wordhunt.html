@@ -183,7 +183,7 @@
             listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取排行榜中...</div>";
             fetch(`${GOOGLE_API_URL}?action=get&theme=${currentTheme}`).then(r => r.json()).then(board => {
                 listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72; padding:10px;'>此關卡還沒有紀錄，搶下第一名吧！</div>"; return; }
-                board.forEach((p, i) => { const row = document.createElement('div'); row.className = 'front-board-row'; let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; row.innerHTML = `<span>${rankStr} ${p.name}</span> <span>${p.score} pts</span>`; listDiv.appendChild(row); });
+                board.forEach((p, i) => { const row = document.createElement('div'); row.className = 'front-board-row'; let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; row.innerHTML = `<span>${rankStr} ${p.name} (${p.time})</span> <span>${p.score} pts</span>`; listDiv.appendChild(row); });
             }).catch(e => { listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-size:14px;'>排行榜連線失敗 😢</div>"; });
         }
 
