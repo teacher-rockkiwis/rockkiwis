@@ -179,7 +179,8 @@
         <!-- ✨ 頂部最醒目的段考複習入口 ✨ -->
         <a href="exam_review.html" class="game-card" style="width: 100%; max-width: 800px; border-color: #f1c40f; background: linear-gradient(135deg, #2c3e50, #34495e); flex-direction: row; padding: 25px; text-align: left;" onmouseover="this.style.transform='translateY(-10px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(241, 196, 15, 0.4)';" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)';">
             <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; width: 100%;">
-                <div class="game-icon" style="background: linear-gradient(135deg, #f1c40f, #f39c12); color: #2c3e50; filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.8)); margin-bottom: 0; width: 130px; height: 130px; line-height: 130px; font-size: 70px; flex-shrink: 0; border: none;">💯</div>
+                <!-- ✨ 修正了 Emoji 的垂直置中對齊問題 ✨ -->
+                <div class="game-icon" style="background: linear-gradient(135deg, #f1c40f, #f39c12); color: #2c3e50; filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.8)); margin-bottom: 0; width: 130px; height: 130px; display: flex; justify-content: center; align-items: center; line-height: normal; font-size: 70px; flex-shrink: 0; border: none;">💯</div>
                 <div style="flex: 1; min-width: 250px;">
                     <h2 class="game-title" style="color: #f1c40f; font-size: 32px; margin-bottom: 5px;">📝 段考總複習特訓網</h2>
                     <p class="game-desc" style="color: #ecf0f1; font-size: 16px; margin-bottom: 15px;">
@@ -191,7 +192,7 @@
             </div>
         </a>
         
-        <!-- ✨ 1v1 拔河對戰 卡片 ✨ -->
+        <!-- 1v1 拔河對戰 卡片 (順延至第二) -->
         <a href="javascript:void(0)" onclick="checkTugAccess(event)" class="game-card" style="border-color: #e84393;" onmouseover="this.style.borderColor='#0984e3'" onmouseout="this.style.borderColor='transparent'">
             <div class="game-icon" style="background: linear-gradient(135deg, #e84393, #0984e3); color: white; filter: drop-shadow(0 0 10px rgba(232, 67, 147, 0.5));">⚔️</div>
             <h2 class="game-title">Tug-of-War</h2>
@@ -474,16 +475,23 @@
             const marqueeContainer = document.getElementById('season-marquee');
             const marqueeText = document.getElementById('marquee-text');
 
-            if (date === 1) {
-                // 每月 1 號
-                marqueeContainer.style.background = "linear-gradient(90deg, #f39c12, #f1c40f)";
-                marqueeText.innerHTML = `🎉 【${month}月】全新賽季正式開打！排行榜已全面刷新，拿出你的最強實力，準備好在榮譽榜上刻下你的名字吧！🏆`;
-                marqueeContainer.style.display = "block";
-            } else if (date >= lastDayOfThisMonth - 2) {
+            if (date >= lastDayOfThisMonth - 2) {
                 // 每月最後三天 (例如 29, 30, 31)
                 const nextMonth = month === 12 ? 1 : month + 1;
                 marqueeContainer.style.background = "linear-gradient(90deg, #c0392b, #e74c3c)";
                 marqueeText.innerHTML = `⚠️ 賽季倒數計時！【${nextMonth}月】全新賽季即將展開，所有排行榜將於 ${nextMonth}/1 凌晨重置！把握最後機會衝刺霸榜！🔥`;
+                marqueeContainer.style.display = "block";
+            } else {
+                // 平常日子繼續顯示賽季開打，並加入兩天的 Bug 清除特別公告
+                marqueeContainer.style.background = "linear-gradient(90deg, #f39c12, #f1c40f)";
+                let msg = `🎉 【${month}月】全新賽季正式開打！排行榜已全面刷新，拿出你的最強實力，準備好在榮譽榜上刻下你的名字吧！🏆`;
+                
+                // ✨ 4/2 ~ 4/3 特別顯示 Bug 修復與呼籲複習公告 ✨
+                if (month === 4 && (date === 2 || date === 3)) {
+                    msg += ` &nbsp;&nbsp;&nbsp;&nbsp; 🛠️ 最新公告：段考複習網的 Bug 已全數清除！請大家踴躍上線複習，衝刺期中考！🔥`;
+                }
+                
+                marqueeText.innerHTML = msg;
                 marqueeContainer.style.display = "block";
             }
         }
