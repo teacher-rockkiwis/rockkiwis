@@ -258,7 +258,6 @@
             <div class="result-rank" id="result-rank">S 級學霸</div>
             <p style="color:#7f8c8d; font-weight:700; font-size:18px; margin-bottom: 20px;" id="result-feedback">成績已自動上傳至英雄榜！</p>
             
-            <!-- ✨ 新增：查看錯題按鈕 ✨ -->
             <button class="review-btn" onclick="showMistakes()">📝 查看錯題與解析</button>
             <button class="home-btn" onclick="showMenu()">🔙 回首頁查看排名</button>
         </div>
@@ -276,7 +275,7 @@
         </div>
     </div>
 
-    <!-- ✨ 新增：錯題總複習彈窗 ✨ -->
+    <!-- 錯題總複習彈窗 -->
     <div class="modal-overlay" id="mistake-review-modal">
         <div class="modal-content review-mode">
             <h2 style="color:var(--warning); text-align:center; margin-top:0; font-size:28px;">📝 錯題總複習</h2>
@@ -291,124 +290,120 @@
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
         let userIP = "Unknown";
 
-        // 📚 海量題庫資料 (文法、單字、Phonics 發音) - 超過 300 題！
+        // 📚 終極海量題庫資料 (文法、單字、Phonics 發音、是非題、邏輯分類)
         const quizData = {
             "g4u1": [
-                // 文法題 (Be 動詞 & 介系詞)
-                { type: "文法", q: "A: Where is your brother?<br>B: He ____ in the bedroom.", opts: ["is", "are", "am", "be"], ans: "is", rationale: "He 是第三人稱單數，搭配 be 動詞 is。" },
-                { type: "文法", q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are", rationale: "主詞是 you，配合的 be 動詞必須是 are。" },
-                { type: "文法", q: "Where ____ they?", opts: ["are", "is", "am", "do"], ans: "are", rationale: "主詞是 they(他們)，複數搭配 are。" },
-                { type: "文法", q: "Where ____ she?", opts: ["is", "are", "am", "does"], ans: "is", rationale: "主詞是 she(她)，單數搭配 is。" },
-                { type: "文法", q: "I ____ in the living room.", opts: ["am", "is", "are", "be"], ans: "am", rationale: "主詞是 I(我)，專屬搭配 am。" },
-                { type: "文法", q: "Where ____ Tom and Mary?", opts: ["are", "is", "am", "do"], ans: "are", rationale: "Tom and Mary 是兩個人(複數)，搭配 are。" },
-                { type: "文法", q: "____ your sister in the kitchen?", opts: ["Is", "Are", "Am", "Do"], ans: "Is", rationale: "your sister 是單數(她)，疑問句開頭用 Is。" },
-                { type: "文法", q: "____ the dogs in the yard?", opts: ["Are", "Is", "Am", "Does"], ans: "Are", rationale: "dogs 有加 s 代表複數(牠們)，疑問句開頭用 Are。" },
-                { type: "文法", q: "A: Is Peter in the bathroom?<br>B: No, ____.", opts: ["he isn't", "she isn't", "he is", "I am not"], ans: "he isn't", rationale: "Peter 是男生，用 Is 發問，否定回答要用 No, he isn't。" },
-                { type: "文法", q: "A: Are they in the dining room?<br>B: Yes, ____.", opts: ["they are", "we are", "they aren't", "there are"], ans: "they are", rationale: "用 Are they 問，肯定回答就用 Yes, they are。" },
-                { type: "文法", q: "The cat is ____ the table.", opts: ["under", "in", "to", "at"], ans: "under", rationale: "貓咪躲在桌子「下面」，介系詞要用 under。" },
-                { type: "文法", q: "The books are ____ the desk.", opts: ["on", "in", "under", "to"], ans: "on", rationale: "書本在書桌「上面」，介系詞要用 on。" },
-                { type: "文法", q: "Mom is ____ the kitchen.", opts: ["in", "on", "under", "at"], ans: "in", rationale: "在某個房間「裡面」，介系詞要使用 in。" },
-                { type: "文法", q: "A: Where is the marker?<br>B: It's ____ the box.", opts: ["in", "on", "under", "to"], ans: "in", rationale: "彩色筆放在盒子「裡面」，用 in。" },
-                { type: "文法", q: "____ are you? I'm in the yard.", opts: ["Where", "What", "Who", "How"], ans: "Where", rationale: "回答地點(in the yard)，所以問句是用 Where(哪裡) 發問。" },
-                // 單字題 (Rooms)
+                // ===== 文法題 (Be 動詞 & 介系詞) =====
+                { type: "文法", q: "A: Where is your brother?<br>B: He ____ in the bedroom.", opts: ["is", "are", "am"], ans: "is", rationale: "He (他) 是第三人稱單數，搭配的 be 動詞必須是 is。are 只能配 you/we/they，am 專屬於 I。" },
+                { type: "文法", q: "Where ____ you?", opts: ["are", "is", "am"], ans: "are", rationale: "主詞是 you (你/你們)，在英文中 you 永遠搭配 be 動詞 are。" },
+                { type: "文法", q: "Where ____ they?", opts: ["are", "is", "am"], ans: "are", rationale: "主詞是 they (他們/牠們/它們)，代表複數，複數主詞一律搭配 are。" },
+                { type: "文法", q: "Where ____ she?", opts: ["is", "are", "am"], ans: "is", rationale: "主詞是 she (她)，第三人稱單數搭配 is。" },
+                { type: "文法", q: "I ____ in the living room.", opts: ["am", "is", "are"], ans: "am", rationale: "主詞是 I (我)，am 是 I 的專屬 be 動詞夥伴！" },
+                { type: "文法", q: "Where ____ Tom and Mary?", opts: ["are", "is", "am"], ans: "are", rationale: "Tom and Mary 是兩個人(複數)，只要大於等於兩個人，be 動詞就要用 are。" },
+                { type: "文法", q: "____ your sister in the kitchen?", opts: ["Is", "Are", "Am"], ans: "Is", rationale: "這是一個疑問句。主詞 your sister (你的妹妹/姐姐) 是單數(她)，所以開頭的 be 動詞要用 Is。" },
+                { type: "文法", q: "____ the dogs in the yard?", opts: ["Are", "Is", "Am"], ans: "Are", rationale: "dogs 字尾有加 s，代表是複數(很多隻狗)，複數主詞的疑問句開頭要用 Are。" },
+                { type: "文法", q: "A: Is Peter in the bathroom?<br>B: No, ____.", opts: ["he isn't", "she isn't", "he is", "I am not"], ans: "he isn't", rationale: "Peter 是男生，代名詞用 he。用 Is 發問，否定簡答要完整回答 No, he isn't (或 is not)。" },
+                { type: "文法", q: "A: Are they in the dining room?<br>B: Yes, ____.", opts: ["they are", "we are", "they aren't"], ans: "they are", rationale: "英文問答規則「怎麼問就怎麼答」。用 Are they 問，肯定回答就是 Yes, they are。" },
+                { type: "文法", q: "The cat is ____ the table.", opts: ["under", "in", "on"], ans: "under", rationale: "貓咪通常會躲在桌子「下面」，介系詞要用 under (在...下面)。" },
+                { type: "文法", q: "The books are ____ the desk.", opts: ["on", "in", "under"], ans: "on", rationale: "書本通常是放在書桌「上面」，表示在表面上接觸的介系詞要用 on (在...上面)。" },
+                { type: "文法", q: "Mom is ____ the kitchen.", opts: ["in", "on", "under"], ans: "in", rationale: "在一個立體的空間(如房間)「裡面」，介系詞要使用 in (在...裡面)。" },
+                { type: "文法", q: "____ are you? I'm in the yard.", opts: ["Where", "What", "Who"], ans: "Where", rationale: "答句說 I'm in the yard (我在庭院裡)，回答的是「地點」，所以問句必須用 Where (哪裡) 發問。" },
+                
+                // ===== 是非題 =====
+                { type: "是非", q: "是非題：Tom are in the kitchen. 這句話的文法是正確的。", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "Tom 是一個人（第三人稱單數），搭配的 be 動詞應該是 is (Tom is...)，不能用 are！" },
+                { type: "是非", q: "是非題：I am in the bedroom. 這句話的文法是正確的。", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "完全正確！主詞 I 搭配 am，並且在房間裡面使用介系詞 in。" },
+                { type: "是非", q: "是非題：當我們想問「媽媽在哪裡」時，應該說 Where is Mom? ", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "正確！詢問地點用 Where，且 Mom 是單數，所以配 is。" },
+                
+                // ===== 單字分類/單字題 =====
                 { type: "單字", q: "「客廳」的英文是？", opts: ["living room", "bedroom", "bathroom", "kitchen"], ans: "living room", rationale: "living room 是客廳。bedroom(臥室)、bathroom(浴室)、kitchen(廚房)。" },
                 { type: "單字", q: "「廚房」的英文是？", opts: ["kitchen", "dining room", "balcony", "garage"], ans: "kitchen", rationale: "kitchen 是廚房。dining room 是飯廳。" },
                 { type: "單字", q: "「陽台」的英文是？", opts: ["balcony", "basement", "garage", "yard"], ans: "balcony", rationale: "balcony 是陽台。basement(地下室)、garage(車庫)、yard(庭院)。" },
-                { type: "單字", q: "「地下室」的英文是？", opts: ["basement", "balcony", "garage", "living room"], ans: "basement", rationale: "basement 是地下室。" },
-                { type: "單字", q: "「車庫」的英文是？", opts: ["garage", "basement", "balcony", "bathroom"], ans: "garage", rationale: "garage 是車庫，用來停車的地方。" },
-                { type: "單字", q: "請選出「bedroom」的中文意思：", opts: ["臥室", "浴室", "飯廳", "車庫"], ans: "臥室", rationale: "bed(床) + room(房間) = 臥室。" },
-                { type: "單字", q: "請選出「dining room」的中文意思：", opts: ["飯廳", "廚房", "客廳", "庭院"], ans: "飯廳", rationale: "dine(用餐) + room = 飯廳。" },
+                { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["kitchen", "bathroom", "bedroom", "teacher"], ans: "teacher", rationale: "teacher 是老師（職業/人），另外三個都是家裡的房間地點！" },
+                { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["under", "in", "on", "garage"], ans: "garage", rationale: "garage 是車庫（名詞），另外三個 under/in/on 都是表示位置的「介系詞」！" },
+                { type: "單字", q: "爸爸把車停在_____。", opts: ["garage", "basement", "balcony", "bathroom"], ans: "garage", rationale: "garage 是車庫，用來停車的地方。" },
                 { type: "單字", q: "我們通常在_____吃晚餐。", opts: ["dining room", "bathroom", "bedroom", "garage"], ans: "dining room", rationale: "吃晚餐通常在 dining room (飯廳)。" },
-                { type: "單字", q: "We sleep in the _____.", opts: ["bedroom", "kitchen", "balcony", "yard"], ans: "bedroom", rationale: "sleep(睡覺) 通常在 bedroom(臥室)。" },
-                { type: "單字", q: "Where is the TV? It is in the _____.", opts: ["living room", "bathroom", "garage", "yard"], ans: "living room", rationale: "電視(TV)通常放在 living room(客廳)。" },
-                { type: "單字", q: "Mom is taking a shower (洗澡) in the _____.", opts: ["bathroom", "living room", "kitchen", "bedroom"], ans: "bathroom", rationale: "洗澡(take a shower) 會在 bathroom(浴室)。" },
-                { type: "單字", q: "I am washing the car in the _____.", opts: ["garage", "balcony", "bedroom", "dining room"], ans: "garage", rationale: "車子(car) 會停在 garage(車庫)。" }
+                { type: "單字", q: "Where is the TV? It is in the _____.", opts: ["living room", "bathroom", "garage", "yard"], ans: "living room", rationale: "電視(TV)通常放在 living room(客廳)。" }
             ],
             "g4u2": [
-                // 文法題 (現在進行式 V-ing)
-                { type: "文法", q: "A: What are you doing?<br>B: I am ____ an apple.", opts: ["eating", "eat", "eats", "ate"], ans: "eating", rationale: "問句是現在進行式，答句也必須用現在進行式 (am/is/are + V-ing)。" },
-                { type: "文法", q: "Look! The boy is ____ in the park.", opts: ["running", "runing", "run", "runs"], ans: "running", rationale: "run 變成進行式時，必須「重複字尾 n 再加 -ing」變成 running。" },
-                { type: "文法", q: "A: What is he doing?<br>B: He is ____ a book.", opts: ["reading", "watching", "listening", "writing"], ans: "reading", rationale: "看書的動詞片語是 read a book。" },
-                { type: "文法", q: "A: Are you sleeping?<br>B: No, I ____.", opts: ["am not", "don't", "isn't", "aren't"], ans: "am not", rationale: "用 Are you 發問，回答時要用 I am (not)。" },
-                { type: "文法", q: "They are ____ to music.", opts: ["listening", "watching", "doing", "playing"], ans: "listening", rationale: "聽音樂的片語是 listen to music，加上 ing 變成 listening。" },
-                { type: "文法", q: "A: What ____ she doing?<br>B: She is painting.", opts: ["is", "are", "am", "does"], ans: "is", rationale: "主詞是 she，進行式疑問句要搭配 be 動詞 is。" },
-                { type: "文法", q: "____ are they doing?", opts: ["What", "Where", "Who", "How"], ans: "What", rationale: "詢問「正在做什麼事」，疑問詞要用 What。" },
-                { type: "文法", q: "A: What is Tom doing?<br>B: ____ is cooking.", opts: ["He", "She", "I", "They"], ans: "He", rationale: "Tom 是男生，代名詞要用 He。" },
-                { type: "文法", q: "A: Is Mary writing?<br>B: Yes, ____.", opts: ["she is", "she isn't", "he is", "I am"], ans: "she is", rationale: "Mary 是女生，用 Is 發問，肯定回答用 Yes, she is。" },
-                { type: "文法", q: "I am ____.", opts: ["swimming", "swiming", "swim", "swims"], ans: "swimming", rationale: "swim 變成進行式時，必須「重複字尾 m 再加 -ing」。" },
-                { type: "文法", q: "The dogs are ____.", opts: ["playing", "play", "plaing", "plays"], ans: "playing", rationale: "play 直接加上 ing 即可，變成 playing。" },
-                { type: "文法", q: "Are they ____ TV?", opts: ["watching", "watch", "watchs", "watching to"], ans: "watching", rationale: "看電視是 watch TV，加上 ing 變成 watching TV。" },
-                { type: "文法", q: "He ____ doing his homework.", opts: ["is", "are", "am", "does"], ans: "is", rationale: "主詞 He 搭配 be 動詞 is。" },
-                // 單字題 (Actions)
-                { type: "單字", q: "「睡覺」的現在分詞 (V-ing) 是？", opts: ["sleeping", "reading", "eating", "cooking"], ans: "sleeping", rationale: "sleep(睡覺) 加上 ing 變成 sleeping。" },
-                { type: "單字", q: "「畫畫」的現在分詞 (V-ing) 是？", opts: ["painting", "writing", "running", "doing"], ans: "painting", rationale: "paint(畫畫) 加上 ing 變成 painting。" },
-                { type: "單字", q: "「寫字」的現在分詞 (V-ing) 正確拼法為：", opts: ["writing", "writting", "writeing", "reading"], ans: "writing", rationale: "write 字尾有 e，必須先「去 e 再加 -ing」變成 writing。" },
+                // ===== 文法題 (現在進行式 V-ing) =====
+                { type: "文法", q: "A: What are you doing?<br>B: I am ____ an apple.", opts: ["eating", "eat", "eats", "ate"], ans: "eating", rationale: "現在進行式的結構是「be動詞 + 現在分詞(V-ing)」。問句是 What are you doing，答句也必須用 am + eating 表示正在吃。" },
+                { type: "文法", q: "Look! The boy is ____ in the park.", opts: ["running", "runing", "run", "runs"], ans: "running", rationale: "動詞 run (跑) 是「子音+短母音+子音」結尾，改成進行式時，必須「重複字尾 n 再加 -ing」，變成 running。" },
+                { type: "文法", q: "A: What is he doing?<br>B: He is ____ a book.", opts: ["reading", "watching", "listening"], ans: "reading", rationale: "看書的固定英文動詞片語是 read a book，因為有 is，所以改成 reading。" },
+                { type: "文法", q: "They are ____ to music.", opts: ["listening", "watching", "doing"], ans: "listening", rationale: "聽音樂的固定片語是 listen to music，加上 ing 變成 listening。" },
+                { type: "文法", q: "A: What ____ she doing?<br>B: She is painting.", opts: ["is", "are", "am"], ans: "is", rationale: "主詞是 she (她)，進行式疑問句要搭配對應的 be 動詞 is。" },
+                { type: "文法", q: "____ are they doing?", opts: ["What", "Where", "Who", "How"], ans: "What", rationale: "詢問「正在做『什麼』事情」，疑問詞要用 What。" },
+                { type: "文法", q: "A: Is Mary writing?<br>B: Yes, ____.", opts: ["she is", "she isn't", "he is", "I am"], ans: "she is", rationale: "Mary 是女生(代名詞 she)，用 Is 發問，肯定回答用 Yes, she is。" },
+                { type: "文法", q: "I am ____.", opts: ["swimming", "swiming", "swim", "swims"], ans: "swimming", rationale: "swim 跟 run 一樣，是「短母音」結尾的字，變成進行式時必須「重複字尾 m 再加 -ing」變成 swimming。" },
+                
+                // ===== 是非題 =====
+                { type: "是非", q: "是非題：She is watch TV. 這句話的文法正確嗎？", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "這句話錯了！現在進行式必須有 V-ing。有 be 動詞 is，後面的 watch 必須加上 ing 變成 watching 才對！" },
+                { type: "是非", q: "是非題：He is writeing a book. (他正在寫書) 這個句子的拼字完全正確。", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "拼字錯了！write 字尾有不發音的 e，必須先「去 e」再加 -ing，正確拼法是 writing。" },
+                { type: "是非", q: "是非題：What are you doing? 可以回答 I am sleeping.", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "完全正確！問句用 present continuous，答句也正確地用了 I am + V-ing。" },
+                
+                // ===== 單字與邏輯題 =====
+                { type: "單字", q: "「畫畫」的現在分詞 (V-ing) 是？", opts: ["painting", "writing", "running", "doing"], ans: "painting", rationale: "paint(畫畫) 直接加上 ing 變成 painting。" },
                 { type: "單字", q: "請選出「watching TV」的中文意思：", opts: ["看電視", "聽音樂", "看書", "睡覺"], ans: "看電視", rationale: "watch TV = 看電視。" },
-                { type: "單字", q: "請選出「cooking」的中文意思：", opts: ["烹飪/煮飯", "吃飯", "睡覺", "跑步"], ans: "烹飪/煮飯", rationale: "cook = 烹飪/煮飯。" },
-                // 發音題 (Phonics: ng / nk)
-                { type: "發音", q: "下列哪個單字的發音，尾音和「ring」一樣是 /ŋ/？", opts: ["sing", "sink", "pink", "bank"], ans: "sing", rationale: "ring 和 sing 都是 ng 結尾，發鼻音 /ŋ/。其餘都是 nk 結尾 /ŋk/。" },
-                { type: "發音", q: "下列哪個單字含有 /ŋk/ 的發音？", opts: ["drink", "doing", "running", "long"], ans: "drink", rationale: "drink 是 nk 結尾，發 /ŋk/ 的音。其餘都是 ng 結尾或沒有。" },
-                { type: "發音", q: "「國王 (king)」的拼字與尾音是：", opts: ["ng 結尾", "nk 結尾", "n 結尾", "k 結尾"], ans: "ng 結尾", rationale: "國王是 king，屬於 ng 結尾家族。" },
-                { type: "發音", q: "下列哪個單字的尾音和「pink」一樣是 /ŋk/？", opts: ["bank", "bang", "song", "wing"], ans: "bank", rationale: "pink 和 bank 都是 nk 結尾，發 /ŋk/ 的音。" },
-                { type: "發音", q: "「唱歌 (sing)」和「水槽 (sink)」的差別在於：", opts: ["sing 是 ng 結尾，sink 是 nk 結尾", "兩個都是 ng 結尾", "兩個都是 nk 結尾", "兩者發音完全相同"], ans: "sing 是 ng 結尾，sink 是 nk 結尾", rationale: "sing (唱歌) 發 /ŋ/，sink (水槽) 發 /ŋk/。" },
-                { type: "發音", q: "「翅膀 (wing)」和「眨眼 (wink)」的差別在於：", opts: ["wing 是 ng 結尾，wink 是 nk 結尾", "兩個都是 nk 結尾", "兩個都是 ng 結尾", "兩者發音完全相同"], ans: "wing 是 ng 結尾，wink 是 nk 結尾", rationale: "wing (翅膀) 發 /ŋ/，wink (眨眼) 發 /ŋk/。" }
+                { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["reading", "sleeping", "eating", "book"], ans: "book", rationale: "book 是名詞（書本），其他三個都是動詞加上 ing (表示動作正在進行)！" },
+                
+                // ===== 發音特訓題 (Phonics: ng / nk) =====
+                { type: "發音", q: "發音特訓：請選出字尾發音為 /ŋ/ (ng) 的單字", opts: ["sing", "sink", "pink", "bank"], ans: "sing", rationale: "ring, sing, king 都是 ng 結尾，發長長的鼻音 /ŋ/。其餘選項都是 nk 結尾，會帶有輕脆的 /k/ 音。" },
+                { type: "發音", q: "發音特訓：請選出含有 /ŋk/ (nk) 發音的單字", opts: ["drink", "doing", "running", "long"], ans: "drink", rationale: "drink 結尾是 nk，發 /ŋk/ 的音。其餘都是 ng 結尾或單純的 ing。" },
+                { type: "發音", q: "發音特訓：下列哪個單字的尾音和「pink」一樣是 /ŋk/？", opts: ["bank", "bang", "song", "wing"], ans: "bank", rationale: "pink 和 bank 都是 nk 結尾，發 /ŋk/ 的音。" },
+                { type: "發音", q: "發音觀念：單字「sing (唱歌)」和「sink (水槽)」發音完全一樣，對嗎？", opts: ["對，發音一樣", "錯，尾音不一樣"], ans: "錯，尾音不一樣", rationale: "sing 的尾音是柔軟的 /ŋ/，sink 的尾音會輕輕把 /k/ 彈出來變成 /ŋk/，發音和意思完全不同！" }
             ],
             "g5u1": [
-                // 文法題 (hurt vs hurts)
-                { type: "文法", q: "A: What's wrong?<br>B: My eyes ____.", opts: ["hurt", "hurts", "hurting", "is hurt"], ans: "hurt", rationale: "eyes 是複數名詞，所以後面的動詞 hurt 不需要加 s。" },
-                { type: "文法", q: "A: What's wrong?<br>B: My ____ hurts.", opts: ["foot", "feet", "eyes", "teeth"], ans: "foot", rationale: "動詞 hurts 有加 s，表示前面的主詞必須是「單數」。foot 是一隻腳的單數形。" },
-                { type: "文法", q: "I have two ____.", opts: ["feet", "foot", "foots", "feets"], ans: "feet", rationale: "foot 的複數是不規則變化，兩隻腳要用 feet。" },
-                { type: "文法", q: "Ouch! My head ____.", opts: ["hurts", "hurt", "is hurt", "hurting"], ans: "hurts", rationale: "head 是一個頭(單數)，所以動詞必須加上 s 變成 hurts。" },
-                { type: "文法", q: "His ____ hurt. He can't hear (聽) well.", opts: ["ears", "eyes", "nose", "mouth"], ans: "ears", rationale: "hear (聽) 是用耳朵，且動詞是 hurt (沒加s)，所以要選複數的 ears。" },
-                { type: "文法", q: "A: What's wrong?<br>B: My ____ hurts. I can't eat.", opts: ["tooth", "teeth", "feet", "head"], ans: "tooth", rationale: "hurts 有加 s 代表是單數，且吃東西(eat)會用到牙齒，tooth 是單數。" },
-                { type: "文法", q: "Her arms ____.", opts: ["hurt", "hurts", "hurting", "is hurt"], ans: "hurt", rationale: "arms 有加 s 是複數(兩隻手臂)，所以動詞用原形 hurt。" },
-                { type: "文法", q: "My left leg ____.", opts: ["hurts", "hurt", "hurting", "are hurt"], ans: "hurts", rationale: "left leg 只有指定「左腿」一隻(單數)，所以要加 s 變成 hurts。" },
-                { type: "文法", q: "My hands ____.", opts: ["hurt", "hurts", "hurting", "are hurt"], ans: "hurt", rationale: "hands 是複數，動詞不加 s。" },
-                { type: "文法", q: "His back ____.", opts: ["hurts", "hurt", "hurting", "is hurt"], ans: "hurts", rationale: "back(背) 是單數部位，動詞加 s。" },
-                // 單字題 (Body Parts)
+                // ===== 文法題 (hurt vs hurts) =====
+                { type: "文法", q: "A: What's wrong?<br>B: My eyes ____.", opts: ["hurt", "hurts", "hurting"], ans: "hurt", rationale: "現在簡單式的觀念：eyes(眼睛) 是複數名詞，當主詞是複數時，後面的動詞 hurt 保持原形，不需要加 s。" },
+                { type: "文法", q: "A: What's wrong?<br>B: My ____ hurts.", opts: ["foot", "feet", "eyes", "teeth"], ans: "foot", rationale: "動詞 hurts 有加 s，表示前面的主詞必須是「單數」（只有一個）。選項中 foot 是一隻腳(單數形)，其餘都是複數。" },
+                { type: "文法", q: "I have two ____.", opts: ["feet", "foot", "foots", "feets"], ans: "feet", rationale: "foot 的複數是不規則變化，不需要加 s，兩隻腳要直接變成 feet。" },
+                { type: "文法", q: "Ouch! My head ____.", opts: ["hurts", "hurt", "is hurt"], ans: "hurts", rationale: "head 是一個頭(單數)，主詞是第三人稱單數時，一般動詞必須加上 s，所以是 hurts。" },
+                { type: "文法", q: "His ____ hurt. He can't hear (聽) well.", opts: ["ears", "eyes", "nose", "mouth"], ans: "ears", rationale: "第一，hear (聽) 必須用耳朵；第二，動詞是 hurt (沒加s)，代表主詞是複數，所以要選 ears。" },
+                { type: "文法", q: "Her arms ____.", opts: ["hurt", "hurts", "hurting"], ans: "hurt", rationale: "arms 有加 s 是複數(兩隻手臂)，複數主詞的動詞用原形 hurt。" },
+                { type: "文法", q: "My left leg ____.", opts: ["hurts", "hurt", "hurting"], ans: "hurts", rationale: "left leg 特別指定了「左腿」一隻(單數)，單數主詞的動詞要加 s 變成 hurts。" },
+                
+                // ===== 是非題 =====
+                { type: "是非", q: "是非題：My tooths hurt. 這句話的單字與文法完全正確。", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "單字拼錯了！牙齒 tooth 的複數是不規則變化，必須變成 teeth，不能直接加 s (沒有 tooths 這種字)。" },
+                { type: "是非", q: "是非題：My shoulders hurt. 因為肩膀有兩個(加了s)，所以動詞 hurt 不加 s。這觀念對嗎？", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "完全正確！名詞複數加 s，動詞反而要用原形不加 s。這就是現在簡單式的主動詞一致原則。" },
+                
+                // ===== 單字與邏輯題 =====
                 { type: "單字", q: "「肩膀」的英文是？", opts: ["shoulder", "neck", "knee", "toe"], ans: "shoulder", rationale: "shoulder 是肩膀。" },
-                { type: "單字", q: "「牙齒(複數)」的英文是？", opts: ["teeth", "tooth", "tooths", "teethes"], ans: "teeth", rationale: "tooth(單數) 的不規則複數變化是 teeth。" },
-                { type: "單字", q: "「膝蓋」的英文是？", opts: ["knee", "neck", "arm", "hand"], ans: "knee", rationale: "knee 是膝蓋 (k 不發音)。" },
-                { type: "單字", q: "請選出「nose」的中文意思：", opts: ["鼻子", "嘴巴", "耳朵", "眼睛"], ans: "鼻子", rationale: "nose = 鼻子。" },
+                { type: "單字", q: "「膝蓋」的英文是？", opts: ["knee", "neck", "arm", "hand"], ans: "knee", rationale: "knee 是膝蓋 (注意字首的 k 不發音喔)。" },
+                { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["foot", "tooth", "head", "feet"], ans: "feet", rationale: "feet 是「複數」(雙腳)，其他三個 foot, tooth, head 都是「單數」！" },
                 { type: "單字", q: "We have ten _____ on our hands.", opts: ["fingers", "toes", "eyes", "ears"], ans: "fingers", rationale: "手上的十根指頭是 fingers (腳趾則是 toes)。" },
-                { type: "單字", q: "We have ten _____ on our feet.", opts: ["toes", "fingers", "legs", "arms"], ans: "toes", rationale: "腳上的十根腳趾是 toes。" },
-                { type: "單字", q: "「背部」的英文是？", opts: ["back", "neck", "head", "mouth"], ans: "back", rationale: "back 是背部。" },
-                { type: "單字", q: "「脖子」的英文是？", opts: ["neck", "back", "knee", "leg"], ans: "neck", rationale: "neck 是脖子。" },
-                // 發音題 (Phonics: th 有聲 vs 無聲)
-                { type: "發音", q: "下列哪個單字的「th」發音和「three」一樣是無聲的 /θ/？", opts: ["math", "mother", "this", "they"], ans: "math", rationale: "three 和 math 的 th 都是吐氣無聲的 /θ/。其餘都是震動有聲的 /ð/。" },
-                { type: "發音", q: "下列哪個單字的「th」發音和「father」一樣是有聲的 /ð/？", opts: ["brother", "thin", "thick", "teeth"], ans: "brother", rationale: "father 和 brother 的 th 都是震動有聲的 /ð/。" },
-                { type: "發音", q: "單字「thank」的 th 發音是：", opts: ["無聲 /θ/", "有聲 /ð/", "不發音", "發 /t/ 的音"], ans: "無聲 /θ/", rationale: "thank you 的 th 是吐氣無聲的 /θ/。" },
-                { type: "發音", q: "單字「that」的 th 發音是：", opts: ["有聲 /ð/", "無聲 /θ/", "不發音", "發 /d/ 的音"], ans: "有聲 /ð/", rationale: "that / this / those 等指示代名詞的 th 都是有聲的 /ð/。" },
-                { type: "發音", q: "請選出「th」發音與其他三個不同的單字：", opts: ["they", "thin", "thick", "path"], ans: "they", rationale: "they 是有聲 /ð/，其餘 thin, thick, path 皆為無聲 /θ/。" },
-                { type: "發音", q: "請選出「th」發音與其他三個不同的單字：", opts: ["teeth", "brother", "mother", "there"], ans: "teeth", rationale: "teeth 是無聲 /θ/，其餘都是有聲的 /ð/。" }
+                { type: "單字", q: "We have ten _____ on our feet.", opts: ["toes", "fingers", "legs", "arms"], ans: "toes", rationale: "長在腳上的十根腳趾叫做 toes。" },
+                
+                // ===== 發音特訓題 (Phonics: th 有聲 vs 無聲) =====
+                { type: "發音", q: "發音特訓：請選出字首「th」發音為無聲 /θ/ (吐氣) 的單字", opts: ["three", "this", "they", "there"], ans: "three", rationale: "數字 three 的 th 是輕輕吐氣無聲的 /θ/。其餘 this, they, there 都是聲帶會震動的 /ð/。" },
+                { type: "發音", q: "發音特訓：下列哪個單字的「th」發音和「father」一樣是震動有聲的 /ð/？", opts: ["brother", "thin", "thick", "teeth"], ans: "brother", rationale: "家人的稱謂(father, mother, brother) 中間的 th 都是聲帶會震動的 /ð/。" },
+                { type: "發音", q: "發音特訓：單字「thank (謝謝)」的 th 發音是？", opts: ["無聲 /θ/", "有聲 /ð/"], ans: "無聲 /θ/", rationale: "thank you 的 th 是吐氣無聲的 /θ/，念的時候只要把舌頭輕輕放在上下牙齒中間吐氣即可。" },
+                { type: "發音", q: "發音特訓：請選出「th」發音與其他三個不同的單字：", opts: ["they", "thin", "thick", "path"], ans: "they", rationale: "they 是有聲 /ð/，其餘 thin, thick, path 皆為無聲 /θ/。" }
             ],
             "g5u2": [
-                // 文法題 (have vs has)
-                { type: "文法", q: "A: Achoo! (打噴嚏)<br>B: What's wrong?<br>A: I think I have a ____.", opts: ["cold", "stomachache", "toothache", "sore throat"], ans: "cold", rationale: "Achoo! 是打噴嚏的聲音，通常代表感冒了 (have a cold)。" },
-                { type: "文法", q: "____ your sister have a fever?", opts: ["Does", "Do", "Is", "Are"], ans: "Does", rationale: "主詞 your sister 是第三人稱單數（等於 she），疑問句必須使用助動詞 Does。" },
-                { type: "文法", q: "A: Does he have a sore throat?<br>B: No, he ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't", rationale: "以 Does 開頭的疑問句，否定簡答時要用 doesn't。" },
-                { type: "文法", q: "She ____ a runny nose.", opts: ["has", "have", "having", "is have"], ans: "has", rationale: "主詞是 She (第三人稱單數)，所以「有」必須使用 has。" },
-                { type: "文法", q: "I ____ a stomachache.", opts: ["have", "has", "am", "do"], ans: "have", rationale: "主詞是 I，所以「有」使用原形動詞 have。" },
-                { type: "文法", q: "A: ____ they have a headache?<br>B: Yes, they do.", opts: ["Do", "Does", "Are", "Is"], ans: "Do", rationale: "主詞是 they，疑問句要用助動詞 Do 開頭。" },
-                { type: "文法", q: "A: Do you have a toothache?<br>B: No, I ____.", opts: ["don't", "doesn't", "am not", "haven't"], ans: "don't", rationale: "用 Do you 發問，否定回答要用 No, I don't。" },
-                { type: "文法", q: "Tom and Mary ____ a fever.", opts: ["have", "has", "having", "are"], ans: "have", rationale: "Tom and Mary 是兩個人(複數)，所以「有」要用原形 have。" },
-                { type: "文法", q: "Peter ____ a bad cold.", opts: ["has", "have", "does", "is"], ans: "has", rationale: "Peter 是第三人稱單數(He)，動詞要用 has。" },
-                { type: "文法", q: "A: Does the dog have a runny nose?<br>B: Yes, it ____.", opts: ["does", "do", "has", "is"], ans: "does", rationale: "用 Does 提問，簡答時要用 does 結尾。" },
-                // 單字題 (Sickness)
-                { type: "單字", q: "「頭痛」的英文是？", opts: ["headache", "toothache", "stomachache", "backache"], ans: "headache", rationale: "head(頭) + ache(痛) = headache。" },
+                // ===== 文法題 (have vs has, Do vs Does) =====
+                { type: "文法", q: "A: Achoo! (打噴嚏)<br>B: What's wrong?<br>A: I think I have a ____.", opts: ["cold", "stomachache", "toothache", "sore throat"], ans: "cold", rationale: "Achoo! 是打噴嚏的擬聲詞，通常代表感冒了 (have a cold) 或是流鼻水。" },
+                { type: "文法", q: "____ your sister have a fever?", opts: ["Does", "Do", "Is", "Are"], ans: "Does", rationale: "主詞 your sister 是第三人稱單數（等於 she）。在英文中，詢問一般動詞(have)的疑問句，單數主詞必須使用助動詞 Does。" },
+                { type: "文法", q: "A: Does he have a sore throat?<br>B: No, he ____.", opts: ["doesn't", "don't", "isn't"], ans: "doesn't", rationale: "「怎麼問就怎麼答」。以 Does 開頭的疑問句，否定簡答時要用 doesn't (does not)。" },
+                { type: "文法", q: "She ____ a runny nose.", opts: ["has", "have", "having"], ans: "has", rationale: "主詞是 She (第三人稱單數)，所以動詞「有」必須做變化，使用 has 而不能用 have。" },
+                { type: "文法", q: "I ____ a stomachache.", opts: ["have", "has", "am"], ans: "have", rationale: "主詞是 I (我)，表示「有某種疾病」時，第一人稱直接使用原形動詞 have。" },
+                { type: "文法", q: "A: ____ they have a headache?<br>B: Yes, they do.", opts: ["Do", "Does", "Are"], ans: "Do", rationale: "主詞是 they (他們，複數)，且答句也提示了 do，所以疑問句要用助動詞 Do 開頭。" },
+                { type: "文法", q: "Tom and Mary ____ a fever.", opts: ["have", "has", "having"], ans: "have", rationale: "Tom and Mary 是兩個人(複數)，複數主詞的動詞「有」要用原形 have。" },
+                
+                // ===== 是非題 =====
+                { type: "是非", q: "是非題：Does he has a cold? 這個問句的文法是正確的。", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "錯！英文有一個很重要的規則：「助動詞後面要接原形動詞」。前面已經有 Does 幫忙加 s 了，後面的 has 必須打回原形變回 have！" },
+                { type: "是非", q: "是非題：I have a headache. 代表我頭痛。這句話正確嗎？", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "完全正確！描述生病時，英文習慣用 have a + 疾病名稱。" },
+                
+                // ===== 單字與邏輯題 =====
+                { type: "單字", q: "「頭痛」的英文是？", opts: ["headache", "toothache", "stomachache", "backache"], ans: "headache", rationale: "英文造字邏輯：head(頭) + ache(痛) = headache(頭痛)。" },
                 { type: "單字", q: "「流鼻水」的英文是？", opts: ["runny nose", "sore throat", "fever", "cough"], ans: "runny nose", rationale: "runny(流動的) + nose(鼻子) = runny nose (流鼻水)。" },
-                { type: "單字", q: "請選出「sore throat」的中文意思：", opts: ["喉嚨痛", "感冒", "肚子痛", "咳嗽"], ans: "喉嚨痛", rationale: "sore(痠痛的) + throat(喉嚨) = sore throat。" },
-                { type: "單字", q: "請選出「cough」的中文意思：", opts: ["咳嗽", "發燒", "感冒", "流鼻水"], ans: "咳嗽", rationale: "cough = 咳嗽 (gh 發 /f/ 的音)。" },
-                { type: "單字", q: "I ate too much food. I have a ____.", opts: ["stomachache", "headache", "fever", "runny nose"], ans: "stomachache", rationale: "吃太多食物通常會導致 stomachache (胃痛/肚子痛)。" },
-                { type: "單字", q: "「發燒」的英文是？", opts: ["fever", "cold", "cough", "headache"], ans: "fever", rationale: "fever 是發燒。" },
-                { type: "單字", q: "「牙痛」的英文是？", opts: ["toothache", "headache", "backache", "stomachache"], ans: "toothache", rationale: "tooth(牙齒) + ache(痛) = toothache。" },
-                // 發音題 (Phonics: wh vs ph)
-                { type: "發音", q: "下列哪個單字開頭的發音和「whale (鯨魚)」一樣是 /w/？", opts: ["white", "phone", "photo", "vase"], ans: "white", rationale: "whale 和 white 都是 wh 開頭，發 /w/ 的音。phone 和 photo 的 ph 發 /f/ 的音。" },
-                { type: "發音", q: "下列哪個單字中含有 /f/ 的發音？", opts: ["elephant", "where", "what", "window"], ans: "elephant", rationale: "elephant 裡面的 ph 會發出 /f/ 的聲音。" },
-                { type: "發音", q: "單字「dolphin (海豚)」中的 ph 發什麼音？", opts: ["/f/ 的音", "/p/ 的音", "/h/ 的音", "不發音"], ans: "/f/ 的音", rationale: "ph 組合在一起通常發 /f/ 的音，就像 phone 一樣。" },
-                { type: "發音", q: "單字「which」的 wh 發音和下列何者相同？", opts: ["when", "who", "phone", "photo"], ans: "when", rationale: "which 和 when 的 wh 都發 /w/。特別注意 who 的 wh 是例外發 /h/。" },
-                { type: "發音", q: "請選出發音與其他三個不同的單字：", opts: ["phone", "photo", "phonics", "white"], ans: "white", rationale: "white 是 /w/ 音，其餘三個都是 ph 開頭的 /f/ 音。" },
-                { type: "發音", q: "單字「who (誰)」的 wh 發什麼音？", opts: ["/h/ 的音", "/w/ 的音", "/f/ 的音", "不發音"], ans: "/h/ 的音", rationale: "who 是一個特別的例外，它的 wh 發 /h/ 的音。" }
+                { type: "單字", q: "I ate too much food. I have a ____.", opts: ["stomachache", "headache", "fever", "runny nose"], ans: "stomachache", rationale: "情境題：吃太多食物 (ate too much food) 通常會導致 stomachache (胃痛/肚子痛)。" },
+                { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["cough", "headache", "fever", "kitchen"], ans: "kitchen", rationale: "kitchen 是廚房（地點），而其他三個都是生病的症狀！" },
+                
+                // ===== 發音特訓題 (Phonics: wh vs ph) =====
+                { type: "發音", q: "發音特訓：請選出字首發音和「whale (鯨魚)」一樣是 /w/ 的單字", opts: ["white", "phone", "photo", "pharmacy"], ans: "white", rationale: "whale 和 white 都是 wh 開頭，發 /w/ 的音。而 ph 開頭的字通常發 /f/ 的音。" },
+                { type: "發音", q: "發音特訓：下列哪個單字中含有 /f/ (像 fish 一樣) 的發音？", opts: ["elephant", "where", "what", "window"], ans: "elephant", rationale: "elephant 裡面的 ph 組合在一起會發出 /f/ 的聲音。" },
+                { type: "發音", q: "發音特訓：單字「dolphin (海豚)」中的 ph 發什麼音？", opts: ["/f/ 的音", "/p/ 的音", "/h/ 的音"], ans: "/f/ 的音", rationale: "記住這個規則：英文中的 ph 組合在一起，幾乎都發 /f/ 的音，就像 phone(電話) 一樣。" },
+                { type: "發音", q: "發音特訓：單字「who (誰)」的 wh 發什麼音？", opts: ["/h/ 的音", "/w/ 的音", "/f/ 的音"], ans: "/h/ 的音", rationale: "這是一個大陷阱！who 是一個特別的例外單字，它的 wh 發的是吐氣的 /h/ 音，而不是 /w/。" },
+                { type: "發音", q: "發音特訓：請選出發音與其他三個「不同」的單字：", opts: ["when", "phone", "photo", "phonics"], ans: "when", rationale: "when 發的是 /w/，而另外三個都是 ph 開頭，發 /f/ 的音。" }
             ]
         };
 
@@ -554,7 +549,7 @@
                 // 答對
                 btn.classList.add('correct');
                 score += (100 / currentQuizList.length);
-                setTimeout(nextQuestion, 1000); // 答對直接 1 秒後換下一題
+                setTimeout(nextQuestion, 800); // 答對直接 0.8 秒後換下一題，加快節奏
             } else {
                 // 答錯
                 btn.classList.add('wrong');
