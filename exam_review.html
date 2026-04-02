@@ -96,10 +96,22 @@
             text-align: center; margin-bottom: 25px; line-height: 1.5; color: var(--text-dark);
             border-left: 6px solid var(--primary);
         }
+        
         .q-type-badge {
             display: inline-block; background: #f1c40f; color: #2d3436; font-size: 14px;
             padding: 4px 10px; border-radius: 8px; margin-bottom: 10px; letter-spacing: 1px;
         }
+        .q-type-badge.typing { background: #9b59b6; color: white; }
+        .q-type-badge.listening { background: #e84393; color: white; }
+
+        /* 🔊 聽力播放按鈕樣式 */
+        .speak-btn {
+            background: #e84393; color: white; border: none; padding: 10px 20px;
+            font-size: 20px; border-radius: 50px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 5px 0 #b71540; transition: 0.1s; font-family: 'Quicksand', sans-serif;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px;
+        }
+        .speak-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #b71540; }
 
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
         .opt-btn {
@@ -110,7 +122,10 @@
         .opt-btn:active { transform: scale(0.97); }
         .opt-btn.correct { background: var(--success); color: white; border-color: var(--success); }
         .opt-btn.wrong { background: var(--error); color: white; border-color: var(--error); }
-        .opt-btn.disabled { pointer-events: none; }
+        .opt-btn.disabled { pointer-events: none; opacity: 0.8; }
+
+        /* 填空題輸入框 */
+        input[type="text"]:focus { border-color: var(--warning); box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); }
 
         /* --- 彈窗共用樣式 --- */
         .modal-overlay {
@@ -290,7 +305,27 @@
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
         let userIP = "Unknown";
 
-        // 📚 終極海量題庫資料 (文法、單字、Phonics 發音、是非題、邏輯分類)
+        // ✨ 全局文字轉語音 (Text-to-Speech) 播放功能 ✨
+        window.speakWord = function(text, event) {
+            if(event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            
+            // 取消正在播放的語音
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US'; // 美式發音
+                utterance.rate = 0.85;     // 稍微放慢速度，適合小學生
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("很抱歉，你的瀏覽器不支援發音功能喔！");
+            }
+        };
+
+        // 📚 終極海量題庫資料 (已更新 G4 U1 th 與 所有單元的聽力測驗)
         const quizData = {
             "g4u1": [
                 // ===== 文法題 (Be 動詞 & 介系詞) =====
@@ -302,54 +337,52 @@
                 { type: "文法", q: "Where ____ Tom and Mary?", opts: ["are", "is", "am"], ans: "are", rationale: "Tom and Mary 是兩個人(複數)，只要大於等於兩個人，be 動詞就要用 are。" },
                 { type: "文法", q: "____ your sister in the kitchen?", opts: ["Is", "Are", "Am"], ans: "Is", rationale: "這是一個疑問句。主詞 your sister (你的妹妹/姐姐) 是單數(她)，所以開頭的 be 動詞要用 Is。" },
                 { type: "文法", q: "____ the dogs in the yard?", opts: ["Are", "Is", "Am"], ans: "Are", rationale: "dogs 字尾有加 s，代表是複數(很多隻狗)，複數主詞的疑問句開頭要用 Are。" },
-                { type: "文法", q: "A: Is Peter in the bathroom?<br>B: No, ____.", opts: ["he isn't", "she isn't", "he is", "I am not"], ans: "he isn't", rationale: "Peter 是男生，代名詞用 he。用 Is 發問，否定簡答要完整回答 No, he isn't (或 is not)。" },
                 { type: "文法", q: "A: Are they in the dining room?<br>B: Yes, ____.", opts: ["they are", "we are", "they aren't"], ans: "they are", rationale: "英文問答規則「怎麼問就怎麼答」。用 Are they 問，肯定回答就是 Yes, they are。" },
                 { type: "文法", q: "The cat is ____ the table.", opts: ["under", "in", "on"], ans: "under", rationale: "貓咪通常會躲在桌子「下面」，介系詞要用 under (在...下面)。" },
-                { type: "文法", q: "The books are ____ the desk.", opts: ["on", "in", "under"], ans: "on", rationale: "書本通常是放在書桌「上面」，表示在表面上接觸的介系詞要用 on (在...上面)。" },
                 { type: "文法", q: "Mom is ____ the kitchen.", opts: ["in", "on", "under"], ans: "in", rationale: "在一個立體的空間(如房間)「裡面」，介系詞要使用 in (在...裡面)。" },
                 { type: "文法", q: "____ are you? I'm in the yard.", opts: ["Where", "What", "Who"], ans: "Where", rationale: "答句說 I'm in the yard (我在庭院裡)，回答的是「地點」，所以問句必須用 Where (哪裡) 發問。" },
                 
-                // ===== 是非題 =====
-                { type: "是非", q: "是非題：Tom are in the kitchen. 這句話的文法是正確的。", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "Tom 是一個人（第三人稱單數），搭配的 be 動詞應該是 is (Tom is...)，不能用 are！" },
-                { type: "是非", q: "是非題：I am in the bedroom. 這句話的文法是正確的。", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "完全正確！主詞 I 搭配 am，並且在房間裡面使用介系詞 in。" },
-                { type: "是非", q: "是非題：當我們想問「媽媽在哪裡」時，應該說 Where is Mom? ", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "正確！詢問地點用 Where，且 Mom 是單數，所以配 is。" },
-                
-                // ===== 單字分類/單字題 =====
+                // ===== 單字選擇與邏輯分類 =====
                 { type: "單字", q: "「客廳」的英文是？", opts: ["living room", "bedroom", "bathroom", "kitchen"], ans: "living room", rationale: "living room 是客廳。bedroom(臥室)、bathroom(浴室)、kitchen(廚房)。" },
                 { type: "單字", q: "「廚房」的英文是？", opts: ["kitchen", "dining room", "balcony", "garage"], ans: "kitchen", rationale: "kitchen 是廚房。dining room 是飯廳。" },
-                { type: "單字", q: "「陽台」的英文是？", opts: ["balcony", "basement", "garage", "yard"], ans: "balcony", rationale: "balcony 是陽台。basement(地下室)、garage(車庫)、yard(庭院)。" },
                 { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["kitchen", "bathroom", "bedroom", "teacher"], ans: "teacher", rationale: "teacher 是老師（職業/人），另外三個都是家裡的房間地點！" },
-                { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["under", "in", "on", "garage"], ans: "garage", rationale: "garage 是車庫（名詞），另外三個 under/in/on 都是表示位置的「介系詞」！" },
-                { type: "單字", q: "爸爸把車停在_____。", opts: ["garage", "basement", "balcony", "bathroom"], ans: "garage", rationale: "garage 是車庫，用來停車的地方。" },
-                { type: "單字", q: "我們通常在_____吃晚餐。", opts: ["dining room", "bathroom", "bedroom", "garage"], ans: "dining room", rationale: "吃晚餐通常在 dining room (飯廳)。" },
-                { type: "單字", q: "Where is the TV? It is in the _____.", opts: ["living room", "bathroom", "garage", "yard"], ans: "living room", rationale: "電視(TV)通常放在 living room(客廳)。" }
+                { type: "中翻英 (填空)", q: "請拼出「客廳」的英文：", opts: [], ans: "living room", rationale: "客廳的英文是 living room。" },
+                { type: "中翻英 (填空)", q: "請拼出「廚房」的英文：", opts: [], ans: "kitchen", rationale: "廚房的英文是 kitchen。" },
+
+                // ✨ G4 U1: 發音特訓題 (有聲無聲 th) ✨
+                { type: "發音", q: "發音特訓：下列哪一個單字的 th 發音是無聲的 /θ/？", opts: ["three", "this", "that", "they"], ans: "three", rationale: "數字 three 的 th 是無聲的 /θ/ (輕輕吐氣)，其他 this/that/they 都是有聲的 /ð/。" },
+                { type: "發音", q: "發音特訓：單字「mother」的 th 發音是有聲還是無聲？", opts: ["有聲 /ð/", "無聲 /θ/"], ans: "有聲 /ð/", rationale: "家人稱謂 (mother, father, brother) 的 th 都是聲帶會震動的有聲 /ð/。" },
+                { type: "發音", q: "發音特訓：請選出 th 發音與其他三個「不同」的單字：", opts: ["thank", "thin", "thick", "there"], ans: "there", rationale: "there 是有聲 /ð/，其餘 thank/thin/thick 皆為無聲 /θ/。" },
+                { type: "發音", q: "發音特訓：下列哪一個單字的 th 發音是有聲的 /ð/？", opts: ["weather", "bath", "math", "tooth"], ans: "weather", rationale: "weather 的 th 是有聲 /ð/，其他三個都是無聲 /θ/。" },
+
+                // ✨ G4 U1: 聽力測驗 (Listening) ✨
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"bathroom\", event)'>▶ 播放語音</button>", opts: ["bathroom", "bedroom", "living room"], ans: "bathroom", rationale: "語音念的是 bathroom (浴室)。" },
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"father\", event)'>▶ 播放語音</button>", opts: ["father", "mother", "brother"], ans: "father", rationale: "語音念的是 father (爸爸)。" },
+                { type: "聽力", q: "🔊 聽力克漏字：<br>He is in the _______.<br><button class='speak-btn' onclick='speakWord(\"garage\", event)'>▶ 聆聽空格單字</button>", opts: ["garage", "garden", "garbage"], ans: "garage", rationale: "語音念的是 garage (車庫)。" }
             ],
             "g4u2": [
                 // ===== 文法題 (現在進行式 V-ing) =====
                 { type: "文法", q: "A: What are you doing?<br>B: I am ____ an apple.", opts: ["eating", "eat", "eats", "ate"], ans: "eating", rationale: "現在進行式的結構是「be動詞 + 現在分詞(V-ing)」。問句是 What are you doing，答句也必須用 am + eating 表示正在吃。" },
                 { type: "文法", q: "Look! The boy is ____ in the park.", opts: ["running", "runing", "run", "runs"], ans: "running", rationale: "動詞 run (跑) 是「子音+短母音+子音」結尾，改成進行式時，必須「重複字尾 n 再加 -ing」，變成 running。" },
                 { type: "文法", q: "A: What is he doing?<br>B: He is ____ a book.", opts: ["reading", "watching", "listening"], ans: "reading", rationale: "看書的固定英文動詞片語是 read a book，因為有 is，所以改成 reading。" },
-                { type: "文法", q: "They are ____ to music.", opts: ["listening", "watching", "doing"], ans: "listening", rationale: "聽音樂的固定片語是 listen to music，加上 ing 變成 listening。" },
                 { type: "文法", q: "A: What ____ she doing?<br>B: She is painting.", opts: ["is", "are", "am"], ans: "is", rationale: "主詞是 she (她)，進行式疑問句要搭配對應的 be 動詞 is。" },
                 { type: "文法", q: "____ are they doing?", opts: ["What", "Where", "Who", "How"], ans: "What", rationale: "詢問「正在做『什麼』事情」，疑問詞要用 What。" },
-                { type: "文法", q: "A: Is Mary writing?<br>B: Yes, ____.", opts: ["she is", "she isn't", "he is", "I am"], ans: "she is", rationale: "Mary 是女生(代名詞 she)，用 Is 發問，肯定回答用 Yes, she is。" },
-                { type: "文法", q: "I am ____.", opts: ["swimming", "swiming", "swim", "swims"], ans: "swimming", rationale: "swim 跟 run 一樣，是「短母音」結尾的字，變成進行式時必須「重複字尾 m 再加 -ing」變成 swimming。" },
-                
-                // ===== 是非題 =====
-                { type: "是非", q: "是非題：She is watch TV. 這句話的文法正確嗎？", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "這句話錯了！現在進行式必須有 V-ing。有 be 動詞 is，後面的 watch 必須加上 ing 變成 watching 才對！" },
-                { type: "是非", q: "是非題：He is writeing a book. (他正在寫書) 這個句子的拼字完全正確。", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "拼字錯了！write 字尾有不發音的 e，必須先「去 e」再加 -ing，正確拼法是 writing。" },
-                { type: "是非", q: "是非題：What are you doing? 可以回答 I am sleeping.", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "完全正確！問句用 present continuous，答句也正確地用了 I am + V-ing。" },
                 
                 // ===== 單字與邏輯題 =====
                 { type: "單字", q: "「畫畫」的現在分詞 (V-ing) 是？", opts: ["painting", "writing", "running", "doing"], ans: "painting", rationale: "paint(畫畫) 直接加上 ing 變成 painting。" },
-                { type: "單字", q: "請選出「watching TV」的中文意思：", opts: ["看電視", "聽音樂", "看書", "睡覺"], ans: "看電視", rationale: "watch TV = 看電視。" },
                 { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["reading", "sleeping", "eating", "book"], ans: "book", rationale: "book 是名詞（書本），其他三個都是動詞加上 ing (表示動作正在進行)！" },
-                
+                { type: "文法填空", q: "請寫出 run 的現在分詞 (正在跑步)：", opts: [], ans: "running", rationale: "run 是短母音結尾，必須「重複字尾 n 再加 -ing」變成 running。" },
+                { type: "文法填空", q: "請寫出 write 的現在分詞 (正在寫字)：", opts: [], ans: "writing", rationale: "write 字尾有 e，必須先「去 e 再加 -ing」變成 writing。" },
+
                 // ===== 發音特訓題 (Phonics: ng / nk) =====
                 { type: "發音", q: "發音特訓：請選出字尾發音為 /ŋ/ (ng) 的單字", opts: ["sing", "sink", "pink", "bank"], ans: "sing", rationale: "ring, sing, king 都是 ng 結尾，發長長的鼻音 /ŋ/。其餘選項都是 nk 結尾，會帶有輕脆的 /k/ 音。" },
                 { type: "發音", q: "發音特訓：請選出含有 /ŋk/ (nk) 發音的單字", opts: ["drink", "doing", "running", "long"], ans: "drink", rationale: "drink 結尾是 nk，發 /ŋk/ 的音。其餘都是 ng 結尾或單純的 ing。" },
                 { type: "發音", q: "發音特訓：下列哪個單字的尾音和「pink」一樣是 /ŋk/？", opts: ["bank", "bang", "song", "wing"], ans: "bank", rationale: "pink 和 bank 都是 nk 結尾，發 /ŋk/ 的音。" },
-                { type: "發音", q: "發音觀念：單字「sing (唱歌)」和「sink (水槽)」發音完全一樣，對嗎？", opts: ["對，發音一樣", "錯，尾音不一樣"], ans: "錯，尾音不一樣", rationale: "sing 的尾音是柔軟的 /ŋ/，sink 的尾音會輕輕把 /k/ 彈出來變成 /ŋk/，發音和意思完全不同！" }
+
+                // ✨ G4 U2: 聽力測驗 (Listening) ✨
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"sleeping\", event)'>▶ 播放語音</button>", opts: ["sleeping", "sweeping", "swimming"], ans: "sleeping", rationale: "語音念的是 sleeping (睡覺)。" },
+                { type: "聽力", q: "🔊 聽音辨字 (注意 ng/nk 尾音)：<br><button class='speak-btn' onclick='speakWord(\"sink\", event)'>▶ 播放語音</button>", opts: ["sink", "sing", "sick"], ans: "sink", rationale: "語音念的是 sink (水槽)，尾音有清脆的 /k/ (k 音)。" },
+                { type: "聽力", q: "🔊 聽力填空：<br>My mom is ______.<br><button class='speak-btn' onclick='speakWord(\"cooking\", event)'>▶ 聆聽空格單字</button>", opts: [], ans: "cooking", rationale: "語音念的是 cooking (正在煮飯)。" }
             ],
             "g5u1": [
                 // ===== 文法題 (hurt vs hurts) =====
@@ -358,25 +391,22 @@
                 { type: "文法", q: "I have two ____.", opts: ["feet", "foot", "foots", "feets"], ans: "feet", rationale: "foot 的複數是不規則變化，不需要加 s，兩隻腳要直接變成 feet。" },
                 { type: "文法", q: "Ouch! My head ____.", opts: ["hurts", "hurt", "is hurt"], ans: "hurts", rationale: "head 是一個頭(單數)，主詞是第三人稱單數時，一般動詞必須加上 s，所以是 hurts。" },
                 { type: "文法", q: "His ____ hurt. He can't hear (聽) well.", opts: ["ears", "eyes", "nose", "mouth"], ans: "ears", rationale: "第一，hear (聽) 必須用耳朵；第二，動詞是 hurt (沒加s)，代表主詞是複數，所以要選 ears。" },
-                { type: "文法", q: "Her arms ____.", opts: ["hurt", "hurts", "hurting"], ans: "hurt", rationale: "arms 有加 s 是複數(兩隻手臂)，複數主詞的動詞用原形 hurt。" },
-                { type: "文法", q: "My left leg ____.", opts: ["hurts", "hurt", "hurting"], ans: "hurts", rationale: "left leg 特別指定了「左腿」一隻(單數)，單數主詞的動詞要加 s 變成 hurts。" },
-                
-                // ===== 是非題 =====
-                { type: "是非", q: "是非題：My tooths hurt. 這句話的單字與文法完全正確。", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "單字拼錯了！牙齒 tooth 的複數是不規則變化，必須變成 teeth，不能直接加 s (沒有 tooths 這種字)。" },
-                { type: "是非", q: "是非題：My shoulders hurt. 因為肩膀有兩個(加了s)，所以動詞 hurt 不加 s。這觀念對嗎？", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "完全正確！名詞複數加 s，動詞反而要用原形不加 s。這就是現在簡單式的主動詞一致原則。" },
                 
                 // ===== 單字與邏輯題 =====
                 { type: "單字", q: "「肩膀」的英文是？", opts: ["shoulder", "neck", "knee", "toe"], ans: "shoulder", rationale: "shoulder 是肩膀。" },
-                { type: "單字", q: "「膝蓋」的英文是？", opts: ["knee", "neck", "arm", "hand"], ans: "knee", rationale: "knee 是膝蓋 (注意字首的 k 不發音喔)。" },
                 { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["foot", "tooth", "head", "feet"], ans: "feet", rationale: "feet 是「複數」(雙腳)，其他三個 foot, tooth, head 都是「單數」！" },
-                { type: "單字", q: "We have ten _____ on our hands.", opts: ["fingers", "toes", "eyes", "ears"], ans: "fingers", rationale: "手上的十根指頭是 fingers (腳趾則是 toes)。" },
-                { type: "單字", q: "We have ten _____ on our feet.", opts: ["toes", "fingers", "legs", "arms"], ans: "toes", rationale: "長在腳上的十根腳趾叫做 toes。" },
+                { type: "中翻英 (填空)", q: "請拼出「肩膀」的英文：", opts: [], ans: "shoulder", rationale: "肩膀的英文是 shoulder。" },
+                { type: "中翻英 (填空)", q: "請拼出「牙齒(複數)」的英文：", opts: [], ans: "teeth", rationale: "tooth 的複數是不規則變化 teeth。" },
                 
-                // ===== 發音特訓題 (Phonics: th 有聲 vs 無聲) =====
-                { type: "發音", q: "發音特訓：請選出字首「th」發音為無聲 /θ/ (吐氣) 的單字", opts: ["three", "this", "they", "there"], ans: "three", rationale: "數字 three 的 th 是輕輕吐氣無聲的 /θ/。其餘 this, they, there 都是聲帶會震動的 /ð/。" },
-                { type: "發音", q: "發音特訓：下列哪個單字的「th」發音和「father」一樣是震動有聲的 /ð/？", opts: ["brother", "thin", "thick", "teeth"], ans: "brother", rationale: "家人的稱謂(father, mother, brother) 中間的 th 都是聲帶會震動的 /ð/。" },
-                { type: "發音", q: "發音特訓：單字「thank (謝謝)」的 th 發音是？", opts: ["無聲 /θ/", "有聲 /ð/"], ans: "無聲 /θ/", rationale: "thank you 的 th 是吐氣無聲的 /θ/，念的時候只要把舌頭輕輕放在上下牙齒中間吐氣即可。" },
-                { type: "發音", q: "發音特訓：請選出「th」發音與其他三個不同的單字：", opts: ["they", "thin", "thick", "path"], ans: "they", rationale: "they 是有聲 /ð/，其餘 thin, thick, path 皆為無聲 /θ/。" }
+                // ===== 發音特訓題 (Phonics: wh vs ph) =====
+                { type: "發音", q: "發音特訓：下列哪個單字開頭的發音和「whale (鯨魚)」一樣是 /w/？", opts: ["white", "phone", "photo", "pharmacy"], ans: "white", rationale: "whale 和 white 都是 wh 開頭，發 /w/ 的音。而 ph 開頭的字通常發 /f/ 的音。" },
+                { type: "發音", q: "發音特訓：下列哪個單字中含有 /f/ (像 fish 一樣) 的發音？", opts: ["elephant", "where", "what", "window"], ans: "elephant", rationale: "elephant 裡面的 ph 組合在一起會發出 /f/ 的聲音。" },
+                { type: "發音", q: "發音特訓：單字「dolphin (海豚)」中的 ph 發什麼音？", opts: ["/f/ 的音", "/p/ 的音", "/h/ 的音"], ans: "/f/ 的音", rationale: "記住這個規則：英文中的 ph 組合在一起，幾乎都發 /f/ 的音，就像 phone(電話) 一樣。" },
+
+                // ✨ G5 U1: 聽力測驗 (Listening) ✨
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"shoulder\", event)'>▶ 播放語音</button>", opts: ["shoulder", "stomach", "swallow"], ans: "shoulder", rationale: "語音念的是 shoulder (肩膀)。" },
+                { type: "聽力", q: "🔊 聽音辨字 (注意 wh/ph 發音)：<br><button class='speak-btn' onclick='speakWord(\"elephant\", event)'>▶ 播放語音</button>", opts: ["elephant", "telephone", "dolphin"], ans: "elephant", rationale: "語音念的是 elephant (大象)，其中 ph 發 /f/ 的聲音。" },
+                { type: "聽力", q: "🔊 聽力填空：<br>My _____ hurts.<br><button class='speak-btn' onclick='speakWord(\"tooth\", event)'>▶ 聆聽空格單字</button>", opts: [], ans: "tooth", rationale: "語音念的是 tooth (牙齒，單數)。" }
             ],
             "g5u2": [
                 // ===== 文法題 (have vs has, Do vs Does) =====
@@ -385,25 +415,22 @@
                 { type: "文法", q: "A: Does he have a sore throat?<br>B: No, he ____.", opts: ["doesn't", "don't", "isn't"], ans: "doesn't", rationale: "「怎麼問就怎麼答」。以 Does 開頭的疑問句，否定簡答時要用 doesn't (does not)。" },
                 { type: "文法", q: "She ____ a runny nose.", opts: ["has", "have", "having"], ans: "has", rationale: "主詞是 She (第三人稱單數)，所以動詞「有」必須做變化，使用 has 而不能用 have。" },
                 { type: "文法", q: "I ____ a stomachache.", opts: ["have", "has", "am"], ans: "have", rationale: "主詞是 I (我)，表示「有某種疾病」時，第一人稱直接使用原形動詞 have。" },
-                { type: "文法", q: "A: ____ they have a headache?<br>B: Yes, they do.", opts: ["Do", "Does", "Are"], ans: "Do", rationale: "主詞是 they (他們，複數)，且答句也提示了 do，所以疑問句要用助動詞 Do 開頭。" },
-                { type: "文法", q: "Tom and Mary ____ a fever.", opts: ["have", "has", "having"], ans: "have", rationale: "Tom and Mary 是兩個人(複數)，複數主詞的動詞「有」要用原形 have。" },
-                
-                // ===== 是非題 =====
-                { type: "是非", q: "是非題：Does he has a cold? 這個問句的文法是正確的。", opts: ["True (正確)", "False (錯誤)"], ans: "False (錯誤)", rationale: "錯！英文有一個很重要的規則：「助動詞後面要接原形動詞」。前面已經有 Does 幫忙加 s 了，後面的 has 必須打回原形變回 have！" },
-                { type: "是非", q: "是非題：I have a headache. 代表我頭痛。這句話正確嗎？", opts: ["True (正確)", "False (錯誤)"], ans: "True (正確)", rationale: "完全正確！描述生病時，英文習慣用 have a + 疾病名稱。" },
                 
                 // ===== 單字與邏輯題 =====
                 { type: "單字", q: "「頭痛」的英文是？", opts: ["headache", "toothache", "stomachache", "backache"], ans: "headache", rationale: "英文造字邏輯：head(頭) + ache(痛) = headache(頭痛)。" },
                 { type: "單字", q: "「流鼻水」的英文是？", opts: ["runny nose", "sore throat", "fever", "cough"], ans: "runny nose", rationale: "runny(流動的) + nose(鼻子) = runny nose (流鼻水)。" },
-                { type: "單字", q: "I ate too much food. I have a ____.", opts: ["stomachache", "headache", "fever", "runny nose"], ans: "stomachache", rationale: "情境題：吃太多食物 (ate too much food) 通常會導致 stomachache (胃痛/肚子痛)。" },
                 { type: "邏輯", q: "選出與其他三個「不同類」的單字：", opts: ["cough", "headache", "fever", "kitchen"], ans: "kitchen", rationale: "kitchen 是廚房（地點），而其他三個都是生病的症狀！" },
+                { type: "中翻英 (填空)", q: "請拼出「咳嗽」的英文：", opts: [], ans: "cough", rationale: "咳嗽的英文是 cough (gh 發 /f/ 的音)。" },
+                { type: "中翻英 (填空)", q: "請拼出「發燒」的英文：", opts: [], ans: "fever", rationale: "發燒的英文是 fever。" },
                 
-                // ===== 發音特訓題 (Phonics: wh vs ph) =====
-                { type: "發音", q: "發音特訓：請選出字首發音和「whale (鯨魚)」一樣是 /w/ 的單字", opts: ["white", "phone", "photo", "pharmacy"], ans: "white", rationale: "whale 和 white 都是 wh 開頭，發 /w/ 的音。而 ph 開頭的字通常發 /f/ 的音。" },
-                { type: "發音", q: "發音特訓：下列哪個單字中含有 /f/ (像 fish 一樣) 的發音？", opts: ["elephant", "where", "what", "window"], ans: "elephant", rationale: "elephant 裡面的 ph 組合在一起會發出 /f/ 的聲音。" },
-                { type: "發音", q: "發音特訓：單字「dolphin (海豚)」中的 ph 發什麼音？", opts: ["/f/ 的音", "/p/ 的音", "/h/ 的音"], ans: "/f/ 的音", rationale: "記住這個規則：英文中的 ph 組合在一起，幾乎都發 /f/ 的音，就像 phone(電話) 一樣。" },
-                { type: "發音", q: "發音特訓：單字「who (誰)」的 wh 發什麼音？", opts: ["/h/ 的音", "/w/ 的音", "/f/ 的音"], ans: "/h/ 的音", rationale: "這是一個大陷阱！who 是一個特別的例外單字，它的 wh 發的是吐氣的 /h/ 音，而不是 /w/。" },
-                { type: "發音", q: "發音特訓：請選出發音與其他三個「不同」的單字：", opts: ["when", "phone", "photo", "phonics"], ans: "when", rationale: "when 發的是 /w/，而另外三個都是 ph 開頭，發 /f/ 的音。" }
+                // ===== 發音特訓題 (Phonics: th 有聲 vs 無聲 總複習) =====
+                { type: "發音", q: "發音特訓：請選出字首「th」發音為無聲 /θ/ (吐氣) 的單字", opts: ["three", "this", "they", "there"], ans: "three", rationale: "數字 three 的 th 是輕輕吐氣無聲的 /θ/。其餘 this, they, there 都是聲帶會震動的 /ð/。" },
+                { type: "發音", q: "發音特訓：單字「thank (謝謝)」的 th 發音是？", opts: ["無聲 /θ/", "有聲 /ð/"], ans: "無聲 /θ/", rationale: "thank you 的 th 是吐氣無聲的 /θ/，念的時候只要把舌頭輕輕放在上下牙齒中間吐氣即可。" },
+
+                // ✨ G5 U2: 聽力測驗 (Listening) ✨
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"headache\", event)'>▶ 播放語音</button>", opts: ["headache", "toothache", "backache"], ans: "headache", rationale: "語音念的是 headache (頭痛)。" },
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"cough\", event)'>▶ 播放語音</button>", opts: ["cough", "cold", "caught"], ans: "cough", rationale: "語音念的是 cough (咳嗽)。" },
+                { type: "聽力", q: "🔊 聽力填空：<br>I have a ______.<br><button class='speak-btn' onclick='speakWord(\"fever\", event)'>▶ 聆聽空格單字</button>", opts: [], ans: "fever", rationale: "語音念的是 fever (發燒)。" }
             ]
         };
 
@@ -412,13 +439,12 @@
         let currentQuestionIndex = 0;
         let score = 0;
         let selectedQuestionCount = 20;
-        let mistakeLog = []; // ✨ 用來記錄學生的錯題 ✨
+        let mistakeLog = []; // 用來記錄學生的錯題
 
         window.onload = function() {
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         }
 
-        // 畫面切換
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
             document.getElementById(screenId).classList.add('active-screen');
@@ -428,11 +454,8 @@
             switchScreen('screen-menu');
         }
 
-        // 單元選擇與排行榜載入
         function selectTheme(themeId) {
-            // 移除其他按鈕的選取狀態
             document.querySelectorAll('.btn-unit, .btn-midterm').forEach(btn => btn.classList.remove('selected'));
-            // 加上選取狀態
             document.getElementById('btn-' + themeId).classList.add('selected');
             
             currentTheme = themeId;
@@ -443,7 +466,6 @@
             const listDiv = document.getElementById('front-leaderboard-list');
             listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
             
-            // 讀取排行榜 (只取前10名)
             fetch(`${GOOGLE_API_URL}?action=get&theme=exam-${currentTheme}`).then(r => r.json()).then(board => {
                 listDiv.innerHTML = ""; 
                 if (!board || board.length === 0) { 
@@ -458,7 +480,6 @@
             }).catch(e => { listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-size:14px;'>排行榜連線失敗 😢</div>"; });
         }
 
-        // 打亂陣列 (Fisher-Yates Shuffle)
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -467,7 +488,6 @@
             return array;
         }
 
-        // 開始測驗
         function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("⚠️ 請先輸入你的姓名喔！"); return; }
@@ -480,22 +500,12 @@
             else if (currentTheme === 'g4u2') { fullQuizPool = [...quizData["g4u2"]]; title = "G4 L2: 現在進行式"; }
             else if (currentTheme === 'g5u1') { fullQuizPool = [...quizData["g5u1"]]; title = "G5 L1: 身體與 hurt/hurts"; }
             else if (currentTheme === 'g5u2') { fullQuizPool = [...quizData["g5u2"]]; title = "G5 L2: 生病與 have/has"; }
-            else if (currentTheme === 'g4mid') { 
-                fullQuizPool = [...quizData["g4u1"], ...quizData["g4u2"]]; 
-                title = "🏆 四年級 期中考總複習"; 
-            }
-            else if (currentTheme === 'g5mid') { 
-                fullQuizPool = [...quizData["g5u1"], ...quizData["g5u2"]]; 
-                title = "🏆 五年級 期中考總複習"; 
-            }
+            else if (currentTheme === 'g4mid') { fullQuizPool = [...quizData["g4u1"], ...quizData["g4u2"]]; title = "🏆 四年級 期中考總複習"; }
+            else if (currentTheme === 'g5mid') { fullQuizPool = [...quizData["g5u1"], ...quizData["g5u2"]]; title = "🏆 五年級 期中考總複習"; }
 
-            // 取得使用者選擇的題數
             selectedQuestionCount = parseInt(document.getElementById('question-count').value);
-
-            // 打亂總題庫
             shuffleArray(fullQuizPool);
             
-            // 依照選擇題數進行切片 (如果題庫不夠大則全出)
             if (fullQuizPool.length > selectedQuestionCount) {
                 currentQuizList = fullQuizPool.slice(0, selectedQuestionCount);
             } else {
@@ -505,60 +515,87 @@
             document.getElementById('quiz-title-display').innerText = title;
             currentQuestionIndex = 0;
             score = 0;
-            mistakeLog = []; // ✨ 每次開始新遊戲，清空錯題紀錄 ✨
+            mistakeLog = []; 
             
             switchScreen('screen-quiz');
             loadQuestion();
         }
 
         function loadQuestion() {
+            // 切換題目時，確保停止任何正在發音的語音
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
             const qData = currentQuizList[currentQuestionIndex];
             const totalQ = currentQuizList.length;
             
-            // 更新進度條與文字
             document.getElementById('q-counter').innerText = `Q: ${currentQuestionIndex + 1} / ${totalQ}`;
             const progressPct = ((currentQuestionIndex) / totalQ) * 100;
             document.getElementById('progress-fill').style.width = `${progressPct}%`;
 
-            // 顯示題目與標籤 (文法/單字/發音)
-            let badgeHtml = qData.type ? `<span class="q-type-badge">${qData.type}</span><br>` : "";
+            let badgeType = "q-type-badge";
+            if (qData.type && qData.type.includes("填空")) badgeType += " typing";
+            if (qData.type && qData.type.includes("聽力")) badgeType += " listening";
+
+            let badgeHtml = qData.type ? `<span class="${badgeType}">${qData.type}</span><br>` : "";
             document.getElementById('question-text').innerHTML = badgeHtml + qData.q;
 
-            // 顯示選項 (打亂選項順序)
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
             
-            let shuffledOpts = [...qData.opts];
-            shuffleArray(shuffledOpts);
+            if (qData.opts && qData.opts.length > 0) {
+                // 一般選擇題 / 是非題
+                let shuffledOpts = [...qData.opts];
+                shuffleArray(shuffledOpts);
 
-            shuffledOpts.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'opt-btn';
-                btn.innerHTML = opt; // 使用 innerHTML 確保如果有 <br> 也能顯示
-                btn.onclick = () => checkAnswer(btn, opt, qData.ans, qData.rationale);
-                optionsContainer.appendChild(btn);
-            });
+                shuffledOpts.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'opt-btn';
+                    btn.innerHTML = opt; 
+                    btn.onclick = () => checkAnswer(btn, opt, qData.ans, qData.rationale);
+                    optionsContainer.appendChild(btn);
+                });
+            } else {
+                // ✨ 填空題輸入框 UI ✨
+                const div = document.createElement('div');
+                div.style.gridColumn = "span 2";
+                div.style.display = "flex";
+                div.style.flexDirection = "column";
+                div.style.gap = "10px";
+                div.innerHTML = `
+                    <input type="text" id="text-ans" placeholder="輸入英文答案 (注意拼字與空格)..." style="font-size:24px; padding:15px; border-radius:15px; border:3px solid var(--primary); text-align:center; font-family:'Quicksand'; font-weight:900; outline:none; text-transform: lowercase;">
+                    <button class="opt-btn" id="text-submit-btn" style="background:var(--secondary); color:white; border-color:var(--secondary);" onclick="checkTextAnswer()">送出答案</button>
+                `;
+                optionsContainer.appendChild(div);
+                
+                setTimeout(() => {
+                    const txt = document.getElementById('text-ans');
+                    if(txt) {
+                        txt.focus();
+                        txt.addEventListener('keypress', function(e) {
+                            if(e.key === 'Enter') checkTextAnswer();
+                        });
+                    }
+                }, 100);
+            }
         }
 
+        // 選擇題判斷
         function checkAnswer(btn, selectedOpt, correctAns, rationale) {
-            // 鎖定所有選項防止連點
             const allBtns = document.querySelectorAll('.opt-btn');
             allBtns.forEach(b => b.classList.add('disabled'));
 
             if (selectedOpt === correctAns) {
-                // 答對
                 btn.classList.add('correct');
                 score += (100 / currentQuizList.length);
-                setTimeout(nextQuestion, 800); // 答對直接 0.8 秒後換下一題，加快節奏
+                setTimeout(nextQuestion, 800); 
             } else {
-                // 答錯
                 btn.classList.add('wrong');
-                // 標示出正確答案
                 allBtns.forEach(b => {
                     if (b.innerHTML === correctAns || b.innerText === correctAns) b.classList.add('correct');
                 });
                 
-                // ✨ 將這題加入錯題紀錄簿 ✨
                 mistakeLog.push({
                     q: currentQuizList[currentQuestionIndex].q,
                     userAns: selectedOpt,
@@ -566,7 +603,45 @@
                     rationale: rationale
                 });
 
-                // 顯示即時解析彈窗
+                document.getElementById('rationale-text').innerHTML = rationale;
+                setTimeout(() => {
+                    document.getElementById('rationale-modal').style.display = 'flex';
+                }, 800);
+            }
+        }
+
+        // 填空題判斷
+        function checkTextAnswer() {
+            const inputEl = document.getElementById('text-ans');
+            const submitBtn = document.getElementById('text-submit-btn');
+            if (inputEl.disabled) return;
+            
+            inputEl.disabled = true;
+            submitBtn.classList.add('disabled');
+
+            const qData = currentQuizList[currentQuestionIndex];
+            const correctAns = qData.ans;
+            const rationale = qData.rationale;
+            
+            const userAns = inputEl.value.trim().toLowerCase();
+            const correct = correctAns.toLowerCase();
+
+            if (userAns === correct) {
+                inputEl.style.backgroundColor = "var(--success)";
+                inputEl.style.color = "white";
+                score += (100 / currentQuizList.length);
+                setTimeout(nextQuestion, 800);
+            } else {
+                inputEl.style.backgroundColor = "var(--error)";
+                inputEl.style.color = "white";
+                
+                mistakeLog.push({
+                    q: qData.q,
+                    userAns: userAns || "(未作答)",
+                    correctAns: correctAns,
+                    rationale: rationale
+                });
+
                 document.getElementById('rationale-text').innerHTML = rationale;
                 setTimeout(() => {
                     document.getElementById('rationale-modal').style.display = 'flex';
@@ -586,7 +661,6 @@
         }
 
         function showResult() {
-            // 滿進度條
             document.getElementById('progress-fill').style.width = `100%`;
             
             setTimeout(() => {
@@ -594,8 +668,7 @@
                 let finalScore = Math.round(score);
                 document.getElementById('result-score').innerText = finalScore;
 
-                let rank = "";
-                let color = "";
+                let rank = ""; let color = "";
 
                 if (finalScore === 100) { rank = "🌟 S 級學霸"; color = "#f39c12"; } 
                 else if (finalScore >= 80) { rank = "🚀 A 級高手"; color = "#2ecc71"; } 
@@ -606,13 +679,11 @@
                 rankEl.innerText = rank; rankEl.style.color = color;
                 document.getElementById('result-score').style.color = color;
                 
-                // 自動上傳成績
                 const playerName = document.getElementById('player-name').value.trim();
                 document.getElementById('result-feedback').innerText = "📡 正在上傳成績...";
                 
                 fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${finalScore}&time=${selectedQuestionCount}Qs&theme=exam-${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
                     document.getElementById('result-feedback').innerText = "✅ 成績已成功上傳至英雄榜！";
-                    // 重整首頁英雄榜
                     selectTheme(currentTheme);
                 }).catch(() => {
                     document.getElementById('result-feedback').innerText = "❌ 網路不穩，上傳失敗。";
@@ -621,7 +692,6 @@
             }, 500);
         }
 
-        // ✨ 錯題總複習顯示邏輯 ✨
         function showMistakes() {
             const container = document.getElementById('mistake-list-container');
             
