@@ -112,18 +112,26 @@
         .opt-btn.wrong { background: var(--error); color: white; border-color: var(--error); }
         .opt-btn.disabled { pointer-events: none; }
 
-        /* --- 解析彈窗 --- */
+        /* --- 彈窗共用樣式 --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px;
         }
         .modal-content {
-            background: white; border-radius: 25px; padding: 30px; width: 100%; max-width: 450px;
+            background: white; border-radius: 25px; padding: 30px; width: 100%; max-width: 500px;
             text-align: center; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 5px solid var(--error);
+            border: 5px solid var(--error); max-height: 85vh; overflow-y: auto;
         }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .modal-title { font-size: 30px; color: var(--error); margin: 0 0 15px 0; }
+        
+        /* 錯題彈窗特定樣式 */
+        .modal-content.review-mode { border-color: var(--warning); text-align: left; padding: 20px; }
+        .mistake-item { background: #f8f9fa; border-left: 5px solid var(--error); padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.05);}
+        .mistake-q { font-weight: 900; margin-bottom: 10px; color: var(--text-dark); font-size: 18px; line-height: 1.4;}
+        .mistake-ans { margin-bottom: 5px; font-size: 16px; font-weight: 700; }
+        .mistake-rat { background: #e8f8f5; padding: 10px; border-radius: 8px; font-size: 15px; color: #27ae60; font-weight: 900; margin-top: 10px; line-height: 1.4;}
+        
+        .modal-title { font-size: 30px; color: var(--error); margin: 0 0 15px 0; text-align: center; }
         .modal-body { font-size: 18px; line-height: 1.6; color: #34495e; font-weight: 700; margin-bottom: 25px; text-align: left; background: #fdf2e9; padding: 15px; border-radius: 15px;}
         .next-btn {
             background: var(--primary); color: white; border: none; width: 100%; padding: 15px;
@@ -133,14 +141,23 @@
 
         /* --- 結算畫面 --- */
         .result-box {
-            background: white; border-radius: 25px; padding: 40px; width: 100%; max-width: 500px;
-            text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); margin-top: 50px;
+            background: white; border-radius: 25px; padding: 30px 40px; width: 100%; max-width: 500px;
+            text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); margin-top: 20px;
         }
         .result-score { font-size: 80px; font-weight: 900; color: var(--primary); margin: 10px 0; text-shadow: 3px 3px 0 #dfe6e9;}
-        .result-rank { font-size: 30px; font-weight: 900; margin-bottom: 30px; color: var(--warning); }
+        .result-rank { font-size: 30px; font-weight: 900; margin-bottom: 20px; color: var(--warning); }
+        
+        .review-btn {
+            background: var(--warning); color: #2d3436; border: none; padding: 15px 20px;
+            font-size: 20px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #d35400;
+            margin-bottom: 15px; width: 100%; transition: 0.1s;
+        }
+        .review-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #d35400; }
+
         .home-btn {
-            background: var(--success); color: white; border: none; padding: 15px 40px;
-            font-size: 22px; font-weight: 900; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 #27ae60;
+            background: var(--success); color: white; border: none; padding: 15px 20px;
+            font-size: 20px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #27ae60;
+            width: 100%; transition: 0.1s;
         }
         .home-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #27ae60; }
 
@@ -239,12 +256,15 @@
             <h2 style="margin:0; color:#2c3e50; font-size: 30px;">測驗完成！</h2>
             <div class="result-score" id="result-score">100</div>
             <div class="result-rank" id="result-rank">S 級學霸</div>
-            <p style="color:#7f8c8d; font-weight:700; font-size:18px; margin-bottom: 30px;" id="result-feedback">成績已自動上傳至英雄榜！</p>
+            <p style="color:#7f8c8d; font-weight:700; font-size:18px; margin-bottom: 20px;" id="result-feedback">成績已自動上傳至英雄榜！</p>
+            
+            <!-- ✨ 新增：查看錯題按鈕 ✨ -->
+            <button class="review-btn" onclick="showMistakes()">📝 查看錯題與解析</button>
             <button class="home-btn" onclick="showMenu()">🔙 回首頁查看排名</button>
         </div>
     </div>
 
-    <!-- 解析彈窗 (答錯時顯示) -->
+    <!-- 即時解析彈窗 (答錯時顯示) -->
     <div class="modal-overlay" id="rationale-modal">
         <div class="modal-content">
             <div class="modal-title">❌ 哎呀，答錯了！</div>
@@ -253,6 +273,17 @@
                 <span id="rationale-text">這裡會顯示文法解析...</span>
             </div>
             <button class="next-btn" onclick="nextQuestion()">了解！下一題 👉</button>
+        </div>
+    </div>
+
+    <!-- ✨ 新增：錯題總複習彈窗 ✨ -->
+    <div class="modal-overlay" id="mistake-review-modal">
+        <div class="modal-content review-mode">
+            <h2 style="color:var(--warning); text-align:center; margin-top:0; font-size:28px;">📝 錯題總複習</h2>
+            <div id="mistake-list-container">
+                <!-- 錯題內容將會動態生成於此 -->
+            </div>
+            <button class="next-btn" style="background:#7f8c8d; box-shadow:0 5px 0 #34495e; margin-top: 15px;" onclick="closeMistakes()">關閉解析</button>
         </div>
     </div>
 
@@ -386,6 +417,7 @@
         let currentQuestionIndex = 0;
         let score = 0;
         let selectedQuestionCount = 20;
+        let mistakeLog = []; // ✨ 用來記錄學生的錯題 ✨
 
         window.onload = function() {
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
@@ -478,6 +510,7 @@
             document.getElementById('quiz-title-display').innerText = title;
             currentQuestionIndex = 0;
             score = 0;
+            mistakeLog = []; // ✨ 每次開始新遊戲，清空錯題紀錄 ✨
             
             switchScreen('screen-quiz');
             loadQuestion();
@@ -530,7 +563,15 @@
                     if (b.innerHTML === correctAns || b.innerText === correctAns) b.classList.add('correct');
                 });
                 
-                // 顯示解析彈窗
+                // ✨ 將這題加入錯題紀錄簿 ✨
+                mistakeLog.push({
+                    q: currentQuizList[currentQuestionIndex].q,
+                    userAns: selectedOpt,
+                    correctAns: correctAns,
+                    rationale: rationale
+                });
+
+                // 顯示即時解析彈窗
                 document.getElementById('rationale-text').innerHTML = rationale;
                 setTimeout(() => {
                     document.getElementById('rationale-modal').style.display = 'flex';
@@ -583,6 +624,30 @@
                 });
 
             }, 500);
+        }
+
+        // ✨ 錯題總複習顯示邏輯 ✨
+        function showMistakes() {
+            const container = document.getElementById('mistake-list-container');
+            
+            if (mistakeLog.length === 0) {
+                container.innerHTML = "<div style='text-align:center; padding:30px 10px; font-size:24px; color:var(--success); font-weight:900;'>太神啦！<br>你這回合沒有任何錯題！🎉</div>";
+            } else {
+                container.innerHTML = mistakeLog.map((m, i) => `
+                    <div class="mistake-item">
+                        <div class="mistake-q">Q${i+1}. ${m.q}</div>
+                        <div class="mistake-ans"><span style="color:var(--error);">❌ 你的答案：${m.userAns}</span></div>
+                        <div class="mistake-ans"><span style="color:var(--success);">✅ 正確答案：${m.correctAns}</span></div>
+                        <div class="mistake-rat">💡 解析：${m.rationale}</div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('mistake-review-modal').style.display = 'flex';
+        }
+
+        function closeMistakes() {
+            document.getElementById('mistake-review-modal').style.display = 'none';
         }
     </script>
 </body>
