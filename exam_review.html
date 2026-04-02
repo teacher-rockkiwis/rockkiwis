@@ -325,51 +325,31 @@
             }
         };
 
-        // 📚 靜態基礎題庫 (已將 G4 U1 修正為有聲無聲 th)
+        // 📚 靜態基礎題庫 (保留最基礎的特訓與聽力題)
         const quizData = {
             "g4u1": [
-                // G4 U1: 發音特訓題 (有聲無聲 th)
                 { type: "發音", q: "發音特訓：下列哪一個單字的 th 發音是無聲的 /θ/？", opts: ["three", "this", "that", "they"], ans: "three", rationale: "數字 three 的 th 是無聲的 /θ/ (輕輕吐氣)，其他 this/that/they 都是有聲的 /ð/。" },
                 { type: "發音", q: "發音特訓：單字「mother」的 th 發音是有聲還是無聲？", opts: ["有聲 /ð/", "無聲 /θ/"], ans: "有聲 /ð/", rationale: "家人稱謂 (mother, father, brother) 的 th 都是聲帶會震動的有聲 /ð/。" },
-                { type: "發音", q: "發音特訓：請選出 th 發音與其他三個「不同」的單字：", opts: ["thank", "thin", "thick", "there"], ans: "there", rationale: "there 是有聲 /ð/，其餘 thank/thin/thick 皆為無聲 /θ/。" },
-                { type: "發音", q: "發音特訓：下列哪一個單字的 th 發音是有聲的 /ð/？", opts: ["weather", "bath", "math", "tooth"], ans: "weather", rationale: "weather 的 th 是有聲 /ð/，其他三個都是無聲 /θ/。" },
-                // G4 U1: 聽力測驗 (Listening)
-                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"bathroom\", event)'>▶ 播放語音</button>", opts: ["bathroom", "bedroom", "living room"], ans: "bathroom", rationale: "語音念的是 bathroom (浴室)。" },
-                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"father\", event)'>▶ 播放語音</button>", opts: ["father", "mother", "brother"], ans: "father", rationale: "語音念的是 father (爸爸)。" },
-                { type: "聽力", q: "🔊 聽力克漏字：<br>He is in the _______.<br><button class='speak-btn' onclick='speakWord(\"garage\", event)'>▶ 聆聽空格單字</button>", opts: ["garage", "garden", "garbage"], ans: "garage", rationale: "語音念的是 garage (車庫)。" }
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"bathroom\", event)'>▶ 播放語音</button>", opts: ["bathroom", "bedroom", "living room"], ans: "bathroom", rationale: "語音念的是 bathroom (浴室)。" }
             ],
             "g4u2": [
-                // G4 U2: 發音特訓題 (Phonics: ng / nk)
                 { type: "發音", q: "發音特訓：請選出字尾發音為 /ŋ/ (ng) 的單字", opts: ["sing", "sink", "pink", "bank"], ans: "sing", rationale: "ring, sing, king 都是 ng 結尾，發長長的鼻音 /ŋ/。其餘選項都是 nk 結尾，會帶有輕脆的 /k/ 音。" },
                 { type: "發音", q: "發音特訓：請選出含有 /ŋk/ (nk) 發音的單字", opts: ["drink", "doing", "running", "long"], ans: "drink", rationale: "drink 結尾是 nk，發 /ŋk/ 的音。其餘都是 ng 結尾或單純的 ing。" },
-                { type: "發音", q: "發音特訓：下列哪個單字的尾音和「pink」一樣是 /ŋk/？", opts: ["bank", "bang", "song", "wing"], ans: "bank", rationale: "pink 和 bank 都是 nk 結尾，發 /ŋk/ 的音。" },
-                // G4 U2: 聽力測驗 (Listening)
-                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"sleeping\", event)'>▶ 播放語音</button>", opts: ["sleeping", "sweeping", "swimming"], ans: "sleeping", rationale: "語音念的是 sleeping (睡覺)。" },
-                { type: "聽力", q: "🔊 聽音辨字 (注意 ng/nk 尾音)：<br><button class='speak-btn' onclick='speakWord(\"sink\", event)'>▶ 播放語音</button>", opts: ["sink", "sing", "sick"], ans: "sink", rationale: "語音念的是 sink (水槽)，尾音有清脆的 /k/ (k 音)。" },
-                { type: "聽力", q: "🔊 聽力填空：<br>My mom is ______.<br><button class='speak-btn' onclick='speakWord(\"cooking\", event)'>▶ 聆聽空格單字</button>", opts: [], ans: "cooking", rationale: "語音念的是 cooking (正在煮飯)。" }
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"sleeping\", event)'>▶ 播放語音</button>", opts: ["sleeping", "sweeping", "swimming"], ans: "sleeping", rationale: "語音念的是 sleeping (睡覺)。" }
             ],
             "g5u1": [
-                // G5 U1: 發音特訓題 (Phonics: wh vs ph)
                 { type: "發音", q: "發音特訓：下列哪個單字開頭的發音和「whale (鯨魚)」一樣是 /w/？", opts: ["white", "phone", "photo", "pharmacy"], ans: "white", rationale: "whale 和 white 都是 wh 開頭，發 /w/ 的音。而 ph 開頭的字通常發 /f/ 的音。" },
                 { type: "發音", q: "發音特訓：下列哪個單字中含有 /f/ (像 fish 一樣) 的發音？", opts: ["elephant", "where", "what", "window"], ans: "elephant", rationale: "elephant 裡面的 ph 組合在一起會發出 /f/ 的聲音。" },
-                { type: "發音", q: "發音特訓：單字「dolphin (海豚)」中的 ph 發什麼音？", opts: ["/f/ 的音", "/p/ 的音", "/h/ 的音"], ans: "/f/ 的音", rationale: "記住這個規則：英文中的 ph 組合在一起，幾乎都發 /f/ 的音，就像 phone(電話) 一樣。" },
-                // G5 U1: 聽力測驗 (Listening)
-                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"shoulder\", event)'>▶ 播放語音</button>", opts: ["shoulder", "stomach", "swallow"], ans: "shoulder", rationale: "語音念的是 shoulder (肩膀)。" },
-                { type: "聽力", q: "🔊 聽音辨字 (注意 wh/ph 發音)：<br><button class='speak-btn' onclick='speakWord(\"elephant\", event)'>▶ 播放語音</button>", opts: ["elephant", "telephone", "dolphin"], ans: "elephant", rationale: "語音念的是 elephant (大象)，其中 ph 發 /f/ 的聲音。" },
-                { type: "聽力", q: "🔊 聽力填空：<br>My _____ hurts.<br><button class='speak-btn' onclick='speakWord(\"tooth\", event)'>▶ 聆聽空格單字</button>", opts: [], ans: "tooth", rationale: "語音念的是 tooth (牙齒，單數)。" }
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"shoulder\", event)'>▶ 播放語音</button>", opts: ["shoulder", "stomach", "swallow"], ans: "shoulder", rationale: "語音念的是 shoulder (肩膀)。" }
             ],
             "g5u2": [
-                // G5 U2: 發音特訓題 (Phonics: th 有聲 vs 無聲 總複習)
                 { type: "發音", q: "發音特訓：請選出字首「th」發音為無聲 /θ/ (吐氣) 的單字", opts: ["three", "this", "they", "there"], ans: "three", rationale: "數字 three 的 th 是輕輕吐氣無聲的 /θ/。其餘 this, they, there 都是聲帶會震動的 /ð/。" },
                 { type: "發音", q: "發音特訓：單字「thank (謝謝)」的 th 發音是？", opts: ["無聲 /θ/", "有聲 /ð/"], ans: "無聲 /θ/", rationale: "thank you 的 th 是吐氣無聲的 /θ/，念的時候只要把舌頭輕輕放在上下牙齒中間吐氣即可。" },
-                // G5 U2: 聽力測驗 (Listening)
-                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"headache\", event)'>▶ 播放語音</button>", opts: ["headache", "toothache", "backache"], ans: "headache", rationale: "語音念的是 headache (頭痛)。" },
-                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"cough\", event)'>▶ 播放語音</button>", opts: ["cough", "cold", "caught"], ans: "cough", rationale: "語音念的是 cough (咳嗽)。" },
-                { type: "聽力", q: "🔊 聽力填空：<br>I have a ______.<br><button class='speak-btn' onclick='speakWord(\"fever\", event)'>▶ 聆聽空格單字</button>", opts: [], ans: "fever", rationale: "語音念的是 fever (發燒)。" }
+                { type: "聽力", q: "🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord(\"headache\", event)'>▶ 播放語音</button>", opts: ["headache", "toothache", "backache"], ans: "headache", rationale: "語音念的是 headache (頭痛)。" }
             ]
         };
 
-        // ✨ 終極 100+ 題自動擴充引擎 (AI Generator) ✨
+        // ✨ 終極 100+ 題自動擴充引擎 (AI Generator) - 加上防當機安全機制 ✨
         function fillMassivePools() {
             const namesM = ["Tom", "Peter", "John", "Kevin", "David", "Danny", "Eric", "Boka", "Jason", "Andy"];
             const namesF = ["Mary", "Anna", "Lisa", "Amy", "Lucy", "Bella", "Cindy", "Dora", "Zoe", "Ella"];
@@ -403,7 +383,7 @@
                 {en: "stomachache", ch: "胃痛"}, {en: "backache", ch: "背痛"}, {en: "cough", ch: "咳嗽"}
             ];
 
-            // 專為 Phonics 準備的題庫抽樣 (G4 U1 已改為 th)
+            // 專為 Phonics 準備的題庫抽樣 (G4 U1 已完全改為 th)
             const phonicsG4U1 = [
                 { q: "發音特訓：字首 th 發音為無聲 /θ/ (吐氣) 的單字", ans: "three", opts: ["three", "this", "they", "there"], rat: "three 是無聲 /θ/" },
                 { q: "發音特訓：字首 th 發音為無聲 /θ/ (吐氣) 的單字", ans: "thank", opts: ["thank", "that", "those", "these"], rat: "thank 是無聲 /θ/" },
@@ -446,7 +426,9 @@
 
             // 擴充 G4 U1 題庫
             let g4u1Keys = new Set(quizData["g4u1"].map(q=>q.q));
-            while(quizData["g4u1"].length < 100) {
+            let attempt1 = 0; // 防當機安全計數器
+            while(quizData["g4u1"].length < 120 && attempt1 < 1000) {
+                attempt1++;
                 let type = Math.floor(Math.random() * 8); // 0~7
                 let nM = getRandom(namesM); let nF = getRandom(namesF);
                 let rm = getRandom(rooms);
@@ -461,10 +443,8 @@
                 } else if(type === 4 || type === 5) {
                     qObj = { type: "文法", q: `____ ${nF} in the ${rm.en}?`, ans: "Is", opts: ["Is", "Are", "Am", "Do"], rationale: `${nF} 是單數(她)，疑問句開頭用 Is。` };
                 } else if(type === 6) {
-                    // 聽力題
                     qObj = { type: "聽力", q: `🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord("${rm.en}", event)'>▶ 播放語音</button>`, ans: rm.en, opts: [rm.en, ...getDistractors(rooms, rm.en, 3)], rationale: `語音念的是 ${rm.en} (${rm.ch})。` };
                 } else {
-                    // 發音題 (已全面改為 th)
                     let p = getRandom(phonicsG4U1);
                     qObj = { type: "發音", q: p.q, ans: p.ans, opts: p.opts, rationale: p.rat };
                 }
@@ -475,7 +455,9 @@
 
             // 擴充 G4 U2 題庫
             let g4u2Keys = new Set(quizData["g4u2"].map(q=>q.q));
-            while(quizData["g4u2"].length < 100) {
+            let attempt2 = 0;
+            while(quizData["g4u2"].length < 120 && attempt2 < 1000) {
+                attempt2++;
                 let type = Math.floor(Math.random() * 8);
                 let nM = getRandom(namesM); let nF = getRandom(namesF);
                 let act = getRandom(actions);
@@ -500,22 +482,28 @@
                 if(!g4u2Keys.has(qStr)) { quizData["g4u2"].push(qObj); g4u2Keys.add(qStr); }
             }
 
-            // 擴充 G5 U1 題庫
+            // 擴充 G5 U1 題庫 (✨ 修復了這段的組合邏輯，保證產生破百題 ✨)
             let g5u1Keys = new Set(quizData["g5u1"].map(q=>q.q));
-            while(quizData["g5u1"].length < 100) {
+            let attempt3 = 0;
+            while(quizData["g5u1"].length < 120 && attempt3 < 1000) {
+                attempt3++;
                 let type = Math.floor(Math.random() * 8);
                 let nM = getRandom(namesM); let nF = getRandom(namesF);
                 let sing = getRandom(bodySingular); let plur = getRandom(bodyPlural);
                 let qObj = {};
                 
                 if(type === 0 || type === 1) {
-                    qObj = { type: "文法", q: `A: What's wrong?<br>B: My ${sing.en} ____.`, ans: "hurts", opts: ["hurts", "hurt", "hurting", "is hurt"], rationale: `${sing.en} 是單數名詞，一般動詞必須加上 s 變成 hurts。` };
+                    let person = type === 0 ? nM : nF;
+                    let pronoun = type === 0 ? "His" : "Her";
+                    qObj = { type: "文法", q: `A: What's wrong with ${person}?<br>B: ${pronoun} ${sing.en} ____.`, ans: "hurts", opts: ["hurts", "hurt", "hurting", "is hurt"], rationale: `${sing.en} 是單數名詞，一般動詞必須加上 s 變成 hurts。` };
                 } else if(type === 2) {
                     qObj = { type: "單字", q: `「${sing.ch}」的英文是？`, ans: sing.en, opts: [sing.en, ...getDistractors(bodySingular, sing.en, 3)], rationale: `${sing.en} 是${sing.ch}。` };
                 } else if(type === 3) {
                     qObj = { type: "中翻英 (填空)", q: `請拼出「${plur.ch}」的英文：`, ans: plur.en, opts: [], rationale: `${plur.ch}的英文是 ${plur.en}。` };
                 } else if(type === 4 || type === 5) {
-                    qObj = { type: "文法", q: `A: What's wrong?<br>B: My ${plur.en} ____.`, ans: "hurt", opts: ["hurt", "hurts", "hurting", "are hurt"], rationale: `${plur.en} 是複數名詞，一般動詞保持原形 hurt。` };
+                    let person = type === 4 ? nM : nF;
+                    let pronoun = type === 4 ? "His" : "Her";
+                    qObj = { type: "文法", q: `A: What's wrong with ${person}?<br>B: ${pronoun} ${plur.en} ____.`, ans: "hurt", opts: ["hurt", "hurts", "hurting", "are hurt"], rationale: `${plur.en} 是複數名詞，一般動詞保持原形 hurt。` };
                 } else if(type === 6) {
                     let isSing = Math.random() > 0.5;
                     let target = isSing ? sing : plur;
@@ -532,7 +520,9 @@
 
             // 擴充 G5 U2 題庫
             let g5u2Keys = new Set(quizData["g5u2"].map(q=>q.q));
-            while(quizData["g5u2"].length < 100) {
+            let attempt4 = 0;
+            while(quizData["g5u2"].length < 120 && attempt4 < 1000) {
+                attempt4++;
                 let type = Math.floor(Math.random() * 8);
                 let nM = getRandom(namesM); let nF = getRandom(namesF);
                 let sick = getRandom(sicknesses);
