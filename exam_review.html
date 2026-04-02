@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ROCK - 段考複習測驗網</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498db; --secondary: #2980b9; --success: #2ecc71; --error: #e74c3c;
+            --warning: #f39c12; --bg: #ecf0f1; --text-dark: #2c3e50; --card-bg: #ffffff; --gold: #f1c40f;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body {
+            background-color: var(--bg); margin: 0; padding: 0;
+            min-height: 100dvh; font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: var(--text-dark); display: flex; flex-direction: column; align-items: center;
+        }
+
+        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 800px; padding: 20px; flex-grow: 1; }
+        .active-screen { display: flex !important; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 主選單樣式 --- */
+        .header-title { text-align: center; margin-top: 30px; margin-bottom: 20px; }
+        .header-title h1 { font-size: 40px; color: var(--secondary); margin: 0; text-shadow: 2px 2px 0px #bdc3c7; }
+        .header-title p { font-size: 18px; color: #7f8c8d; margin-top: 10px; font-weight: 700;}
+
+        /* ✨ 前十名英雄榜 ✨ */
+        .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 100%; max-width: 400px; margin-bottom: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: 3px solid var(--gold); }
+        .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--text-dark); text-align: center; font-size: 22px; font-weight: 900; background: var(--gold); border-radius: 10px; padding: 5px; }
+        #front-leaderboard-list { max-height: 250px; overflow-y: auto; padding-right: 5px; } 
+        #front-leaderboard-list::-webkit-scrollbar { width: 6px; } 
+        #front-leaderboard-list::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; } 
+        #front-leaderboard-list::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
+        .front-board-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 900; } .front-board-row:last-child { border-bottom: none; }
+        .rank-top3 { color: var(--error); font-size: 18px;}
+
+        /* ✨ 題數選擇器樣式 ✨ */
+        .settings-panel {
+            background: white; padding: 15px 25px; border-radius: 15px; margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px;
+            border: 2px dashed #bdc3c7; width: 100%; max-width: 400px; justify-content: center;
+        }
+        .settings-panel select {
+            font-size: 18px; padding: 8px 15px; border-radius: 10px; border: 2px solid var(--primary);
+            outline: none; font-family: 'Quicksand', 'Noto Sans TC'; font-weight: 900; color: var(--primary);
+            background: #f1f2f6; cursor: pointer;
+        }
+
+        .name-input { font-size: 20px; padding: 12px 20px; border-radius: 15px; border: 2px solid var(--primary); text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 15px; width: 100%; max-width: 400px; outline: none; }
+
+        .grade-container { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; justify-content: center; }
+        .grade-card {
+            background: var(--card-bg); border-radius: 20px; padding: 25px; width: 100%; max-width: 360px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-top: 8px solid var(--primary);
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .grade-card.g5 { border-top-color: #9b59b6; }
+        .grade-card h2 { margin: 0 0 10px 0; color: var(--text-dark); font-size: 26px; text-align: center; }
+
+        .btn-unit {
+            background: #f1f2f6; color: #2d3436; border: 2px solid #dfe6e9; padding: 15px;
+            border-radius: 15px; font-size: 18px; font-weight: 900; cursor: pointer; transition: 0.2s;
+            text-align: left; display: flex; justify-content: space-between; align-items: center;
+        }
+        .btn-unit:hover, .btn-unit.selected { background: white; border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.1); }
+        .btn-unit:active { transform: translateY(0); }
+        
+        .grade-card.g5 .btn-unit:hover, .grade-card.g5 .btn-unit.selected { border-color: #9b59b6; }
+
+        .btn-midterm {
+            background: linear-gradient(135deg, #f1c40f, #f39c12); color: white; border: none;
+            padding: 16px; border-radius: 15px; font-size: 20px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 6px 0 #d35400; transition: 0.1s; text-align: center; margin-top: 10px;
+        }
+        .btn-midterm:hover, .btn-midterm.selected { filter: brightness(1.1); transform: translateY(-3px); box-shadow: 0 9px 0 #d35400;}
+        .btn-midterm:active { transform: translateY(6px); box-shadow: 0 0 0 #d35400; }
+
+        .start-btn { background: var(--success); color: white; border: none; padding: 15px 40px; font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #219150; transition: 0.1s; width: 100%; max-width: 400px; margin-top: 20px;}
+        .start-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #219150; }
+
+        /* --- 測驗區樣式 --- */
+        .quiz-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .quiz-title { font-size: 18px; font-weight: 900; color: var(--secondary); background: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .exit-btn { background: var(--error); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #c0392b; }
+        .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #c0392b; }
+
+        .progress-bar { width: 100%; height: 12px; background: #dfe6e9; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+        .progress-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.3s ease; }
+
+        .question-box {
+            background: white; width: 100%; padding: 25px; border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); font-size: 24px; font-weight: 900;
+            text-align: center; margin-bottom: 25px; line-height: 1.5; color: var(--text-dark);
+            border-left: 6px solid var(--primary);
+        }
+        .q-type-badge {
+            display: inline-block; background: #f1c40f; color: #2d3436; font-size: 14px;
+            padding: 4px 10px; border-radius: 8px; margin-bottom: 10px; letter-spacing: 1px;
+        }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .opt-btn {
+            background: white; border: 3px solid #dfe6e9; color: var(--text-dark);
+            padding: 15px 10px; font-size: 20px; font-weight: 900; border-radius: 15px;
+            cursor: pointer; transition: 0.2s; word-wrap: break-word;
+        }
+        .opt-btn:active { transform: scale(0.97); }
+        .opt-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .opt-btn.wrong { background: var(--error); color: white; border-color: var(--error); }
+        .opt-btn.disabled { pointer-events: none; }
+
+        /* --- 解析彈窗 --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-content {
+            background: white; border-radius: 25px; padding: 30px; width: 100%; max-width: 450px;
+            text-align: center; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 5px solid var(--error);
+        }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .modal-title { font-size: 30px; color: var(--error); margin: 0 0 15px 0; }
+        .modal-body { font-size: 18px; line-height: 1.6; color: #34495e; font-weight: 700; margin-bottom: 25px; text-align: left; background: #fdf2e9; padding: 15px; border-radius: 15px;}
+        .next-btn {
+            background: var(--primary); color: white; border: none; width: 100%; padding: 15px;
+            font-size: 22px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 5px 0 #2980b9;
+        }
+        .next-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #2980b9; }
+
+        /* --- 結算畫面 --- */
+        .result-box {
+            background: white; border-radius: 25px; padding: 40px; width: 100%; max-width: 500px;
+            text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); margin-top: 50px;
+        }
+        .result-score { font-size: 80px; font-weight: 900; color: var(--primary); margin: 10px 0; text-shadow: 3px 3px 0 #dfe6e9;}
+        .result-rank { font-size: 30px; font-weight: 900; margin-bottom: 30px; color: var(--warning); }
+        .home-btn {
+            background: var(--success); color: white; border: none; padding: 15px 40px;
+            font-size: 22px; font-weight: 900; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 #27ae60;
+        }
+        .home-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #27ae60; }
+
+        @media (max-width: 768px) {
+            .header-title h1 { font-size: 32px; }
+            .grade-card { padding: 20px; }
+            .question-box { font-size: 20px; padding: 20px; }
+            .opt-btn { font-size: 18px; padding: 12px 10px; }
+            .options-grid { grid-template-columns: 1fr; } 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 主選單 -->
+    <div id="screen-menu" class="screen active-screen">
+        <div class="header-title">
+            <h1 style="cursor: pointer;" onclick="location.href='index.html'">🔙 ROCK 段考複習網</h1>
+            <p>選擇關卡後，點擊最下方按鈕開始測驗！</p>
+        </div>
+
+        <!-- ✨ 英雄榜 ✨ -->
+        <div class="front-leaderboard">
+            <h3 id="front-board-title">🏆 選擇關卡查看前十名</h3>
+            <div id="front-leaderboard-list">
+                <div style="text-align:center; font-size:14px; color:#636e72;">點擊下方單元即可載入英雄榜！</div>
+            </div>
+        </div>
+
+        <!-- 玩家姓名與題數 -->
+        <input type="text" id="player-name" class="name-input" placeholder="👉 請輸入你的姓名..." autocomplete="off" maxlength="12">
+        <div class="settings-panel">
+            <label style="font-size: 18px; font-weight: 900; color: var(--text-dark);">⚙️ 選擇題數：</label>
+            <select id="question-count">
+                <option value="10">10 題</option>
+                <option value="15">15 題</option>
+                <option value="20" selected>20 題</option>
+                <option value="25">25 題</option>
+                <option value="50">50 題 (極限挑戰)</option>
+            </select>
+        </div>
+
+        <div class="grade-container">
+            <!-- 四年級 -->
+            <div class="grade-card">
+                <h2>📘 四年級 (Grade 4)</h2>
+                <button class="btn-unit" id="btn-g4u1" onclick="selectTheme('g4u1')">
+                    <span>L1: Where are you? (房間)</span><span>▶</span>
+                </button>
+                <button class="btn-unit" id="btn-g4u2" onclick="selectTheme('g4u2')">
+                    <span>L2: What are you doing?</span><span>▶</span>
+                </button>
+                <button class="btn-midterm" id="btn-g4mid" onclick="selectTheme('g4mid')">🏆 四年級 期中考總複習</button>
+            </div>
+
+            <!-- 五年級 -->
+            <div class="grade-card g5">
+                <h2>📙 五年級 (Grade 5)</h2>
+                <button class="btn-unit" id="btn-g5u1" onclick="selectTheme('g5u1')">
+                    <span>L1: hurt vs hurts (身體)</span><span>▶</span>
+                </button>
+                <button class="btn-unit" id="btn-g5u2" onclick="selectTheme('g5u2')">
+                    <span>L2: have vs has (生病)</span><span>▶</span>
+                </button>
+                <button class="btn-midterm" id="btn-g5mid" onclick="selectTheme('g5mid')">🏆 五年級 期中考總複習</button>
+            </div>
+        </div>
+        
+        <button class="start-btn" onclick="startGame()">🚀 開始測驗！</button>
+    </div>
+
+    <!-- 測驗畫面 -->
+    <div id="screen-quiz" class="screen">
+        <div class="quiz-header">
+            <div class="quiz-title" id="quiz-title-display">測驗載入中...</div>
+            <button class="exit-btn" onclick="showMenu()">放棄測驗</button>
+        </div>
+        
+        <div style="width:100%; text-align:right; font-weight:900; color:#7f8c8d; margin-bottom:5px;" id="q-counter">Q: 1 / 10</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="question-box" id="question-text">
+            題目載入中...
+        </div>
+
+        <div class="options-grid" id="options-container">
+            <!-- 選項會動態產生在這裡 -->
+        </div>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="screen-result" class="screen">
+        <div class="result-box">
+            <h2 style="margin:0; color:#2c3e50; font-size: 30px;">測驗完成！</h2>
+            <div class="result-score" id="result-score">100</div>
+            <div class="result-rank" id="result-rank">S 級學霸</div>
+            <p style="color:#7f8c8d; font-weight:700; font-size:18px; margin-bottom: 30px;" id="result-feedback">成績已自動上傳至英雄榜！</p>
+            <button class="home-btn" onclick="showMenu()">🔙 回首頁查看排名</button>
+        </div>
+    </div>
+
+    <!-- 解析彈窗 (答錯時顯示) -->
+    <div class="modal-overlay" id="rationale-modal">
+        <div class="modal-content">
+            <div class="modal-title">❌ 哎呀，答錯了！</div>
+            <div class="modal-body">
+                <strong style="color:var(--primary);">💡 觀念解析：</strong><br>
+                <span id="rationale-text">這裡會顯示文法解析...</span>
+            </div>
+            <button class="next-btn" onclick="nextQuestion()">了解！下一題 👉</button>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
+        let userIP = "Unknown";
+
+        // 📚 海量題庫資料 (文法、單字、Phonics 發音) - 超過 300 題！
+        const quizData = {
+            "g4u1": [
+                // 文法題 (Be 動詞 & 介系詞)
+                { type: "文法", q: "A: Where is your brother?<br>B: He ____ in the bedroom.", opts: ["is", "are", "am", "be"], ans: "is", rationale: "He 是第三人稱單數，搭配 be 動詞 is。" },
+                { type: "文法", q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are", rationale: "主詞是 you，配合的 be 動詞必須是 are。" },
+                { type: "文法", q: "Where ____ they?", opts: ["are", "is", "am", "do"], ans: "are", rationale: "主詞是 they(他們)，複數搭配 are。" },
+                { type: "文法", q: "Where ____ she?", opts: ["is", "are", "am", "does"], ans: "is", rationale: "主詞是 she(她)，單數搭配 is。" },
+                { type: "文法", q: "I ____ in the living room.", opts: ["am", "is", "are", "be"], ans: "am", rationale: "主詞是 I(我)，專屬搭配 am。" },
+                { type: "文法", q: "Where ____ Tom and Mary?", opts: ["are", "is", "am", "do"], ans: "are", rationale: "Tom and Mary 是兩個人(複數)，搭配 are。" },
+                { type: "文法", q: "____ your sister in the kitchen?", opts: ["Is", "Are", "Am", "Do"], ans: "Is", rationale: "your sister 是單數(她)，疑問句開頭用 Is。" },
+                { type: "文法", q: "____ the dogs in the yard?", opts: ["Are", "Is", "Am", "Does"], ans: "Are", rationale: "dogs 有加 s 代表複數(牠們)，疑問句開頭用 Are。" },
+                { type: "文法", q: "A: Is Peter in the bathroom?<br>B: No, ____.", opts: ["he isn't", "she isn't", "he is", "I am not"], ans: "he isn't", rationale: "Peter 是男生，用 Is 發問，否定回答要用 No, he isn't。" },
+                { type: "文法", q: "A: Are they in the dining room?<br>B: Yes, ____.", opts: ["they are", "we are", "they aren't", "there are"], ans: "they are", rationale: "用 Are they 問，肯定回答就用 Yes, they are。" },
+                { type: "文法", q: "The cat is ____ the table.", opts: ["under", "in", "to", "at"], ans: "under", rationale: "貓咪躲在桌子「下面」，介系詞要用 under。" },
+                { type: "文法", q: "The books are ____ the desk.", opts: ["on", "in", "under", "to"], ans: "on", rationale: "書本在書桌「上面」，介系詞要用 on。" },
+                { type: "文法", q: "Mom is ____ the kitchen.", opts: ["in", "on", "under", "at"], ans: "in", rationale: "在某個房間「裡面」，介系詞要使用 in。" },
+                { type: "文法", q: "A: Where is the marker?<br>B: It's ____ the box.", opts: ["in", "on", "under", "to"], ans: "in", rationale: "彩色筆放在盒子「裡面」，用 in。" },
+                { type: "文法", q: "____ are you? I'm in the yard.", opts: ["Where", "What", "Who", "How"], ans: "Where", rationale: "回答地點(in the yard)，所以問句是用 Where(哪裡) 發問。" },
+                // 單字題 (Rooms)
+                { type: "單字", q: "「客廳」的英文是？", opts: ["living room", "bedroom", "bathroom", "kitchen"], ans: "living room", rationale: "living room 是客廳。bedroom(臥室)、bathroom(浴室)、kitchen(廚房)。" },
+                { type: "單字", q: "「廚房」的英文是？", opts: ["kitchen", "dining room", "balcony", "garage"], ans: "kitchen", rationale: "kitchen 是廚房。dining room 是飯廳。" },
+                { type: "單字", q: "「陽台」的英文是？", opts: ["balcony", "basement", "garage", "yard"], ans: "balcony", rationale: "balcony 是陽台。basement(地下室)、garage(車庫)、yard(庭院)。" },
+                { type: "單字", q: "「地下室」的英文是？", opts: ["basement", "balcony", "garage", "living room"], ans: "basement", rationale: "basement 是地下室。" },
+                { type: "單字", q: "「車庫」的英文是？", opts: ["garage", "basement", "balcony", "bathroom"], ans: "garage", rationale: "garage 是車庫，用來停車的地方。" },
+                { type: "單字", q: "請選出「bedroom」的中文意思：", opts: ["臥室", "浴室", "飯廳", "車庫"], ans: "臥室", rationale: "bed(床) + room(房間) = 臥室。" },
+                { type: "單字", q: "請選出「dining room」的中文意思：", opts: ["飯廳", "廚房", "客廳", "庭院"], ans: "飯廳", rationale: "dine(用餐) + room = 飯廳。" },
+                { type: "單字", q: "我們通常在_____吃晚餐。", opts: ["dining room", "bathroom", "bedroom", "garage"], ans: "dining room", rationale: "吃晚餐通常在 dining room (飯廳)。" },
+                { type: "單字", q: "We sleep in the _____.", opts: ["bedroom", "kitchen", "balcony", "yard"], ans: "bedroom", rationale: "sleep(睡覺) 通常在 bedroom(臥室)。" },
+                { type: "單字", q: "Where is the TV? It is in the _____.", opts: ["living room", "bathroom", "garage", "yard"], ans: "living room", rationale: "電視(TV)通常放在 living room(客廳)。" },
+                { type: "單字", q: "Mom is taking a shower (洗澡) in the _____.", opts: ["bathroom", "living room", "kitchen", "bedroom"], ans: "bathroom", rationale: "洗澡(take a shower) 會在 bathroom(浴室)。" },
+                { type: "單字", q: "I am washing the car in the _____.", opts: ["garage", "balcony", "bedroom", "dining room"], ans: "garage", rationale: "車子(car) 會停在 garage(車庫)。" }
+            ],
+            "g4u2": [
+                // 文法題 (現在進行式 V-ing)
+                { type: "文法", q: "A: What are you doing?<br>B: I am ____ an apple.", opts: ["eating", "eat", "eats", "ate"], ans: "eating", rationale: "問句是現在進行式，答句也必須用現在進行式 (am/is/are + V-ing)。" },
+                { type: "文法", q: "Look! The boy is ____ in the park.", opts: ["running", "runing", "run", "runs"], ans: "running", rationale: "run 變成進行式時，必須「重複字尾 n 再加 -ing」變成 running。" },
+                { type: "文法", q: "A: What is he doing?<br>B: He is ____ a book.", opts: ["reading", "watching", "listening", "writing"], ans: "reading", rationale: "看書的動詞片語是 read a book。" },
+                { type: "文法", q: "A: Are you sleeping?<br>B: No, I ____.", opts: ["am not", "don't", "isn't", "aren't"], ans: "am not", rationale: "用 Are you 發問，回答時要用 I am (not)。" },
+                { type: "文法", q: "They are ____ to music.", opts: ["listening", "watching", "doing", "playing"], ans: "listening", rationale: "聽音樂的片語是 listen to music，加上 ing 變成 listening。" },
+                { type: "文法", q: "A: What ____ she doing?<br>B: She is painting.", opts: ["is", "are", "am", "does"], ans: "is", rationale: "主詞是 she，進行式疑問句要搭配 be 動詞 is。" },
+                { type: "文法", q: "____ are they doing?", opts: ["What", "Where", "Who", "How"], ans: "What", rationale: "詢問「正在做什麼事」，疑問詞要用 What。" },
+                { type: "文法", q: "A: What is Tom doing?<br>B: ____ is cooking.", opts: ["He", "She", "I", "They"], ans: "He", rationale: "Tom 是男生，代名詞要用 He。" },
+                { type: "文法", q: "A: Is Mary writing?<br>B: Yes, ____.", opts: ["she is", "she isn't", "he is", "I am"], ans: "she is", rationale: "Mary 是女生，用 Is 發問，肯定回答用 Yes, she is。" },
+                { type: "文法", q: "I am ____.", opts: ["swimming", "swiming", "swim", "swims"], ans: "swimming", rationale: "swim 變成進行式時，必須「重複字尾 m 再加 -ing」。" },
+                { type: "文法", q: "The dogs are ____.", opts: ["playing", "play", "plaing", "plays"], ans: "playing", rationale: "play 直接加上 ing 即可，變成 playing。" },
+                { type: "文法", q: "Are they ____ TV?", opts: ["watching", "watch", "watchs", "watching to"], ans: "watching", rationale: "看電視是 watch TV，加上 ing 變成 watching TV。" },
+                { type: "文法", q: "He ____ doing his homework.", opts: ["is", "are", "am", "does"], ans: "is", rationale: "主詞 He 搭配 be 動詞 is。" },
+                // 單字題 (Actions)
+                { type: "單字", q: "「睡覺」的現在分詞 (V-ing) 是？", opts: ["sleeping", "reading", "eating", "cooking"], ans: "sleeping", rationale: "sleep(睡覺) 加上 ing 變成 sleeping。" },
+                { type: "單字", q: "「畫畫」的現在分詞 (V-ing) 是？", opts: ["painting", "writing", "running", "doing"], ans: "painting", rationale: "paint(畫畫) 加上 ing 變成 painting。" },
+                { type: "單字", q: "「寫字」的現在分詞 (V-ing) 正確拼法為：", opts: ["writing", "writting", "writeing", "reading"], ans: "writing", rationale: "write 字尾有 e，必須先「去 e 再加 -ing」變成 writing。" },
+                { type: "單字", q: "請選出「watching TV」的中文意思：", opts: ["看電視", "聽音樂", "看書", "睡覺"], ans: "看電視", rationale: "watch TV = 看電視。" },
+                { type: "單字", q: "請選出「cooking」的中文意思：", opts: ["烹飪/煮飯", "吃飯", "睡覺", "跑步"], ans: "烹飪/煮飯", rationale: "cook = 烹飪/煮飯。" },
+                // 發音題 (Phonics: ng / nk)
+                { type: "發音", q: "下列哪個單字的發音，尾音和「ring」一樣是 /ŋ/？", opts: ["sing", "sink", "pink", "bank"], ans: "sing", rationale: "ring 和 sing 都是 ng 結尾，發鼻音 /ŋ/。其餘都是 nk 結尾 /ŋk/。" },
+                { type: "發音", q: "下列哪個單字含有 /ŋk/ 的發音？", opts: ["drink", "doing", "running", "long"], ans: "drink", rationale: "drink 是 nk 結尾，發 /ŋk/ 的音。其餘都是 ng 結尾或沒有。" },
+                { type: "發音", q: "「國王 (king)」的拼字與尾音是：", opts: ["ng 結尾", "nk 結尾", "n 結尾", "k 結尾"], ans: "ng 結尾", rationale: "國王是 king，屬於 ng 結尾家族。" },
+                { type: "發音", q: "下列哪個單字的尾音和「pink」一樣是 /ŋk/？", opts: ["bank", "bang", "song", "wing"], ans: "bank", rationale: "pink 和 bank 都是 nk 結尾，發 /ŋk/ 的音。" },
+                { type: "發音", q: "「唱歌 (sing)」和「水槽 (sink)」的差別在於：", opts: ["sing 是 ng 結尾，sink 是 nk 結尾", "兩個都是 ng 結尾", "兩個都是 nk 結尾", "兩者發音完全相同"], ans: "sing 是 ng 結尾，sink 是 nk 結尾", rationale: "sing (唱歌) 發 /ŋ/，sink (水槽) 發 /ŋk/。" },
+                { type: "發音", q: "「翅膀 (wing)」和「眨眼 (wink)」的差別在於：", opts: ["wing 是 ng 結尾，wink 是 nk 結尾", "兩個都是 nk 結尾", "兩個都是 ng 結尾", "兩者發音完全相同"], ans: "wing 是 ng 結尾，wink 是 nk 結尾", rationale: "wing (翅膀) 發 /ŋ/，wink (眨眼) 發 /ŋk/。" }
+            ],
+            "g5u1": [
+                // 文法題 (hurt vs hurts)
+                { type: "文法", q: "A: What's wrong?<br>B: My eyes ____.", opts: ["hurt", "hurts", "hurting", "is hurt"], ans: "hurt", rationale: "eyes 是複數名詞，所以後面的動詞 hurt 不需要加 s。" },
+                { type: "文法", q: "A: What's wrong?<br>B: My ____ hurts.", opts: ["foot", "feet", "eyes", "teeth"], ans: "foot", rationale: "動詞 hurts 有加 s，表示前面的主詞必須是「單數」。foot 是一隻腳的單數形。" },
+                { type: "文法", q: "I have two ____.", opts: ["feet", "foot", "foots", "feets"], ans: "feet", rationale: "foot 的複數是不規則變化，兩隻腳要用 feet。" },
+                { type: "文法", q: "Ouch! My head ____.", opts: ["hurts", "hurt", "is hurt", "hurting"], ans: "hurts", rationale: "head 是一個頭(單數)，所以動詞必須加上 s 變成 hurts。" },
+                { type: "文法", q: "His ____ hurt. He can't hear (聽) well.", opts: ["ears", "eyes", "nose", "mouth"], ans: "ears", rationale: "hear (聽) 是用耳朵，且動詞是 hurt (沒加s)，所以要選複數的 ears。" },
+                { type: "文法", q: "A: What's wrong?<br>B: My ____ hurts. I can't eat.", opts: ["tooth", "teeth", "feet", "head"], ans: "tooth", rationale: "hurts 有加 s 代表是單數，且吃東西(eat)會用到牙齒，tooth 是單數。" },
+                { type: "文法", q: "Her arms ____.", opts: ["hurt", "hurts", "hurting", "is hurt"], ans: "hurt", rationale: "arms 有加 s 是複數(兩隻手臂)，所以動詞用原形 hurt。" },
+                { type: "文法", q: "My left leg ____.", opts: ["hurts", "hurt", "hurting", "are hurt"], ans: "hurts", rationale: "left leg 只有指定「左腿」一隻(單數)，所以要加 s 變成 hurts。" },
+                { type: "文法", q: "My hands ____.", opts: ["hurt", "hurts", "hurting", "are hurt"], ans: "hurt", rationale: "hands 是複數，動詞不加 s。" },
+                { type: "文法", q: "His back ____.", opts: ["hurts", "hurt", "hurting", "is hurt"], ans: "hurts", rationale: "back(背) 是單數部位，動詞加 s。" },
+                // 單字題 (Body Parts)
+                { type: "單字", q: "「肩膀」的英文是？", opts: ["shoulder", "neck", "knee", "toe"], ans: "shoulder", rationale: "shoulder 是肩膀。" },
+                { type: "單字", q: "「牙齒(複數)」的英文是？", opts: ["teeth", "tooth", "tooths", "teethes"], ans: "teeth", rationale: "tooth(單數) 的不規則複數變化是 teeth。" },
+                { type: "單字", q: "「膝蓋」的英文是？", opts: ["knee", "neck", "arm", "hand"], ans: "knee", rationale: "knee 是膝蓋 (k 不發音)。" },
+                { type: "單字", q: "請選出「nose」的中文意思：", opts: ["鼻子", "嘴巴", "耳朵", "眼睛"], ans: "鼻子", rationale: "nose = 鼻子。" },
+                { type: "單字", q: "We have ten _____ on our hands.", opts: ["fingers", "toes", "eyes", "ears"], ans: "fingers", rationale: "手上的十根指頭是 fingers (腳趾則是 toes)。" },
+                { type: "單字", q: "We have ten _____ on our feet.", opts: ["toes", "fingers", "legs", "arms"], ans: "toes", rationale: "腳上的十根腳趾是 toes。" },
+                { type: "單字", q: "「背部」的英文是？", opts: ["back", "neck", "head", "mouth"], ans: "back", rationale: "back 是背部。" },
+                { type: "單字", q: "「脖子」的英文是？", opts: ["neck", "back", "knee", "leg"], ans: "neck", rationale: "neck 是脖子。" },
+                // 發音題 (Phonics: th 有聲 vs 無聲)
+                { type: "發音", q: "下列哪個單字的「th」發音和「three」一樣是無聲的 /θ/？", opts: ["math", "mother", "this", "they"], ans: "math", rationale: "three 和 math 的 th 都是吐氣無聲的 /θ/。其餘都是震動有聲的 /ð/。" },
+                { type: "發音", q: "下列哪個單字的「th」發音和「father」一樣是有聲的 /ð/？", opts: ["brother", "thin", "thick", "teeth"], ans: "brother", rationale: "father 和 brother 的 th 都是震動有聲的 /ð/。" },
+                { type: "發音", q: "單字「thank」的 th 發音是：", opts: ["無聲 /θ/", "有聲 /ð/", "不發音", "發 /t/ 的音"], ans: "無聲 /θ/", rationale: "thank you 的 th 是吐氣無聲的 /θ/。" },
+                { type: "發音", q: "單字「that」的 th 發音是：", opts: ["有聲 /ð/", "無聲 /θ/", "不發音", "發 /d/ 的音"], ans: "有聲 /ð/", rationale: "that / this / those 等指示代名詞的 th 都是有聲的 /ð/。" },
+                { type: "發音", q: "請選出「th」發音與其他三個不同的單字：", opts: ["they", "thin", "thick", "path"], ans: "they", rationale: "they 是有聲 /ð/，其餘 thin, thick, path 皆為無聲 /θ/。" },
+                { type: "發音", q: "請選出「th」發音與其他三個不同的單字：", opts: ["teeth", "brother", "mother", "there"], ans: "teeth", rationale: "teeth 是無聲 /θ/，其餘都是有聲的 /ð/。" }
+            ],
+            "g5u2": [
+                // 文法題 (have vs has)
+                { type: "文法", q: "A: Achoo! (打噴嚏)<br>B: What's wrong?<br>A: I think I have a ____.", opts: ["cold", "stomachache", "toothache", "sore throat"], ans: "cold", rationale: "Achoo! 是打噴嚏的聲音，通常代表感冒了 (have a cold)。" },
+                { type: "文法", q: "____ your sister have a fever?", opts: ["Does", "Do", "Is", "Are"], ans: "Does", rationale: "主詞 your sister 是第三人稱單數（等於 she），疑問句必須使用助動詞 Does。" },
+                { type: "文法", q: "A: Does he have a sore throat?<br>B: No, he ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't", rationale: "以 Does 開頭的疑問句，否定簡答時要用 doesn't。" },
+                { type: "文法", q: "She ____ a runny nose.", opts: ["has", "have", "having", "is have"], ans: "has", rationale: "主詞是 She (第三人稱單數)，所以「有」必須使用 has。" },
+                { type: "文法", q: "I ____ a stomachache.", opts: ["have", "has", "am", "do"], ans: "have", rationale: "主詞是 I，所以「有」使用原形動詞 have。" },
+                { type: "文法", q: "A: ____ they have a headache?<br>B: Yes, they do.", opts: ["Do", "Does", "Are", "Is"], ans: "Do", rationale: "主詞是 they，疑問句要用助動詞 Do 開頭。" },
+                { type: "文法", q: "A: Do you have a toothache?<br>B: No, I ____.", opts: ["don't", "doesn't", "am not", "haven't"], ans: "don't", rationale: "用 Do you 發問，否定回答要用 No, I don't。" },
+                { type: "文法", q: "Tom and Mary ____ a fever.", opts: ["have", "has", "having", "are"], ans: "have", rationale: "Tom and Mary 是兩個人(複數)，所以「有」要用原形 have。" },
+                { type: "文法", q: "Peter ____ a bad cold.", opts: ["has", "have", "does", "is"], ans: "has", rationale: "Peter 是第三人稱單數(He)，動詞要用 has。" },
+                { type: "文法", q: "A: Does the dog have a runny nose?<br>B: Yes, it ____.", opts: ["does", "do", "has", "is"], ans: "does", rationale: "用 Does 提問，簡答時要用 does 結尾。" },
+                // 單字題 (Sickness)
+                { type: "單字", q: "「頭痛」的英文是？", opts: ["headache", "toothache", "stomachache", "backache"], ans: "headache", rationale: "head(頭) + ache(痛) = headache。" },
+                { type: "單字", q: "「流鼻水」的英文是？", opts: ["runny nose", "sore throat", "fever", "cough"], ans: "runny nose", rationale: "runny(流動的) + nose(鼻子) = runny nose (流鼻水)。" },
+                { type: "單字", q: "請選出「sore throat」的中文意思：", opts: ["喉嚨痛", "感冒", "肚子痛", "咳嗽"], ans: "喉嚨痛", rationale: "sore(痠痛的) + throat(喉嚨) = sore throat。" },
+                { type: "單字", q: "請選出「cough」的中文意思：", opts: ["咳嗽", "發燒", "感冒", "流鼻水"], ans: "咳嗽", rationale: "cough = 咳嗽 (gh 發 /f/ 的音)。" },
+                { type: "單字", q: "I ate too much food. I have a ____.", opts: ["stomachache", "headache", "fever", "runny nose"], ans: "stomachache", rationale: "吃太多食物通常會導致 stomachache (胃痛/肚子痛)。" },
+                { type: "單字", q: "「發燒」的英文是？", opts: ["fever", "cold", "cough", "headache"], ans: "fever", rationale: "fever 是發燒。" },
+                { type: "單字", q: "「牙痛」的英文是？", opts: ["toothache", "headache", "backache", "stomachache"], ans: "toothache", rationale: "tooth(牙齒) + ache(痛) = toothache。" },
+                // 發音題 (Phonics: wh vs ph)
+                { type: "發音", q: "下列哪個單字開頭的發音和「whale (鯨魚)」一樣是 /w/？", opts: ["white", "phone", "photo", "vase"], ans: "white", rationale: "whale 和 white 都是 wh 開頭，發 /w/ 的音。phone 和 photo 的 ph 發 /f/ 的音。" },
+                { type: "發音", q: "下列哪個單字中含有 /f/ 的發音？", opts: ["elephant", "where", "what", "window"], ans: "elephant", rationale: "elephant 裡面的 ph 會發出 /f/ 的聲音。" },
+                { type: "發音", q: "單字「dolphin (海豚)」中的 ph 發什麼音？", opts: ["/f/ 的音", "/p/ 的音", "/h/ 的音", "不發音"], ans: "/f/ 的音", rationale: "ph 組合在一起通常發 /f/ 的音，就像 phone 一樣。" },
+                { type: "發音", q: "單字「which」的 wh 發音和下列何者相同？", opts: ["when", "who", "phone", "photo"], ans: "when", rationale: "which 和 when 的 wh 都發 /w/。特別注意 who 的 wh 是例外發 /h/。" },
+                { type: "發音", q: "請選出發音與其他三個不同的單字：", opts: ["phone", "photo", "phonics", "white"], ans: "white", rationale: "white 是 /w/ 音，其餘三個都是 ph 開頭的 /f/ 音。" },
+                { type: "發音", q: "單字「who (誰)」的 wh 發什麼音？", opts: ["/h/ 的音", "/w/ 的音", "/f/ 的音", "不發音"], ans: "/h/ 的音", rationale: "who 是一個特別的例外，它的 wh 發 /h/ 的音。" }
+            ]
+        };
+
+        let currentTheme = "";
+        let currentQuizList = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedQuestionCount = 20;
+
+        window.onload = function() {
+            fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
+        }
+
+        // 畫面切換
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        function showMenu() {
+            switchScreen('screen-menu');
+        }
+
+        // 單元選擇與排行榜載入
+        function selectTheme(themeId) {
+            // 移除其他按鈕的選取狀態
+            document.querySelectorAll('.btn-unit, .btn-midterm').forEach(btn => btn.classList.remove('selected'));
+            // 加上選取狀態
+            document.getElementById('btn-' + themeId).classList.add('selected');
+            
+            currentTheme = themeId;
+            let themeName = document.getElementById('btn-' + themeId).innerText.split(':')[0].replace('🏆 ', '').replace('▶', '').trim();
+            if(themeId.includes('mid')) themeName = document.getElementById('btn-' + themeId).innerText.replace('🏆 ', '');
+            
+            document.getElementById('front-board-title').innerText = `🏆 ${themeName} 前十名`;
+            const listDiv = document.getElementById('front-leaderboard-list');
+            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            
+            // 讀取排行榜 (只取前10名)
+            fetch(`${GOOGLE_API_URL}?action=get&theme=exam-${currentTheme}`).then(r => r.json()).then(board => {
+                listDiv.innerHTML = ""; 
+                if (!board || board.length === 0) { 
+                    listDiv.innerHTML = "<div style='text-align:center; font-size:14px; padding:10px;'>目前無紀錄，搶下榜首吧！</div>"; 
+                    return; 
+                }
+                board.slice(0, 10).forEach((p, i) => { 
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; 
+                    let rankClass = i < 3 ? 'rank-top3' : '';
+                    listDiv.innerHTML += `<div class='front-board-row ${rankClass}'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score}</span></div>`; 
+                });
+            }).catch(e => { listDiv.innerHTML = "<div style='text-align:center; color:var(--error); font-size:14px;'>排行榜連線失敗 😢</div>"; });
+        }
+
+        // 打亂陣列 (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 開始測驗
+        function startGame() {
+            const inputName = document.getElementById('player-name').value.trim();
+            if(inputName === "") { alert("⚠️ 請先輸入你的姓名喔！"); return; }
+            if(currentTheme === "") { alert("⚠️ 請先點擊選擇一個【挑戰關卡】！"); return; }
+
+            let fullQuizPool = [];
+            let title = "";
+
+            if (currentTheme === 'g4u1') { fullQuizPool = [...quizData["g4u1"]]; title = "G4 L1: 房間與位置"; }
+            else if (currentTheme === 'g4u2') { fullQuizPool = [...quizData["g4u2"]]; title = "G4 L2: 現在進行式"; }
+            else if (currentTheme === 'g5u1') { fullQuizPool = [...quizData["g5u1"]]; title = "G5 L1: 身體與 hurt/hurts"; }
+            else if (currentTheme === 'g5u2') { fullQuizPool = [...quizData["g5u2"]]; title = "G5 L2: 生病與 have/has"; }
+            else if (currentTheme === 'g4mid') { 
+                fullQuizPool = [...quizData["g4u1"], ...quizData["g4u2"]]; 
+                title = "🏆 四年級 期中考總複習"; 
+            }
+            else if (currentTheme === 'g5mid') { 
+                fullQuizPool = [...quizData["g5u1"], ...quizData["g5u2"]]; 
+                title = "🏆 五年級 期中考總複習"; 
+            }
+
+            // 取得使用者選擇的題數
+            selectedQuestionCount = parseInt(document.getElementById('question-count').value);
+
+            // 打亂總題庫
+            shuffleArray(fullQuizPool);
+            
+            // 依照選擇題數進行切片 (如果題庫不夠大則全出)
+            if (fullQuizPool.length > selectedQuestionCount) {
+                currentQuizList = fullQuizPool.slice(0, selectedQuestionCount);
+            } else {
+                currentQuizList = [...fullQuizPool];
+            }
+
+            document.getElementById('quiz-title-display').innerText = title;
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            switchScreen('screen-quiz');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const qData = currentQuizList[currentQuestionIndex];
+            const totalQ = currentQuizList.length;
+            
+            // 更新進度條與文字
+            document.getElementById('q-counter').innerText = `Q: ${currentQuestionIndex + 1} / ${totalQ}`;
+            const progressPct = ((currentQuestionIndex) / totalQ) * 100;
+            document.getElementById('progress-fill').style.width = `${progressPct}%`;
+
+            // 顯示題目與標籤 (文法/單字/發音)
+            let badgeHtml = qData.type ? `<span class="q-type-badge">${qData.type}</span><br>` : "";
+            document.getElementById('question-text').innerHTML = badgeHtml + qData.q;
+
+            // 顯示選項 (打亂選項順序)
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            let shuffledOpts = [...qData.opts];
+            shuffleArray(shuffledOpts);
+
+            shuffledOpts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerHTML = opt; // 使用 innerHTML 確保如果有 <br> 也能顯示
+                btn.onclick = () => checkAnswer(btn, opt, qData.ans, qData.rationale);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(btn, selectedOpt, correctAns, rationale) {
+            // 鎖定所有選項防止連點
+            const allBtns = document.querySelectorAll('.opt-btn');
+            allBtns.forEach(b => b.classList.add('disabled'));
+
+            if (selectedOpt === correctAns) {
+                // 答對
+                btn.classList.add('correct');
+                score += (100 / currentQuizList.length);
+                setTimeout(nextQuestion, 1000); // 答對直接 1 秒後換下一題
+            } else {
+                // 答錯
+                btn.classList.add('wrong');
+                // 標示出正確答案
+                allBtns.forEach(b => {
+                    if (b.innerHTML === correctAns || b.innerText === correctAns) b.classList.add('correct');
+                });
+                
+                // 顯示解析彈窗
+                document.getElementById('rationale-text').innerHTML = rationale;
+                setTimeout(() => {
+                    document.getElementById('rationale-modal').style.display = 'flex';
+                }, 800);
+            }
+        }
+
+        function nextQuestion() {
+            document.getElementById('rationale-modal').style.display = 'none';
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < currentQuizList.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            // 滿進度條
+            document.getElementById('progress-fill').style.width = `100%`;
+            
+            setTimeout(() => {
+                switchScreen('screen-result');
+                let finalScore = Math.round(score);
+                document.getElementById('result-score').innerText = finalScore;
+
+                let rank = "";
+                let color = "";
+
+                if (finalScore === 100) { rank = "🌟 S 級學霸"; color = "#f39c12"; } 
+                else if (finalScore >= 80) { rank = "🚀 A 級高手"; color = "#2ecc71"; } 
+                else if (finalScore >= 60) { rank = "👍 B 級勇者"; color = "#3498db"; } 
+                else { rank = "💪 C 級新手"; color = "#e74c3c"; }
+
+                const rankEl = document.getElementById('result-rank');
+                rankEl.innerText = rank; rankEl.style.color = color;
+                document.getElementById('result-score').style.color = color;
+                
+                // 自動上傳成績
+                const playerName = document.getElementById('player-name').value.trim();
+                document.getElementById('result-feedback').innerText = "📡 正在上傳成績...";
+                
+                fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${finalScore}&time=${selectedQuestionCount}Qs&theme=exam-${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
+                    document.getElementById('result-feedback').innerText = "✅ 成績已成功上傳至英雄榜！";
+                    // 重整首頁英雄榜
+                    selectTheme(currentTheme);
+                }).catch(() => {
+                    document.getElementById('result-feedback').innerText = "❌ 網路不穩，上傳失敗。";
+                });
+
+            }, 500);
+        }
+    </script>
+</body>
+</html>
