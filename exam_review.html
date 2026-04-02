@@ -325,7 +325,7 @@
             }
         };
 
-        // 📚 靜態基礎題庫 (專屬的聽力與發音題)
+        // 📚 靜態基礎題庫 (已將 G4 U1 修正為有聲無聲 th)
         const quizData = {
             "g4u1": [
                 // G4 U1: 發音特訓題 (有聲無聲 th)
@@ -370,7 +370,6 @@
         };
 
         // ✨ 終極 100+ 題自動擴充引擎 (AI Generator) ✨
-        // 在程式啟動時，動態組合各種變數，確保每個單元都有 100 題以上的不同題目
         function fillMassivePools() {
             const namesM = ["Tom", "Peter", "John", "Kevin", "David", "Danny", "Eric", "Boka", "Jason", "Andy"];
             const namesF = ["Mary", "Anna", "Lisa", "Amy", "Lucy", "Bella", "Cindy", "Dora", "Zoe", "Ella"];
@@ -404,6 +403,33 @@
                 {en: "stomachache", ch: "胃痛"}, {en: "backache", ch: "背痛"}, {en: "cough", ch: "咳嗽"}
             ];
 
+            // 專為 Phonics 準備的題庫抽樣 (G4 U1 已改為 th)
+            const phonicsG4U1 = [
+                { q: "發音特訓：字首 th 發音為無聲 /θ/ (吐氣) 的單字", ans: "three", opts: ["three", "this", "they", "there"], rat: "three 是無聲 /θ/" },
+                { q: "發音特訓：字首 th 發音為無聲 /θ/ (吐氣) 的單字", ans: "thank", opts: ["thank", "that", "those", "these"], rat: "thank 是無聲 /θ/" },
+                { q: "發音特訓：字首/字中 th 發音為有聲 /ð/ (震動) 的單字", ans: "mother", opts: ["mother", "math", "bath", "tooth"], rat: "mother 的 th 是有聲 /ð/" },
+                { q: "發音特訓：字首/字中 th 發音為有聲 /ð/ (震動) 的單字", ans: "brother", opts: ["brother", "thin", "thick", "path"], rat: "brother 的 th 是有聲 /ð/" },
+                { q: "發音特訓：請選出 th 發音與其他三個「不同」的單字：", ans: "there", opts: ["there", "thank", "thin", "thick"], rat: "there 是有聲 /ð/，其餘皆為無聲 /θ/" }
+            ];
+            const phonicsG4U2 = [
+                { q: "發音特訓：字尾發音為 /ŋ/ (ng) 的單字", ans: "sing", opts: ["sing", "sink", "pink", "bank"], rat: "sing 是 ng 結尾" },
+                { q: "發音特訓：字尾發音為 /ŋ/ (ng) 的單字", ans: "ring", opts: ["ring", "drink", "think", "wink"], rat: "ring 是 ng 結尾" },
+                { q: "發音特訓：含有 /ŋk/ (nk) 發音的單字", ans: "drink", opts: ["drink", "doing", "running", "long"], rat: "drink 是 nk 結尾" },
+                { q: "發音特訓：含有 /ŋk/ (nk) 發音的單字", ans: "pink", opts: ["pink", "ping", "sing", "ring"], rat: "pink 是 nk 結尾" }
+            ];
+            const phonicsG5U1 = [
+                { q: "發音特訓：發音和「whale (鯨魚)」一樣是 /w/ 的單字", ans: "white", opts: ["white", "phone", "photo", "pharmacy"], rat: "white 的 wh 發 /w/" },
+                { q: "發音特訓：發音和「where (哪裡)」一樣是 /w/ 的單字", ans: "when", opts: ["when", "elephant", "dolphin", "graph"], rat: "when 的 wh 發 /w/" },
+                { q: "發音特訓：含有 /f/ (像 fish) 發音的單字", ans: "elephant", opts: ["elephant", "where", "what", "window"], rat: "elephant 的 ph 發 /f/" },
+                { q: "發音特訓：含有 /f/ (像 fish) 發音的單字", ans: "dolphin", opts: ["dolphin", "which", "why", "white"], rat: "dolphin 的 ph 發 /f/" }
+            ];
+            const phonicsG5U2 = [
+                { q: "發音特訓：字首 th 發音為無聲 /θ/ (吐氣) 的單字", ans: "three", opts: ["three", "this", "they", "there"], rat: "three 是無聲 /θ/" },
+                { q: "發音特訓：字首 th 發音為無聲 /θ/ (吐氣) 的單字", ans: "thank", opts: ["thank", "that", "those", "these"], rat: "thank 是無聲 /θ/" },
+                { q: "發音特訓：字首/字中 th 發音為有聲 /ð/ (震動) 的單字", ans: "mother", opts: ["mother", "math", "bath", "tooth"], rat: "mother 的 th 是有聲 /ð/" },
+                { q: "發音特訓：字首/字中 th 發音為有聲 /ð/ (震動) 的單字", ans: "brother", opts: ["brother", "thin", "thick", "path"], rat: "brother 的 th 是有聲 /ð/" }
+            ];
+
             const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
             const getDistractors = (arr, correct, count, key='en') => {
                 let res = [];
@@ -414,104 +440,117 @@
                         res.push(val);
                     }
                 }
-                while(res.length < count) { res.push("something"); } // 安全保護
+                while(res.length < count) { res.push("something"); } 
                 return res;
             };
 
-            // 擴充 G4 U1 題庫至 100 題
+            // 擴充 G4 U1 題庫
             let g4u1Keys = new Set(quizData["g4u1"].map(q=>q.q));
             while(quizData["g4u1"].length < 100) {
-                let type = Math.floor(Math.random() * 6);
+                let type = Math.floor(Math.random() * 8); // 0~7
                 let nM = getRandom(namesM); let nF = getRandom(namesF);
                 let rm = getRandom(rooms);
                 let qObj = {};
-                if(type === 0) {
+                
+                if(type === 0 || type === 1) {
                     qObj = { type: "文法", q: `A: Where is ${nM}?<br>B: He is ____ the ${rm.en}.`, ans: "in", opts: ["in", "on", "under", "at"], rationale: `在房間「裡面」介系詞用 in。` };
-                } else if(type === 1) {
-                    qObj = { type: "文法", q: `____ ${nF} in the ${rm.en}?`, ans: "Is", opts: ["Is", "Are", "Am", "Do"], rationale: `${nF} 是單數(她)，疑問句開頭用 Is。` };
                 } else if(type === 2) {
-                    qObj = { type: "文法", q: `A: Is ${nM} in the ${rm.en}?<br>B: No, he ____.`, ans: "isn't", opts: ["isn't", "aren't", "doesn't", "is"], rationale: `用 Is 發問，否定簡答為 No, he isn't。` };
-                } else if(type === 3) {
                     qObj = { type: "單字", q: `「${rm.ch}」的英文是？`, ans: rm.en, opts: [rm.en, ...getDistractors(rooms, rm.en, 3)], rationale: `${rm.en} 是${rm.ch}。` };
-                } else if(type === 4) {
-                    qObj = { type: "文法", q: `Where ____ ${nM} and ${nF}?`, ans: "are", opts: ["are", "is", "am", "do"], rationale: `兩個人是複數，be動詞用 are。` };
-                } else {
+                } else if(type === 3) {
                     qObj = { type: "中翻英 (填空)", q: `請拼出「${rm.ch}」的英文：`, ans: rm.en, opts: [], rationale: `${rm.ch}的英文是 ${rm.en}。` };
+                } else if(type === 4 || type === 5) {
+                    qObj = { type: "文法", q: `____ ${nF} in the ${rm.en}?`, ans: "Is", opts: ["Is", "Are", "Am", "Do"], rationale: `${nF} 是單數(她)，疑問句開頭用 Is。` };
+                } else if(type === 6) {
+                    // 聽力題
+                    qObj = { type: "聽力", q: `🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord("${rm.en}", event)'>▶ 播放語音</button>`, ans: rm.en, opts: [rm.en, ...getDistractors(rooms, rm.en, 3)], rationale: `語音念的是 ${rm.en} (${rm.ch})。` };
+                } else {
+                    // 發音題 (已全面改為 th)
+                    let p = getRandom(phonicsG4U1);
+                    qObj = { type: "發音", q: p.q, ans: p.ans, opts: p.opts, rationale: p.rat };
                 }
                 
                 let qStr = qObj.q + qObj.ans;
                 if(!g4u1Keys.has(qStr)) { quizData["g4u1"].push(qObj); g4u1Keys.add(qStr); }
             }
 
-            // 擴充 G4 U2 題庫至 100 題
+            // 擴充 G4 U2 題庫
             let g4u2Keys = new Set(quizData["g4u2"].map(q=>q.q));
             while(quizData["g4u2"].length < 100) {
-                let type = Math.floor(Math.random() * 6);
+                let type = Math.floor(Math.random() * 8);
                 let nM = getRandom(namesM); let nF = getRandom(namesF);
                 let act = getRandom(actions);
                 let qObj = {};
-                if(type === 0) {
+                
+                if(type === 0 || type === 1) {
                     qObj = { type: "文法", q: `A: What is ${nM} doing?<br>B: He is ____.`, ans: act.ving, opts: [act.ving, act.v, act.v+"s", act.v+"ed"], rationale: `現在進行式必須用 be動詞 + V-ing，所以是 ${act.ving}。` };
-                } else if(type === 1) {
-                    qObj = { type: "文法", q: `____ are ${nM} and ${nF} doing?`, ans: "What", opts: ["What", "Where", "Who", "How"], rationale: `詢問「做什麼」要用疑問詞 What。` };
                 } else if(type === 2) {
-                    qObj = { type: "文法", q: `A: Are they ${act.ving}?<br>B: Yes, ____.`, ans: "they are", opts: ["they are", "we are", "they aren't", "he is"], rationale: `用 Are they 發問，肯定回答是 Yes, they are。` };
+                    qObj = { type: "單字", q: `「${act.ch}」的英文(現在分詞)是？`, ans: act.ving, opts: [act.ving, ...getDistractors(actions, act.ving, 3, 'ving')], rationale: `${act.ving} 是正在${act.ch}。` };
                 } else if(type === 3) {
                     qObj = { type: "文法填空", q: `請寫出 ${act.v} 的現在分詞 (正在${act.ch})：`, ans: act.ving, opts: [], rationale: `${act.v} 的現在分詞是 ${act.ving}。` };
-                } else if(type === 4) {
-                    qObj = { type: "單字", q: `「${act.ch}」的英文是？`, ans: act.ving, opts: [act.ving, ...getDistractors(actions, act.ving, 3, 'ving')], rationale: `${act.ving} 是 ${act.ch}。` };
+                } else if(type === 4 || type === 5) {
+                    qObj = { type: "文法", q: `____ are ${nM} and ${nF} doing?`, ans: "What", opts: ["What", "Where", "Who", "How"], rationale: `詢問「做什麼」要用疑問詞 What。` };
+                } else if(type === 6) {
+                    qObj = { type: "聽力", q: `🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord("${act.ving}", event)'>▶ 播放語音</button>`, ans: act.ving, opts: [act.ving, ...getDistractors(actions, act.ving, 3, 'ving')], rationale: `語音念的是 ${act.ving}。` };
                 } else {
-                    qObj = { type: "文法", q: `${nF} is ____ now.`, ans: act.ving, opts: [act.ving, act.v, act.v+"s", "is "+act.ving], rationale: `now 代表現在，要用進行式 is + V-ing。` };
+                    let p = getRandom(phonicsG4U2);
+                    qObj = { type: "發音", q: p.q, ans: p.ans, opts: p.opts, rationale: p.rat };
                 }
                 
                 let qStr = qObj.q + qObj.ans;
                 if(!g4u2Keys.has(qStr)) { quizData["g4u2"].push(qObj); g4u2Keys.add(qStr); }
             }
 
-            // 擴充 G5 U1 題庫至 100 題
+            // 擴充 G5 U1 題庫
             let g5u1Keys = new Set(quizData["g5u1"].map(q=>q.q));
             while(quizData["g5u1"].length < 100) {
-                let type = Math.floor(Math.random() * 6);
+                let type = Math.floor(Math.random() * 8);
                 let nM = getRandom(namesM); let nF = getRandom(namesF);
                 let sing = getRandom(bodySingular); let plur = getRandom(bodyPlural);
                 let qObj = {};
-                if(type === 0) {
+                
+                if(type === 0 || type === 1) {
                     qObj = { type: "文法", q: `A: What's wrong?<br>B: My ${sing.en} ____.`, ans: "hurts", opts: ["hurts", "hurt", "hurting", "is hurt"], rationale: `${sing.en} 是單數名詞，一般動詞必須加上 s 變成 hurts。` };
-                } else if(type === 1) {
-                    qObj = { type: "文法", q: `A: What's wrong?<br>B: My ${plur.en} ____.`, ans: "hurt", opts: ["hurt", "hurts", "hurting", "are hurt"], rationale: `${plur.en} 是複數名詞，一般動詞保持原形 hurt。` };
                 } else if(type === 2) {
                     qObj = { type: "單字", q: `「${sing.ch}」的英文是？`, ans: sing.en, opts: [sing.en, ...getDistractors(bodySingular, sing.en, 3)], rationale: `${sing.en} 是${sing.ch}。` };
                 } else if(type === 3) {
                     qObj = { type: "中翻英 (填空)", q: `請拼出「${plur.ch}」的英文：`, ans: plur.en, opts: [], rationale: `${plur.ch}的英文是 ${plur.en}。` };
-                } else if(type === 4) {
-                    qObj = { type: "文法", q: `${nM}'s ${sing.en} ____.`, ans: "hurts", opts: ["hurts", "hurt", "is hurt", "hurting"], rationale: `${nM}'s ${sing.en} 是第三人稱單數，動詞加 s。` };
+                } else if(type === 4 || type === 5) {
+                    qObj = { type: "文法", q: `A: What's wrong?<br>B: My ${plur.en} ____.`, ans: "hurt", opts: ["hurt", "hurts", "hurting", "are hurt"], rationale: `${plur.en} 是複數名詞，一般動詞保持原形 hurt。` };
+                } else if(type === 6) {
+                    let isSing = Math.random() > 0.5;
+                    let target = isSing ? sing : plur;
+                    let options = isSing ? [target.en, ...getDistractors(bodySingular, target.en, 3)] : [target.en, ...getDistractors(bodyPlural, target.en, 3)];
+                    qObj = { type: "聽力", q: `🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord("${target.en}", event)'>▶ 播放語音</button>`, ans: target.en, opts: options, rationale: `語音念的是 ${target.en}。` };
                 } else {
-                    qObj = { type: "文法", q: `Their ${plur.en} ____.`, ans: "hurt", opts: ["hurt", "hurts", "is hurt", "hurting"], rationale: `their ${plur.en} 是複數，動詞用原形 hurt。` };
+                    let p = getRandom(phonicsG5U1);
+                    qObj = { type: "發音", q: p.q, ans: p.ans, opts: p.opts, rationale: p.rat };
                 }
                 
                 let qStr = qObj.q + qObj.ans;
                 if(!g5u1Keys.has(qStr)) { quizData["g5u1"].push(qObj); g5u1Keys.add(qStr); }
             }
 
-            // 擴充 G5 U2 題庫至 100 題
+            // 擴充 G5 U2 題庫
             let g5u2Keys = new Set(quizData["g5u2"].map(q=>q.q));
             while(quizData["g5u2"].length < 100) {
-                let type = Math.floor(Math.random() * 6);
+                let type = Math.floor(Math.random() * 8);
                 let nM = getRandom(namesM); let nF = getRandom(namesF);
                 let sick = getRandom(sicknesses);
                 let qObj = {};
-                if(type === 0) {
+                
+                if(type === 0 || type === 1) {
                     qObj = { type: "文法", q: `____ ${nM} have a ${sick.en}?`, ans: "Does", opts: ["Does", "Do", "Is", "Are"], rationale: `${nM} 是第三人稱單數，一般動詞疑問句用 Does 開頭。` };
-                } else if(type === 1) {
-                    qObj = { type: "文法", q: `____ you have a ${sick.en}?`, ans: "Do", opts: ["Do", "Does", "Are", "Am"], rationale: `主詞 you 的疑問句要用助動詞 Do。` };
                 } else if(type === 2) {
-                    qObj = { type: "文法", q: `${nF} ____ a ${sick.en}.`, ans: "has", opts: ["has", "have", "having", "does"], rationale: `${nF} 是單數，動詞「有」要用 has。` };
-                } else if(type === 3) {
-                    qObj = { type: "文法", q: `I ____ a ${sick.en}.`, ans: "have", opts: ["have", "has", "am", "do"], rationale: `主詞 I 搭配原形動詞 have。` };
-                } else if(type === 4) {
                     qObj = { type: "單字", q: `「${sick.ch}」的英文是？`, ans: sick.en, opts: [sick.en, ...getDistractors(sicknesses, sick.en, 3)], rationale: `${sick.en} 是${sick.ch}。` };
-                } else {
+                } else if(type === 3) {
                     qObj = { type: "中翻英 (填空)", q: `請拼出「${sick.ch}」的英文：`, ans: sick.en, opts: [], rationale: `${sick.ch}的英文是 ${sick.en}。` };
+                } else if(type === 4 || type === 5) {
+                    qObj = { type: "文法", q: `${nF} ____ a ${sick.en}.`, ans: "has", opts: ["has", "have", "having", "does"], rationale: `${nF} 是單數，動詞「有」要用 has。` };
+                } else if(type === 6) {
+                    qObj = { type: "聽力", q: `🔊 聽音辨字：請聆聽系統發音，選出正確的單字。<br><button class='speak-btn' onclick='speakWord("${sick.en}", event)'>▶ 播放語音</button>`, ans: sick.en, opts: [sick.en, ...getDistractors(sicknesses, sick.en, 3)], rationale: `語音念的是 ${sick.en}。` };
+                } else {
+                    let p = getRandom(phonicsG5U2);
+                    qObj = { type: "發音", q: p.q, ans: p.ans, opts: p.opts, rationale: p.rat };
                 }
                 
                 let qStr = qObj.q + qObj.ans;
