@@ -1,0 +1,12 @@
+[
+  { "q": "What's ____?", "opts": ["wrong", "matter", "bad", "problem"], "ans": "wrong" },
+  { "q": "My head ____.", "opts": ["hurts", "hurt", "hurting", "hunted"], "ans": "hurts" },
+  { "q": "My nose ____.", "opts": ["hurts", "hurt", "hurting", "hunted"], "ans": "hurts" },
+  { "q": "My eyes ____.", "opts": ["hurt", "hurts", "hurting", "hunted"], "ans": "hurt" },
+  { "q": "My ears ____.", "opts": ["hurt", "hurts", "hurting", "hunted"], "ans": "hurt" },
+  { "q": "His arms ____.", "opts": ["hurt", "hurts", "hurting", "hunted"], "ans": "hurt" },
+  { "q": "Her leg ____.", "opts": ["hurts", "hurt", "hurting", "hunted"], "ans": "hurts" },
+  { "q": "My feet ____.", "opts": ["hurt", "hurts", "hurting", "hunted"], "ans": "hurt" },
+  { "q": "His teeth ____.", "opts": ["hurt", "hurts", "hurting", "hunted"], "ans": "hurt" },
+  { "q": "Tom's eyes ____.", "opts": ["hurt", "hurts", "hurting", "hunted"], "ans": "hurt" }
+]

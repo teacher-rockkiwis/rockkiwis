@@ -140,13 +140,6 @@
         });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
-        const themes = {
-            body: ["eye", "eyes", "ear", "ears", "head", "heads", "nose", "noses", "mouth", "mouths", "arm", "arms", "hand", "hands", "shoulder", "shoulders", "foot", "feet", "leg", "legs", "hurt"],
-            home: ["bathroom", "bedroom", "kitchen", "diningroom", "livingroom", "balcony", "basement", "garage", "tv", "light", "tap", "fan"],
-            numbers: ["bathroom", "bedroom", "kitchen", "diningroom", "livingroom", "balcony", "basement", "garage", "tv", "light", "tap", "fan", "sixty", "seventy", "eighty", "ninety", "onehundred"],
-            actions: ["cooking", "eating", "reading", "sleeping", "writing", "running", "listeningtomusic", "painting", "studying", "watchingtv", "doing"],
-            sickness: ["cold", "fever", "runnynose", "sorethroat", "headache", "toothache", "stomachache", "backache", "cough", "diarrhea", "have", "has"]
-        };
 
         const badWords = [
             "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
@@ -199,21 +192,27 @@
             else if (type === 'celebration') { [523, 659, 783, 1046].forEach((f, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(f, audioCtx.currentTime + i*0.1); g.gain.setValueAtTime(0.1, audioCtx.currentTime + i*0.1); o.start(audioCtx.currentTime + i*0.1); o.stop(audioCtx.currentTime + i*0.1 + 0.4); }); }
         }
 
-        function startGame() {
+        async function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             const errorMsg = document.getElementById('error-msg');
             const themeSelect = document.getElementById('theme-select');
-            
+
             errorMsg.style.display = "none";
             if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入尋寶家姓名喔！"; errorMsg.style.display = "block"; return; }
             const cleanName = inputName.toLowerCase().replace(/\s+/g, '');
             if(badWords.some(bad => cleanName.includes(bad))) { errorMsg.innerText = "⚠️ 請使用有禮貌的名字喔！😇"; errorMsg.style.display = "block"; return; }
             if(themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
 
+            try {
+                const res = await fetch(`data/wordhunt-${themeSelect.value}.json`);
+                currentVocab = await res.json();
+            } catch(e) {
+                errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
+            }
+
             playerName = inputName; document.getElementById('display-name').innerText = playerName;
             bgm.volume = 0.4; bgm.play().catch(e => console.log("BGM Error")); secretBgm.onended = function() { bgm.play(); };
             document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('word-bank').style.visibility = 'visible';
-            currentVocab = themes[themeSelect.value];
             initBoard(); seconds = 0; interval = setInterval(countUp, 1000);
         }
 

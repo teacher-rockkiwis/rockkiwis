@@ -1,0 +1,10 @@
+[
+  { "en": "bedroom", "ch": "臥室" },
+  { "en": "living room", "ch": "客廳" },
+  { "en": "dining room", "ch": "飯廳" },
+  { "en": "kitchen", "ch": "廚房" },
+  { "en": "bathroom", "ch": "浴室" },
+  { "en": "balcony", "ch": "陽台" },
+  { "en": "garage", "ch": "車庫" },
+  { "en": "basement", "ch": "地下室" }
+]

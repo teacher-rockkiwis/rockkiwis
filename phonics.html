@@ -186,12 +186,7 @@
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         // ✨ 題庫設定 ✨
-        const phonicsBanks = {
-            "g4-th": ["three", "this", "that", "they", "thank", "mother", "brother", "father", "there", "math", "bath", "thin", "thick"],
-            "g4-ng-nk": ["sing", "sink", "pink", "bank", "ring", "drink", "think", "wink", "wing", "song", "long", "strong", "blank"],
-            "g5-wh-ph": ["white", "phone", "photo", "pharmacy", "whale", "when", "where", "elephant", "dolphin", "which", "who", "why"],
-            "g5-th-review": ["three", "this", "that", "they", "thank", "mother", "brother", "father", "there", "math", "bath", "thin", "thick", "weather", "feather", "teeth", "tooth"]
-        };
+        let currentWordBank = [];
 
         let score = 0, combo = 0, multiplier = 1, timeLeft = 60;
         let isPlaying = false, isMuted = false, isFever = false;
@@ -288,24 +283,30 @@
             else if (playerLane === 2) train.style.left = "83.33%";
         }
 
-        function startGame() {
+        async function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             const errorMsg = document.getElementById('error-msg');
             const themeSelect = document.getElementById('theme-select');
-            
+
             errorMsg.style.display = "none";
-            
+
             if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入車長姓名！"; errorMsg.style.display = "block"; return; }
             if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
             if (themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
-            
-            // 觸發一次空的語音來解鎖 iOS 限制
+
+            try {
+                const res = await fetch(`data/phonics-${themeSelect.value}.json`);
+                currentWordBank = await res.json();
+            } catch(e) {
+                errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
+            }
+
             if ('speechSynthesis' in window) {
                 let u = new SpeechSynthesisUtterance("");
                 window.speechSynthesis.speak(u);
             }
 
-            playerName = inputName; 
+            playerName = inputName;
             currentTheme = themeSelect.value;
             
             document.getElementById('start-overlay').style.display = 'none';
@@ -335,7 +336,7 @@
         function spawnWave() {
             if (!isPlaying) return;
             
-            let bank = phonicsBanks[currentTheme];
+            let bank = currentWordBank;
             currentTarget = bank[Math.floor(Math.random() * bank.length)];
             speakWord(currentTarget);
             

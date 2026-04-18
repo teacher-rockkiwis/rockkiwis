@@ -1,0 +1,12 @@
+[
+  { "q": "What's ____?", "a": "wrong", "w": ["matter", "bad"] },
+  { "q": "My head ____.", "a": "hurts", "w": ["hurt", "hurting"] },
+  { "q": "My eyes ____.", "a": "hurt", "w": ["hurts", "hurting"] },
+  { "q": "His leg ____.", "a": "hurts", "w": ["hurt", "hurting"] },
+  { "q": "Her ears ____.", "a": "hurt", "w": ["hurts", "hurting"] },
+  { "q": "My tooth ____.", "a": "hurts", "w": ["hurt", "hurting"] },
+  { "q": "Your hands ____.", "a": "hurt", "w": ["hurts", "hurting"] },
+  { "q": "His shoulder ____.", "a": "hurts", "w": ["hurt", "hurting"] },
+  { "q": "Her feet ____.", "a": "hurt", "w": ["hurts", "hurting"] },
+  { "q": "My back ____.", "a": "hurts", "w": ["hurt", "hurting"] }
+]

@@ -1,0 +1,13 @@
+[
+  { "en": "cooking", "ch": "烹飪" },
+  { "en": "eating", "ch": "吃" },
+  { "en": "reading", "ch": "閱讀" },
+  { "en": "sleeping", "ch": "睡覺" },
+  { "en": "writing", "ch": "寫字" },
+  { "en": "running", "ch": "跑步" },
+  { "en": "listening to music", "ch": "聽音樂" },
+  { "en": "painting", "ch": "畫畫" },
+  { "en": "studying", "ch": "研讀" },
+  { "en": "watching TV", "ch": "看電視" },
+  { "en": "doing", "ch": "做" }
+]

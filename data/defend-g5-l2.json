@@ -1,0 +1,12 @@
+[
+  { "q": "____ you have a fever?", "a": "Do", "w": ["Does", "Are"] },
+  { "q": "Yes, I ____.", "a": "do", "w": ["does", "am"] },
+  { "q": "No, I ____.", "a": "don't", "w": ["doesn't", "not"] },
+  { "q": "I ____ a runny nose.", "a": "have", "w": ["has", "having"] },
+  { "q": "____ he have a headache?", "a": "Does", "w": ["Do", "Is"] },
+  { "q": "Yes, he ____.", "a": "does", "w": ["do", "is"] },
+  { "q": "No, she ____.", "a": "doesn't", "w": ["don't", "isn't"] },
+  { "q": "He ____ a sore throat.", "a": "has", "w": ["have", "having"] },
+  { "q": "She ____ a stomachache.", "a": "has", "w": ["have", "having"] },
+  { "q": "____ they have a cold?", "a": "Do", "w": ["Does", "Are"] }
+]

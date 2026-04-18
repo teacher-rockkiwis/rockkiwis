@@ -232,7 +232,8 @@
         let userIP = "Unknown";
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
-        const wordBanks = {
+        let currentWordBank = [];
+        const wordBanks_UNUSED = {
             "ninja-g4-th": [
                 { word: "thin", target: "th", distractors: ["f", "s", "v", "z"] },
                 { word: "this", target: "th", distractors: ["d", "z", "v", "f"] },
@@ -750,18 +751,23 @@
             }
         }
 
-        function startGame(requestFullscreen) {
+        async function startGame(requestFullscreen) {
             const inputName = document.getElementById('player-name').value.trim();
             const errorMsg = document.getElementById('error-msg');
             const themeSelect = document.getElementById('theme-select');
-            
+
             errorMsg.style.display = "none";
-            
+
             if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入忍者姓名喔！"; errorMsg.style.display = "block"; return; }
             if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
-            
-            // ✨ 防呆機制：沒選關卡會跳錯 ✨
             if(themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
+
+            try {
+                const res = await fetch(`data/${themeSelect.value}.json`);
+                currentWordBank = await res.json();
+            } catch(e) {
+                errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
+            }
             
             if (requestFullscreen) {
                 let elem = document.documentElement;
@@ -839,7 +845,7 @@
         function launchWave() {
             if (width <= 0 || height <= 0) return; 
             isSpawningPhase = true;
-            let bank = wordBanks[currentTheme];
+            let bank = currentWordBank;
             currentWordData = bank[Math.floor(Math.random() * bank.length)];
             
             speakWord(currentWordData.word, () => {

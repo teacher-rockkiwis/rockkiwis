@@ -227,12 +227,6 @@
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         // ✨ 題庫設定 ✨
-        const wordBanks = {
-            "code-g4-l1": [ "bedroom", "living room", "dining room", "kitchen", "bathroom", "balcony", "garage", "basement" ],
-            "code-g4-l2": [ "cooking", "eating", "reading", "sleeping", "writing", "running", "listening to music", "painting", "studying", "watching TV", "doing" ],
-            "code-g5-l1": [ "head", "eye", "ear", "nose", "mouth", "hand", "arm", "leg", "foot", "shoulder", "tooth" ],
-            "code-g5-l2": [ "cold", "fever", "runny nose", "sore throat", "headache", "toothache", "stomachache", "backache", "cough", "diarrhea", "have", "has" ]
-        };
 
         let score = 0;
         let isPlaying = false, isMuted = false;
@@ -346,37 +340,43 @@
             return code.trim();
         }
 
-        function startGame() {
+        async function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             const errorMsg = document.getElementById('error-msg');
             const themeSelect = document.getElementById('theme-select');
-            
+
             errorMsg.style.display = "none";
-            
+
             if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入特務姓名！"; errorMsg.style.display = "block"; return; }
             if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
             if (themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
-            
-            playerName = inputName; 
+
+            playerName = inputName;
             currentTheme = themeSelect.value;
             document.getElementById('display-name').innerText = playerName;
-            
+
+            let bank;
+            try {
+                const res = await fetch(`data/${currentTheme}.json`);
+                bank = await res.json();
+            } catch(e) {
+                errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
+            }
+
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('header').style.visibility = 'visible';
             document.getElementById('game-area').style.visibility = 'visible';
-            
+
             score = 0; seconds = 90;
             document.getElementById('score-val').innerText = score;
             document.getElementById('timer-val').innerText = seconds;
 
             bgm.play().catch(e => console.log(e));
             secretBgm.onended = function() { bgm.play(); };
-            
-            // 隨機生成新密碼表
+
             generateMapping();
-            
-            // 複製題庫並打亂
-            gameWords = [...wordBanks[currentTheme]].sort(() => Math.random() - 0.5);
+
+            gameWords = [...bank].sort(() => Math.random() - 0.5);
             currentWordIndex = 0;
             
             isPlaying = true;

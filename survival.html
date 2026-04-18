@@ -210,7 +210,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const questionBanks = {
+        const questionBanks_UNUSED = {
             "g4-l1": [
                 { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
                 { q: "Where ____ he?", opts: ["is", "are", "am", "does"], ans: "is" },
@@ -299,13 +299,20 @@
         // ==========================================
         // 👑 老師端邏輯 (Host)
         // ==========================================
-        function createRoom() {
+        async function createRoom() {
             role = 'host';
             let currentTheme = document.getElementById('host-theme').value;
             maxRounds = parseInt(document.getElementById('host-rounds').value);
-            
+
+            try {
+                const res = await fetch(`data/survival-${currentTheme}.json`);
+                const bank = await res.json();
+                questions = [...bank].sort(() => Math.random() - 0.5);
+            } catch(e) {
+                alert("⚠️ 題庫載入失敗，請重新整理！"); return;
+            }
+
             roomId = Math.floor(1000 + Math.random() * 9000).toString();
-            questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
 
             roomRef = db.ref('survival_rooms/' + roomId);
             roomRef.set({
@@ -386,9 +393,10 @@
             });
 
             if (questions.length === 0) {
-                // 如果題目用完，重新打亂
                 let currentTheme = document.getElementById('host-theme').value;
-                questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
+                fetch(`data/survival-${currentTheme}.json`).then(r => r.json()).then(bank => {
+                    questions = [...bank].sort(() => Math.random() - 0.5);
+                });
             }
             
             let q = questions.pop();

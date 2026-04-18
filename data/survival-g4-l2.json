@@ -1,0 +1,12 @@
+[
+  { "q": "What ____ you doing?", "opts": ["are", "is", "am", "do"], "ans": "are" },
+  { "q": "What ____ he doing?", "opts": ["is", "are", "am", "does"], "ans": "is" },
+  { "q": "What is he ____?", "opts": ["doing", "do", "does", "did"], "ans": "doing" },
+  { "q": "I am ____.", "opts": ["running", "run", "runs", "ran"], "ans": "running" },
+  { "q": "She is ____ TV.", "opts": ["watching", "watch", "watches", "watched"], "ans": "watching" },
+  { "q": "They are ____.", "opts": ["eating", "eat", "eats", "ate"], "ans": "eating" },
+  { "q": "Where ____ you going?", "opts": ["are", "is", "am", "do"], "ans": "are" },
+  { "q": "Where is she ____?", "opts": ["going", "go", "goes", "went"], "ans": "going" },
+  { "q": "I am going ____ the park.", "opts": ["to", "in", "on", "at"], "ans": "to" },
+  { "q": "We ____ going to the shop.", "opts": ["are", "is", "am", "be"], "ans": "are" }
+]

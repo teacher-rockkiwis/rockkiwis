@@ -1,0 +1,12 @@
+[
+  { "q": "Where ____ you?", "a": "are", "w": ["is", "am"] },
+  { "q": "Where ____ he?", "a": "is", "w": ["are", "am"] },
+  { "q": "I ____ in the bedroom.", "a": "am", "w": ["is", "are"] },
+  { "q": "They ____ in the kitchen.", "a": "are", "w": ["is", "am"] },
+  { "q": "She ____ in the dining room.", "a": "is", "w": ["are", "am"] },
+  { "q": "Where ____ they?", "a": "are", "w": ["is", "am"] },
+  { "q": "Where ____ she?", "a": "is", "w": ["are", "am"] },
+  { "q": "He ____ in the yard.", "a": "is", "w": ["are", "am"] },
+  { "q": "We ____ in the living room.", "a": "are", "w": ["is", "am"] },
+  { "q": "The dog ____ in the house.", "a": "is", "w": ["are", "am"] }
+]

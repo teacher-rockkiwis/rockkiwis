@@ -204,12 +204,7 @@
         ];
 
         // ✨ 新增了 Unit 2 單字題庫 ✨
-        const wordBanks = {
-            "predict-g4-unit1": ["bedroom", "living room", "dining room", "kitchen", "bathroom", "balcony", "garage", "basement"],
-            "predict-g4-unit2": ["cooking", "eating", "reading", "sleeping", "writing", "running", "listening to music", "painting", "studying", "watching TV", "doing"],
-            "predict-g5-unit1": ["head", "eye", "ear", "nose", "mouth", "hand", "arm", "leg", "foot", "shoulder", "tooth"],
-            "predict-g5-unit2": ["cold", "fever", "runny nose", "sore throat", "headache", "toothache", "stomachache", "backache", "cough", "diarrhea", "have", "has"]
-        };
+        let currentWordBank = [];
         const QWERTY = [ ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["Z", "X", "C", "V", "B", "N", "M"] ];
 
         let totalScore = 0, currentRound = 1, maxRounds = 4;
@@ -275,21 +270,26 @@
             bottomRow.appendChild(spaceBtn); bottomRow.appendChild(delBtn); kb.appendChild(bottomRow);
         }
 
-        function startGame() {
+        async function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             const errorMsg = document.getElementById('error-msg');
             const themeSelect = document.getElementById('theme-select');
-            
+
             errorMsg.style.display = "none";
-            
+
             if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入預言家姓名喔！"; errorMsg.style.display = "block"; return; }
             if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
-            
-            // ✨ 防呆機制：沒選關卡會跳錯 ✨
             if(themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
-            
+
+            try {
+                const res = await fetch(`data/${themeSelect.value}.json`);
+                currentWordBank = await res.json();
+            } catch(e) {
+                errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
+            }
+
             playerName = inputName; document.getElementById('display-name').innerText = playerName; currentTheme = themeSelect.value;
-            
+
             document.getElementById('start-overlay').style.display = 'none'; document.getElementById('header').style.visibility = 'visible'; document.getElementById('game-area').style.visibility = 'visible';
             totalScore = 0; currentRound = 1; document.getElementById('score-val').textContent = totalScore;
             bgmGuess.volume = 0.4; stopAllAudio(); bgmGuess.play().catch(e => console.log(e)); initRound();
@@ -297,7 +297,7 @@
 
         function initRound() {
             document.getElementById('round-indicator').innerText = `Round ${currentRound} / ${maxRounds}`;
-            let bank = [...wordBanks[currentTheme]]; roundWords = bank.sort(() => Math.random() - 0.5).slice(0, 4); secretOrder = [...roundWords].sort(() => Math.random() - 0.5);
+            let bank = [...currentWordBank]; roundWords = bank.sort(() => Math.random() - 0.5).slice(0, 4); secretOrder = [...roundWords].sort(() => Math.random() - 0.5);
             document.getElementById('word-list').innerText = roundWords.join(', ');
             userInputs = ["", "", "", ""]; isRevealing = false;
             document.getElementById('submit-btn').innerText = "🔒 鎖定開獎"; document.getElementById('submit-btn').disabled = true; document.getElementById('submit-btn').onclick = revealAnswers;

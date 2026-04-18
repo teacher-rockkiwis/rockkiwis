@@ -1,0 +1,12 @@
+[
+  { "q": "Where ____ you?", "opts": ["are", "is", "am", "do"], "ans": "are" },
+  { "q": "Where ____ he?", "opts": ["is", "are", "am", "does"], "ans": "is" },
+  { "q": "Where ____ she?", "opts": ["is", "are", "am", "does"], "ans": "is" },
+  { "q": "Where ____ they?", "opts": ["are", "is", "am", "do"], "ans": "are" },
+  { "q": "Where ____ I?", "opts": ["am", "is", "are", "does"], "ans": "am" },
+  { "q": "I ____ in the bedroom.", "opts": ["am", "is", "are", "be"], "ans": "am" },
+  { "q": "You ____ in the kitchen.", "opts": ["are", "is", "am", "be"], "ans": "are" },
+  { "q": "He ____ in the yard.", "opts": ["is", "are", "am", "be"], "ans": "is" },
+  { "q": "She ____ in the dining room.", "opts": ["is", "are", "am", "does"], "ans": "is" },
+  { "q": "They ____ in the kitchen.", "opts": ["are", "is", "am", "do"], "ans": "are" }
+]

@@ -1,0 +1,14 @@
+[
+  { "en": "cold", "ch": "感冒" },
+  { "en": "fever", "ch": "發燒" },
+  { "en": "runny nose", "ch": "流鼻水" },
+  { "en": "sore throat", "ch": "喉嚨痛" },
+  { "en": "headache", "ch": "頭痛" },
+  { "en": "toothache", "ch": "牙痛" },
+  { "en": "stomachache", "ch": "胃痛" },
+  { "en": "backache", "ch": "背痛" },
+  { "en": "cough", "ch": "咳嗽" },
+  { "en": "diarrhea", "ch": "腹瀉" },
+  { "en": "have", "ch": "有(複數)" },
+  { "en": "has", "ch": "有(單數)" }
+]

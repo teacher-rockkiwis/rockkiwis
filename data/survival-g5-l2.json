@@ -1,0 +1,12 @@
+[
+  { "q": "____ you have a fever?", "opts": ["Do", "Does", "Are", "Is"], "ans": "Do" },
+  { "q": "____ he have a stomachache?", "opts": ["Does", "Do", "Is", "Are"], "ans": "Does" },
+  { "q": "____ Tom have a cough?", "opts": ["Does", "Do", "Is", "Are"], "ans": "Does" },
+  { "q": "Yes, I ____.", "opts": ["do", "does", "am", "are"], "ans": "do" },
+  { "q": "Yes, he ____.", "opts": ["does", "do", "is", "has"], "ans": "does" },
+  { "q": "No, I ____.", "opts": ["don't", "doesn't", "not", "no"], "ans": "don't" },
+  { "q": "No, she ____.", "opts": ["doesn't", "don't", "isn't", "hasn't"], "ans": "doesn't" },
+  { "q": "I ____ a runny nose.", "opts": ["have", "has", "having", "had"], "ans": "have" },
+  { "q": "He ____ a sore throat.", "opts": ["has", "have", "having", "had"], "ans": "has" },
+  { "q": "Tom ____ a toothache.", "opts": ["has", "have", "having", "had"], "ans": "has" }
+]

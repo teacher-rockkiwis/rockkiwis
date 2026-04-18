@@ -1,0 +1,12 @@
+[
+  { "q": "What ____ you doing?", "a": "are", "w": ["is", "am"] },
+  { "q": "What is he ____?", "a": "doing", "w": ["do", "does"] },
+  { "q": "I am ____.", "a": "running", "w": ["run", "runs"] },
+  { "q": "She is ____ a book.", "a": "reading", "w": ["read", "reads"] },
+  { "q": "They are ____ TV.", "a": "watching", "w": ["watch", "watches"] },
+  { "q": "Where ____ you going?", "a": "are", "w": ["is", "am"] },
+  { "q": "Where is she ____?", "a": "going", "w": ["go", "goes"] },
+  { "q": "I am going ____ the park.", "a": "to", "w": ["in", "on"] },
+  { "q": "We ____ going to the shop.", "a": "are", "w": ["is", "am"] },
+  { "q": "He is going to ____.", "a": "sleep", "w": ["sleeping", "sleeps"] }
+]

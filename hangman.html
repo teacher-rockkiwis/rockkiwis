@@ -256,24 +256,6 @@
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         // ✨ 題庫設定 (已加入四年級 L2 動作單字) ✨
-        const wordBanks = {
-            "hangman-g4-l2": [
-                { en: "cooking", ch: "" }, { en: "eating", ch: "" },
-                { en: "reading", ch: "" }, { en: "sleeping", ch: "" },
-                { en: "writing", ch: "" }, { en: "running", ch: "" },
-                { en: "listening to music", ch: "" }, { en: "painting", ch: "" },
-                { en: "studying", ch: "" }, { en: "watching TV", ch: "" },
-                { en: "doing", ch: "" }
-            ],
-            "hangman-g5-l2": [
-                { en: "cold", ch: "" }, { en: "fever", ch: "" },
-                { en: "runny nose", ch: "" }, { en: "sore throat", ch: "" },
-                { en: "headache", ch: "" }, { en: "toothache", ch: "" },
-                { en: "stomachache", ch: "" }, { en: "backache", ch: "" },
-                { en: "cough", ch: "" }, { en: "diarrhea", ch: "" },
-                { en: "have", ch: "" }, { en: "has", ch: "" }
-            ]
-        };
 
         const QWERTY = [ ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["Z", "X", "C", "V", "B", "N", "M"] ];
 
@@ -430,32 +412,38 @@
             ctx.stroke();
         }
 
-        function startGame() {
+        async function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             const errorMsg = document.getElementById('error-msg');
             const themeSelect = document.getElementById('theme-select');
-            
+
             errorMsg.style.display = "none";
-            
+
             if(inputName === "") { errorMsg.innerText = "⚠️ 請輸入玩家姓名！"; errorMsg.style.display = "block"; return; }
             if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
             if (themeSelect.value === "") { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
-            
-            playerName = inputName; 
+
+            playerName = inputName;
             currentTheme = themeSelect.value;
-            
+
+            let fullBank;
+            try {
+                const res = await fetch(`data/${currentTheme}.json`);
+                fullBank = await res.json();
+            } catch(e) {
+                errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
+            }
+
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('header').style.visibility = 'visible';
             document.getElementById('game-area').style.visibility = 'visible';
-            
+
             score = 0;
             currentWordIndex = 0;
             updateHUD();
 
             bgm.play().catch(e => console.log(e));
-            
-            // Pick 5 random words for the game
-            let fullBank = [...wordBanks[currentTheme]];
+
             gameWords = fullBank.sort(() => Math.random() - 0.5).slice(0, 5);
             
             isPlaying = true;

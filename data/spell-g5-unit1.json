@@ -1,0 +1,13 @@
+[
+  { "en": "head", "ch": "頭" },
+  { "en": "eye", "ch": "眼睛" },
+  { "en": "ear", "ch": "耳朵" },
+  { "en": "nose", "ch": "鼻子" },
+  { "en": "mouth", "ch": "嘴巴" },
+  { "en": "hand", "ch": "手" },
+  { "en": "arm", "ch": "手臂" },
+  { "en": "leg", "ch": "腿" },
+  { "en": "foot", "ch": "腳" },
+  { "en": "shoulder", "ch": "肩膀" },
+  { "en": "tooth", "ch": "牙齒" }
+]

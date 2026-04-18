@@ -170,56 +170,6 @@
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         // ✨ 文法題庫 ✨
-        const grammarBanks = {
-            "runner-g4-l1": [
-                { q: "Where ____ you?", a: "are", w: ["is", "am"] },
-                { q: "Where ____ he?", a: "is", w: ["are", "am"] },
-                { q: "I ____ in the bedroom.", a: "am", w: ["is", "are"] },
-                { q: "They ____ in the kitchen.", a: "are", w: ["is", "am"] },
-                { q: "She ____ in the dining room.", a: "is", w: ["are", "am"] },
-                { q: "Where ____ they?", a: "are", w: ["is", "am"] },
-                { q: "Where ____ she?", a: "is", w: ["are", "am"] },
-                { q: "He ____ in the yard.", a: "is", w: ["are", "am"] },
-                { q: "We ____ in the living room.", a: "are", w: ["is", "am"] },
-                { q: "The dog ____ in the house.", a: "is", w: ["are", "am"] }
-            ],
-            "runner-g4-l2": [
-                { q: "What ____ you doing?", a: "are", w: ["is", "am"] },
-                { q: "What is he ____?", a: "doing", w: ["do", "does"] },
-                { q: "I am ____.", a: "running", w: ["run", "runs"] },
-                { q: "She is ____ a book.", a: "reading", w: ["read", "reads"] },
-                { q: "They are ____ TV.", a: "watching", w: ["watch", "watches"] },
-                { q: "Where ____ you going?", a: "are", w: ["is", "am"] },
-                { q: "Where is she ____?", a: "going", w: ["go", "goes"] },
-                { q: "I am going ____ the park.", a: "to", w: ["in", "on"] },
-                { q: "We ____ going to the shop.", a: "are", w: ["is", "am"] },
-                { q: "He is going to ____.", a: "sleep", w: ["sleeping", "sleeps"] }
-            ],
-            "runner-g5-l1": [
-                { q: "What's ____?", a: "wrong", w: ["matter", "bad"] },
-                { q: "My head ____.", a: "hurts", w: ["hurt", "hurting"] },
-                { q: "My eyes ____.", a: "hurt", w: ["hurts", "hurting"] },
-                { q: "His leg ____.", a: "hurts", w: ["hurt", "hurting"] },
-                { q: "Her ears ____.", "a": "hurt", w: ["hurts", "hurting"] },
-                { q: "My tooth ____.", a: "hurts", w: ["hurt", "hurting"] },
-                { q: "Your hands ____.", a: "hurt", w: ["hurts", "hurting"] },
-                { q: "His shoulder ____.", a: "hurts", w: ["hurt", "hurting"] },
-                { q: "Her feet ____.", a: "hurt", w: ["hurts", "hurting"] },
-                { q: "My back ____.", a: "hurts", w: ["hurt", "hurting"] }
-            ],
-            "runner-g5-l2": [
-                { q: "____ you have a fever?", a: "Do", w: ["Does", "Are"] },
-                { q: "Yes, I ____.", a: "do", w: ["does", "am"] },
-                { q: "No, I ____.", "a": "don't", w: ["doesn't", "not"] },
-                { q: "I ____ a runny nose.", a: "have", w: ["has", "having"] },
-                { q: "____ he have a headache?", a: "Does", w: ["Do", "Is"] },
-                { q: "Yes, he ____.", a: "does", w: ["do", "is"] },
-                { q: "No, she ____.", a: "doesn't", w: ["don't", "isn't"] },
-                { q: "He ____ a sore throat.", a: "has", w: ["have", "having"] },
-                { q: "She ____ a stomachache.", a: "has", w: ["have", "having"] },
-                { q: "____ they have a cold?", a: "Do", w: ["Does", "Are"] }
-            ]
-        };
 
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
@@ -498,14 +448,20 @@
             document.getElementById('combo-hud').classList.add('combo-active');
         }
 
-        function startGame() {
+        async function startGame() {
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("請輸入跑者姓名！"); return; }
             if(badWords.some(bad => inputName.toLowerCase().replace(/\s+/g, '').includes(bad))) { alert("請保持禮貌喔！😇"); return; }
-            
-            playerName = inputName; 
+
+            playerName = inputName;
             currentTheme = document.getElementById('theme-select').value;
-            currentQuestions = grammarBanks[currentTheme];
+
+            try {
+                const res = await fetch(`data/${currentTheme}.json`);
+                currentQuestions = await res.json();
+            } catch(e) {
+                alert("⚠️ 題庫載入失敗，請重新整理！"); return;
+            }
             
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'flex';

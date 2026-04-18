@@ -1,0 +1,8 @@
+[
+  { "q": "What are you doing?", "ans": "I am cooking", "wrong1": "He is cooking", "wrong2": "She is cooking" },
+  { "q": "What is Tom doing?", "ans": "He is eating", "wrong1": "I am eating", "wrong2": "She is eating" },
+  { "q": "What is Mary doing?", "ans": "She is reading", "wrong1": "I am reading", "wrong2": "He is reading" },
+  { "q": "What is your brother doing?", "ans": "He is sleeping", "wrong1": "I am sleeping", "wrong2": "She is sleeping" },
+  { "q": "What is your sister doing?", "ans": "She is writing", "wrong1": "I am writing", "wrong2": "He is writing" },
+  { "q": "What are you doing?", "ans": "I am running", "wrong1": "He is running", "wrong2": "She is running" }
+]
