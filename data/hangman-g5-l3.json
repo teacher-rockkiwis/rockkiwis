@@ -7,5 +7,12 @@
   {"en": "salad", "ch": "沙拉"},
   {"en": "soup", "ch": "湯"},
   {"en": "noodles", "ch": "麵條"},
-  {"en": "please", "ch": "請"}
+  {"en": "please", "ch": "請"},
+  {"en": "cereal", "ch": "穀物麥片"},
+  {"en": "dumplings", "ch": "水餃；餃子"},
+  {"en": "fries", "ch": "薯條"},
+  {"en": "seafood", "ch": "海鮮"},
+  {"en": "spaghetti", "ch": "義大利麵"},
+  {"en": "steak", "ch": "牛排"},
+  {"en": "sushi", "ch": "壽司"}
 ]
