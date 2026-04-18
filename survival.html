@@ -210,56 +210,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const questionBanks_UNUSED = {
-            "g4-l1": [
-                { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Where ____ he?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "Where ____ she?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "Where ____ they?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Where ____ I?", opts: ["am", "is", "are", "does"], ans: "am" },
-                { q: "I ____ in the bedroom.", opts: ["am", "is", "are", "be"], ans: "am" },
-                { q: "You ____ in the kitchen.", opts: ["are", "is", "am", "be"], ans: "are" },
-                { q: "He ____ in the yard.", opts: ["is", "are", "am", "be"], ans: "is" },
-                { q: "She ____ in the dining room.", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "They ____ in the kitchen.", opts: ["are", "is", "am", "do"], ans: "are" }
-            ],
-            "g4-l2": [
-                { q: "What ____ you doing?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "What ____ he doing?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "What is he ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
-                { q: "I am ____.", opts: ["running", "run", "runs", "ran"], ans: "running" },
-                { q: "She is ____ TV.", opts: ["watching", "watch", "watches", "watched"], ans: "watching" },
-                { q: "They are ____.", opts: ["eating", "eat", "eats", "ate"], ans: "eating" },
-                { q: "Where ____ you going?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Where is she ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
-                { q: "I am going ____ the park.", opts: ["to", "in", "on", "at"], ans: "to" },
-                { q: "We ____ going to the shop.", opts: ["are", "is", "am", "be"], ans: "are" }
-            ],
-            "g5-l1": [
-                { q: "What's ____?", opts: ["wrong", "matter", "bad", "problem"], ans: "wrong" },
-                { q: "My head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My nose ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "My ears ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "His arms ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "Her leg ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "His teeth ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "Tom's eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" }
-            ],
-            "g5-l2": [
-                { q: "____ you have a fever?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
-                { q: "____ he have a stomachache?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
-                { q: "____ Tom have a cough?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
-                { q: "Yes, I ____.", opts: ["do", "does", "am", "are"], ans: "do" },
-                { q: "Yes, he ____.", opts: ["does", "do", "is", "has"], ans: "does" },
-                { q: "No, I ____.", opts: ["don't", "doesn't", "not", "no"], ans: "don't" },
-                { q: "No, she ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
-                { q: "I ____ a runny nose.", opts: ["have", "has", "having", "had"], ans: "have" },
-                { q: "He ____ a sore throat.", opts: ["has", "have", "having", "had"], ans: "has" },
-                { q: "Tom ____ a toothache.", opts: ["has", "have", "having", "had"], ans: "has" }
-            ]
-        };
 
         let role = ''; 
         let roomId = '';

@@ -99,9 +99,7 @@
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px;
         }
-        select.theme-select option, select.theme-select optgroup { color: #2c3e50; background-color: #ffffff; }
 
-        #error-msg { display: none; color: #ffcccc; font-weight: 900; margin-bottom: 15px; background: rgba(255, 71, 87, 0.9); padding: 10px 20px; border-radius: 20px; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
         .front-leaderboard { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #2d3436; text-align: left; }
         .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
@@ -153,14 +151,14 @@
         <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
             <option value="" disabled selected hidden>▼ 請先選擇挑戰關卡...</option>
             <optgroup label="四年級 (Grade 4)">
-                <option value="code-g4-l1">🏠 L1: Home Space</option>
-                <option value="code-g4-l2">🏃 L2: Actions</option>
-                <option value="code-g4-l3">🍔 L3: Food & Drinks</option>
+                <option value="code-g4-unit1">🏠 G4 Unit 1 - Home Space</option>
+                <option value="code-g4-unit2">🏃 G4 Unit 2 - Actions</option>
+                <option value="code-g4-unit3">🍔 G4 Unit 3 - Food & Drinks</option>
             </optgroup>
             <optgroup label="五年級 (Grade 5)">
-                <option value="code-g5-l1">🦴 L1: Body Parts</option>
-                <option value="code-g5-l2">🤒 L2: Sickness</option>
-                <option value="code-g5-l3">🍽️ L3: Meals & Food</option>
+                <option value="code-g5-unit1">🦴 G5 Unit 1 - Body Parts</option>
+                <option value="code-g5-unit2">🤒 G5 Unit 2 - Sickness</option>
+                <option value="code-g5-unit3">🍽️ G5 Unit 3 - Meals & Food</option>
             </optgroup>
         </select>
 
