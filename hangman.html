@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Dr. ROCK - Hangman</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
     <style>
         :root {
             --primary: #9b59b6; --secondary: #8e44ad; --success: #2ecc71; --error: #e74c3c;
@@ -149,6 +149,7 @@
             .key { max-width: 32px; font-size: 18px; padding: 10px 0; }
         }
     </style>
+    <script src="common.js"></script>
 </head>
 <body>
 
@@ -232,28 +233,8 @@
         document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
-        const badWords = [
-            // 英文髒話與不雅詞彙 (已避開會誤擋 Chloe, Cassie 等英文名字的短詞)
-            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            
-            // 國罵、三字經、諧音
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-            
-            // 智力、精神疾病、身心障礙歧視 (國中小最愛罵)
-            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
-            
-            // 咒罵死亡、家人、孤兒 (惡意攻擊)
-            "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
-            
-            // 性別特質、性傾向歧視、蕩婦羞辱
-            "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
-            
-            // 排泄物、器官、一般羞辱
-            "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
-        ];
 
         let userIP = "Unknown";
-        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         // ✨ 題庫設定 (已加入四年級 L2 動作單字) ✨
 
@@ -313,17 +294,6 @@
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
-        function toggleSound(e) { 
-            if (e) e.stopPropagation(); isMuted = !isMuted; 
-            const btn = document.getElementById('sound-btn'); 
-            if (isMuted) { 
-                btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; 
-                bgm.muted = true; sfxDamage.muted = true; sfxVictory.muted = true; secretBgm.muted = true;
-            } else { 
-                btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; 
-                bgm.muted = false; sfxDamage.muted = false; sfxVictory.muted = false; secretBgm.muted = false;
-            } 
-        }
 
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list'); 

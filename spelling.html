@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Dr. ROCK - Spelling Hero</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
     <style>
         :root { --primary: #e84393; --success: #00cec9; --error: #d63031; --bg: #2d3436; --keyboard-bg: #dfe6e9; --key-bg: #ffffff; --text-dark: #2d3436; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -64,6 +64,7 @@
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
         @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay h1 { font-size: 40px !important; } .name-input { font-size: 20px; padding: 10px; } .start-btn { font-size: 24px; padding: 10px 40px; } #chinese-prompt { font-size: 32px; } .letter-box { width: 30px; height: 40px; font-size: 28px; border-width: 3px; } .letter-box.space { width: 10px; } .key { font-size: 20px; padding: 10px 0; max-width: 35px; } #keyboard { padding: 10px 5px; gap: 6px; } .key-row { gap: 4px; } }
     </style>
+    <script src="common.js"></script>
 </head>
 <body>
     <audio id="bgm" src="bgm/spelling.mp3" loop></audio>
@@ -141,10 +142,6 @@
         });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
-        const badWords = [
-            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭"
-        ];
 
 
         const QWERTY = [ ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], ["A", "S", "D", "F", "G", "H", "J", "K", "L"], ["Z", "X", "C", "V", "B", "N", "M"] ];
@@ -157,7 +154,6 @@
         let userIP = "Unknown"; 
 
         const bgm = document.getElementById('bgm'); const secretBgm = document.getElementById('secret-bgm');
-        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         window.onload = function() { 
             fetchFrontLeaderboard(); buildKeyboard();
@@ -167,11 +163,6 @@
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
-        function toggleSound(e) {
-            if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn');
-            if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; bgm.muted = true; secretBgm.muted = true; } 
-            else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; bgm.muted = false; secretBgm.muted = false; }
-        }
 
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list'), themeSelect = document.getElementById('theme-select');

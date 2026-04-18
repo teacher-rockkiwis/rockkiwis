@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Word Hunt - Global Leaderboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
     <style>
         :root { --primary: #6c5ce7; --success: #2ed573; --error: #ff4757; --wall-text: #2c3e50; --bank-bg: #f8f9fa; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -59,6 +59,7 @@
         
         @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 105px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay { padding-top: 10px; } #start-overlay h1 { font-size: 40px !important; margin-bottom: 5px; } #start-overlay p { font-size: 16px !important; margin-bottom: 10px !important; } .front-leaderboard { width: 95%; padding: 10px; margin-bottom: 10px; } .name-input { width: 85%; font-size: 20px; padding: 10px; margin-bottom: 10px; } select.theme-select { font-size: 16px !important; padding: 8px 15px !important; margin-bottom: 10px !important; } .start-btn { font-size: 28px; padding: 10px 40px; margin-bottom: 10px; } .bank-item { font-size: 14px; padding: 5px 8px; } #game-area { font-size: 22px !important; letter-spacing: 2px !important; padding: 10px !important; line-height: 1.15 !important; } .float-num { font-size: 70px !important; } #end-title { font-size: 36px !important; } .result-panel { width: 95%; padding: 15px; } .score-breakdown { font-size: 16px; padding: 10px; } .final-score-display { font-size: 28px; } .board-row { font-size: 14px; padding: 6px; } }
     </style>
+    <script src="common.js"></script>
 </head>
 
 <body onpointerdown="handleTap(event)">
@@ -141,10 +142,6 @@
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
 
-        const badWords = [
-            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭"
-        ];
 
         let currentVocab = [], score = 0, foundCount = 0, seconds = 0, interval;
         let playerName = "Player"; 
@@ -153,18 +150,12 @@
         
         const bgm = document.getElementById('bgm');
         const secretBgm = document.getElementById('secret-bgm');
-        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         window.onload = function() { 
             fetchFrontLeaderboard(); 
             fetch('https://api.ipify.org?format=json').then(response => response.json()).then(data => { userIP = data.ip; }).catch(err => console.log("無法獲取 IP"));
         };
 
-        function toggleSound(e) {
-            if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn');
-            if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; bgm.muted = true; secretBgm.muted = true; } 
-            else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; bgm.muted = false; secretBgm.muted = false; }
-        }
 
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list'), themeSelect = document.getElementById('theme-select');

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Dr. ROCK - Phonics Hyperdrive</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
     <style>
         :root {
             --primary: #00cec9; --secondary: #0984e3; --success: #00b894; --error: #d63031;
@@ -89,6 +89,7 @@
             .exit-btn { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); left: 5px; }
         }
     </style>
+    <script src="common.js"></script>
 </head>
 <body>
     <audio id="bgm" src="bgm/arcade.mp3" loop></audio>
@@ -177,13 +178,8 @@
         document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
-        const badWords = [
-            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭"
-        ];
 
         let userIP = "Unknown";
-        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         // ✨ 題庫設定 ✨
         let currentWordBank = [];
@@ -220,17 +216,6 @@
             });
         };
 
-        function toggleSound(e) { 
-            if (e) e.stopPropagation(); isMuted = !isMuted; 
-            const btn = document.getElementById('sound-btn'); 
-            if (isMuted) { 
-                btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; 
-                bgm.muted = true; sfxSuccess.muted = true; sfxError.muted = true;
-            } else { 
-                btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; 
-                bgm.muted = false; sfxSuccess.muted = false; sfxError.muted = false;
-            } 
-        }
 
         function fetchFrontLeaderboard() {
             const listDiv = document.getElementById('front-leaderboard-list'); 

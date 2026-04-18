@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Dr. ROCK - Word Predictor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
     <style>
         :root { --primary: #8e44ad; --secondary: #9b59b6; --success: #27ae60; --error: #c0392b; --bg: #2c3e50; --slot-bg: #ecf0f1; --keyboard-bg: #bdc3c7; --text-dark: #2c3e50; --gold: #f1c40f; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -83,6 +83,7 @@
         @keyframes flipIn { 0% { transform: rotateX(-90deg); opacity: 0; } 100% { transform: rotateX(0); opacity: 1; } }
         @media (max-width: 768px) { .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; } #header { padding: 0 100px 0 5px; height: 50px; gap: 5px; } .stat-pill { font-size: 13px !important; padding: 4px 6px; } .exit-btn { font-size: 13px; padding: 5px 8px; } #start-overlay h1 { font-size: 36px !important; } .slot { font-size: 18px; height: 55px; } .key { font-size: 18px; padding: 12px 0; max-width: 38px; } .key-wide { max-width: 60px; font-size: 14px; } }
     </style>
+    <script src="common.js"></script>
 </head>
 <body>
     <audio id="bgm-guess" src="bgm/guess.mp3" loop></audio>
@@ -194,14 +195,6 @@
         document.addEventListener('keydown', function(e) { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; } });
         setInterval(function() { try { (function() { return false; }['constructor']('debugger')()); } catch(err) {} console.clear(); }, 1000);
 
-        const badWords = [
-            "fuck", "shit", "bitch", "pussy", "whore", "idiot", "stupid", "wtf", "mdfk", "nmsl", "retard", "psycho", "loser", "trash", "autist", "gay", "lesbian", 
-            "幹", "靠北", "靠杯", "靠腰", "靠夭", "靠妖", "靠么", "機掰", "雞掰", "擊敗", "姬芭", "機八", "雞巴", "雞排", "操", "肏", "草泥馬", "操你", "媽的", "他媽", "幹你娘", "幹您娘", "趕羚羊", "機車", "ㄘㄠˋ", "ㄍㄢˋ", "ㄐㄅ", "e04", "林北", "恁爸", "老木", "老母", "哭爸", "哭夭",
-            "智障", "白痴", "白癡", "北七", "北漆", "腦殘", "腦弱", "低能", "智缺", "喜憨兒", "殘障", "神經病", "有病", "精神病", "自閉", "腦袋進水", "弱智", "啟智", "白目", "丁丁", "特教班", "資源班", "唐氏症", "神經", "智商",
-            "死", "孤兒", "沒爸", "沒媽", "沒爹", "沒娘", "沒家教", "全家", "沒人要", "找死", "去死", "短命", "夭壽", "挫冰", "祝你", "沒老母", "沒教養", "棄嬰", "孤兒院", "遺腹子", "沒生教",
-            "娘炮", "娘娘腔", "基佬", "死玻璃", "玻璃心", "變態", "人妖", "同性戀", "假妹", "破麻", "綠茶", "婊", "渣男", "渣女", "公車", "妓", "欠幹", "欠操", "男妓", "老玻璃", "發情", "噁男",
-            "垃圾", "沙小", "三小", "王八", "賤", "雜碎", "畜生", "狗娘", "狗屎", "屎", "尿", "糞", "大便", "吃大便", "甲賽", "假賽", "呷賽", "甲洨", "喝尿", "屌", "懶覺", "蘭嬌", "懶叫", "卵葩", "老二", "小雞雞", "陰莖", "鮑魚", "傻逼", "沙雕", "肥豬", "醜八怪", "🖕", "💩", "🐷", "🐶", "🐒"
-        ];
 
         // ✨ 新增了 Unit 2 單字題庫 ✨
         let currentWordBank = [];
@@ -214,7 +207,6 @@
         let userIP = "Unknown"; 
 
         const bgmGuess = document.getElementById('bgm-guess'); const sfxDrumroll = document.getElementById('sfx-drumroll'); const sfxBingo = document.getElementById('sfx-bingo'); const sfxFail = document.getElementById('sfx-fail'); const sfxVictory = document.getElementById('sfx-victory'); const sfxFighting = document.getElementById('sfx-fighting'); const secretBgm = document.getElementById('secret-bgm');
-        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
 
         window.onload = function() { 
             fetchFrontLeaderboard(); buildKeyboard();
@@ -250,7 +242,6 @@
             }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗 😢</div>");
         }
 
-        function toggleSound(e) { if (e) e.stopPropagation(); isMuted = !isMuted; const btn = document.getElementById('sound-btn'); const audios = [bgmGuess, sfxDrumroll, sfxBingo, sfxFail, sfxVictory, sfxFighting, secretBgm]; if (isMuted) { btn.innerHTML = "🔇 音效：關"; btn.style.borderColor = "var(--error)"; audios.forEach(a => a.muted = true); } else { btn.innerHTML = "🔊 音效：開"; btn.style.borderColor = "var(--success)"; audios.forEach(a => a.muted = false); } }
         function stopAllAudio() { bgmGuess.pause(); sfxDrumroll.pause(); sfxDrumroll.currentTime = 0; sfxBingo.pause(); sfxBingo.currentTime = 0; sfxFail.pause(); sfxFail.currentTime = 0; sfxVictory.pause(); sfxVictory.currentTime = 0; sfxFighting.pause(); sfxFighting.currentTime = 0; secretBgm.pause(); }
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();

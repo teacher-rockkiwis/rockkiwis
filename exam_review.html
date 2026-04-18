@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ROCK - 段考複習測驗網</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #3498db; --secondary: #2980b9; --success: #2ecc71; --error: #e74c3c;
@@ -186,6 +187,7 @@
             .options-grid { grid-template-columns: 1fr; } 
         }
     </style>
+    <script src="common.js"></script>
 </head>
 <body>
 
@@ -305,7 +307,6 @@
     </div>
 
     <script>
-        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyH7U0pDNYhRZanfP0k6NiKKtwZGnKpcCMdJyx8l6xFrzGhf6yma3Y9TQv6X-0r-HAxwg/exec";
         let userIP = "Unknown";
 
         // ✨ 全局文字轉語音 (Text-to-Speech) 播放功能 ✨
