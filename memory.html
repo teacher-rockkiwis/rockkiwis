@@ -91,6 +91,7 @@
 
     <!-- Start Overlay -->
     <div id="start-overlay">
+        <a href="index.html" style="position:absolute;top:15px;left:15px;background:rgba(255,255,255,0.15);color:white;border:2px solid rgba(255,255,255,0.3);padding:7px 14px;border-radius:10px;font-weight:900;font-size:14px;text-decoration:none;font-family:'Quicksand',sans-serif;">← 回首頁</a>
         <h1>🃏 Memory Match</h1>
         <p>翻牌配對！找出英文和中文的對應單字！</p>
 
@@ -297,7 +298,7 @@
                 firstCard.classList.add('matched');
                 second.classList.add('matched');
                 document.getElementById('match-val').textContent = `${matchedCount} / ${Math.min(totalPairs, fullWordBank.length)}`;
-                if (!isMuted) { const sfx = document.getElementById('sfxMatch'); sfx.currentTime = 0; sfx.play().catch(() => {}); }
+                if (!isMuted) { const sfx = document.getElementById('sfxMatch'); sfx.currentTime = 0; sfx.volume = 0.25; sfx.play().catch(() => {}); }
                 showBurst(second.getBoundingClientRect().left + 30, second.getBoundingClientRect().top, '✓', '#00b894');
                 firstCard = null; isLocked = false;
                 if (matchedCount === Math.min(totalPairs, fullWordBank.length)) setTimeout(endGame, 600);
@@ -361,7 +362,11 @@
             document.getElementById('bgm').currentTime = 0;
         }
 
-        function exitGame() { replayGame(); }
+        function exitGame() {
+            clearInterval(timerInterval);
+            document.getElementById('bgm').pause();
+            window.location.href = 'index.html';
+        }
     </script>
 </body>
 </html>
