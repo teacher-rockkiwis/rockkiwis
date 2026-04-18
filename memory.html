@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr. ROCK - Memory Match</title>
+    <link rel="stylesheet" href="common.css">
+    <script src="common.js"></script>
+    <style>
+        :root { --primary: #6c5ce7; --success: #00b894; --error: #d63031; --bg: #1e1e2e; --card-back: #6c5ce7; --card-en: #ffffff; --card-ch: #ffeaa7; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { background: var(--bg); margin: 0; padding: 0; height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
+
+        .sound-toggle { position: fixed; top: 12px; right: 15px; background: white; border: 3px solid var(--success); border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand', sans-serif; color: #2d3436; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 50000; transition: 0.2s; }
+        .exit-btn { background: #ff7675; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 15px; cursor: pointer; font-family: 'Quicksand', sans-serif; box-shadow: 0 4px 0 #d63031; transition: 0.2s; }
+        .exit-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Header */
+        #header { height: 55px; background: rgba(255,255,255,0.08); border-bottom: 2px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; padding: 0 130px 0 10px; flex-shrink: 0; visibility: hidden; }
+        .stat-pill { background: rgba(255,255,255,0.12); padding: 5px 14px; border-radius: 10px; font-weight: 900; font-size: 16px; color: white; }
+        .stat-label { font-size: 11px; opacity: 0.7; display: block; }
+        .stat-val { font-size: 20px; }
+
+        /* Card Grid */
+        #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 10px; visibility: hidden; overflow: hidden; }
+        #card-grid { display: grid; gap: 8px; width: 100%; max-width: 700px; }
+
+        /* Card */
+        .card { perspective: 800px; cursor: pointer; }
+        .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 12px; }
+        .card.flipped .card-inner, .card.matched .card-inner { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; }
+        .card-back { background: var(--card-back); background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 1px, transparent 0, transparent 50%); background-size: 10px 10px; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(108,92,231,0.4); }
+        .card-back-icon { font-size: 28px; opacity: 0.9; }
+        .card-front { transform: rotateY(180deg); border: 3px solid transparent; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .card-front.en { background: var(--card-en); color: #2d3436; border-color: #dfe6e9; }
+        .card-front.ch { background: var(--card-ch); color: #2d3436; border-color: #fdcb6e; }
+        .card-type-badge { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; margin-bottom: 2px; }
+        .card-text { font-weight: 900; text-align: center; line-height: 1.2; word-break: break-word; }
+        .card-front.en .card-text { color: #2d3436; }
+        .card-front.ch .card-text { color: #2d3436; font-size: 1.3em; }
+        .card.matched .card-front { border-color: var(--success); background: #d4f5ec; box-shadow: 0 0 15px rgba(0,184,148,0.5); }
+        .card.matched .card-front.ch { background: #d4f5ec; }
+        .card.mismatch .card-inner { animation: shake 0.4s; }
+
+        @keyframes shake { 0%,100%{transform:rotateY(180deg) translateX(0);} 25%{transform:rotateY(180deg) translateX(-6px);} 75%{transform:rotateY(180deg) translateX(6px);} }
+        @keyframes burst { 0%{transform:scale(0);opacity:0;} 40%{transform:scale(1.5) translateY(-30px);opacity:1;} 100%{transform:scale(1.2) translateY(-150px);opacity:0;} }
+        .float-num { position:fixed; pointer-events:none; font-weight:900; font-size:50px; z-index:30000; text-shadow:3px 3px 0 white,-3px -3px 0 white; animation:burst 0.7s forwards; }
+
+        /* Start Overlay */
+        #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 60000; overflow-y: auto; padding: 30px 15px 20px; background: linear-gradient(135deg, #1e1e2e, #2d2b55); color: white; }
+        #start-overlay h1 { font-size: 46px; margin: 0 0 5px 0; text-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        #start-overlay p { font-size: 15px; margin: 0 0 20px 0; opacity: 0.8; }
+        .front-leaderboard { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; width: 320px; max-width: 95%; margin-bottom: 18px; }
+        .front-leaderboard h3 { margin: 0 0 10px 0; color: #ffeaa7; text-align: center; font-size: 18px; font-weight: 900; }
+        #front-leaderboard-list { max-height: 130px; overflow-y: auto; }
+        .front-board-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.2); font-size: 14px; font-weight: 700; }
+        .front-board-row:last-child { border-bottom: none; }
+        .name-input { font-size: 22px; padding: 12px 20px; border-radius: 15px; border: none; text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: 14px; width: 90%; max-width: 340px; outline: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .options-row { display: flex; gap: 10px; width: 90%; max-width: 340px; margin-bottom: 14px; }
+        .options-row select { flex: 1; font-size: 15px; padding: 10px 12px; border-radius: 12px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; }
+        select.theme-select { width: 90%; max-width: 340px; font-size: 15px; padding: 11px 15px; border-radius: 12px; border: none; outline: none; font-family: 'Quicksand'; font-weight: 700; margin-bottom: 14px; }
+        .start-btn { background: var(--primary); color: white; border: none; padding: 14px 50px; font-size: 28px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 8px 0 #4834d4; margin-bottom: 20px; transition: 0.1s; }
+        .start-btn:active { transform: translateY(8px); box-shadow: none; }
+
+        /* End Screen */
+        #end-msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: flex-start; align-items: center; z-index: 60000; overflow-y: auto; padding: 30px 15px; background: rgba(255,255,255,0.98); text-align: center; }
+        .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; }
+        .score-breakdown { background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 18px; font-weight: 700; color: #2d3436; }
+        .final-score-display { font-size: 40px; color: var(--primary); text-align: center; font-weight: 900; margin-top: 10px; }
+        .board-row { display: flex; justify-content: space-between; padding: 7px 5px; border-bottom: 1px solid #dfe6e9; font-size: 16px; font-weight: 700; color: #2d3436; }
+        #leaderboard-list { max-height: 200px; overflow-y: auto; }
+        .replay-btn { background: var(--primary); color: white; border: none; padding: 14px 40px; font-size: 24px; border-radius: 50px; font-family: 'Quicksand', sans-serif; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #4834d4; margin-top: 10px; }
+
+        @media (max-width: 768px) {
+            .sound-toggle { top: 8px; right: 8px; font-size: 13px; padding: 6px 10px; }
+            #header { padding: 0 110px 0 5px; height: 48px; }
+            .stat-pill { font-size: 12px; padding: 4px 8px; }
+            .stat-val { font-size: 17px; }
+            #start-overlay h1 { font-size: 36px; }
+            .start-btn { font-size: 22px; padding: 12px 40px; }
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgm" src="bgm/music.mp3" loop></audio>
+    <audio id="sfxMatch" src="bgm/buff.mp3"></audio>
+    <audio id="sfxMiss" src="bgm/wrong.mp3"></audio>
+    <audio id="sfxVictory" src="bgm/victory.mp3"></audio>
+    <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
+
+    <!-- Start Overlay -->
+    <div id="start-overlay">
+        <h1>🃏 Memory Match</h1>
+        <p>翻牌配對！找出英文和中文的對應單字！</p>
+
+        <div class="front-leaderboard">
+            <h3 id="front-board-title">🏆 排行榜</h3>
+            <div id="front-leaderboard-list"><div style="text-align:center;font-size:13px;opacity:0.7;">請先選擇關卡查看排行榜</div></div>
+        </div>
+
+        <div id="error-msg"></div>
+        <input type="text" id="player-name" class="name-input" placeholder="輸入姓名..." autocomplete="off" maxlength="12">
+
+        <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
+            <option value="" disabled selected hidden>▼ 請選擇關卡...</option>
+            <optgroup label="四年級 (Grade 4)">
+                <option value="spell-g4-unit1">🏠 G4 Unit 1 - Home Space</option>
+                <option value="spell-g4-unit2">🏃 G4 Unit 2 - Actions</option>
+                <option value="spell-g4-unit3">🍔 G4 Unit 3 - Food & Drinks</option>
+            </optgroup>
+            <optgroup label="五年級 (Grade 5)">
+                <option value="spell-g5-unit1">🦴 G5 Unit 1 - Body Parts</option>
+                <option value="spell-g5-unit2">🤒 G5 Unit 2 - Sickness</option>
+                <option value="spell-g5-unit3">🍽️ G5 Unit 3 - Meals & Food</option>
+            </optgroup>
+        </select>
+
+        <div class="options-row">
+            <select id="pairs-select">
+                <option value="6">6 對（12 張）</option>
+                <option value="8" selected>8 對（16 張）</option>
+                <option value="10">10 對（20 張）</option>
+            </select>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">開始挑戰！</button>
+    </div>
+
+    <!-- Header -->
+    <div id="header">
+        <div class="stat-pill"><span class="stat-label">配對</span><span class="stat-val" id="match-val">0 / 0</span></div>
+        <div class="stat-pill"><span class="stat-label">失誤</span><span class="stat-val" id="miss-val">0</span></div>
+        <div class="stat-pill"><span class="stat-label">時間</span><span class="stat-val" id="timer-val">00:00</span></div>
+        <button class="exit-btn" onclick="exitGame()">離開</button>
+    </div>
+
+    <!-- Game Area -->
+    <div id="game-area">
+        <div id="card-grid"></div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-msg">
+        <h1 style="font-size:48px;margin:0 0 5px 0;">🎉 完成！</h1>
+        <p id="end-subtitle" style="font-size:18px;color:#636e72;margin:0 0 15px 0;"></p>
+        <div class="result-panel">
+            <div class="score-breakdown" id="score-breakdown"></div>
+            <div class="final-score-display" id="final-score"></div>
+        </div>
+        <div class="result-panel" style="max-width:400px;width:95%;">
+            <h3 style="margin:0 0 10px 0;color:var(--primary);font-size:20px;font-weight:900;">🏆 排行榜</h3>
+            <div id="leaderboard-list"></div>
+        </div>
+        <button class="replay-btn" onclick="replayGame()">再玩一次！</button>
+    </div>
+
+    <script>
+        let currentTheme = "", playerName = "Player";
+        let totalPairs = 8, matchedCount = 0, missCount = 0;
+        let firstCard = null, isLocked = false;
+        let seconds = 0, timerInterval = null;
+        let isMuted = false, userIP = "Unknown";
+        let fullWordBank = [];
+
+        window.onload = function() {
+            fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { userIP = d.ip; }).catch(() => {});
+        };
+
+        function fetchFrontLeaderboard() {
+            const listDiv = document.getElementById('front-leaderboard-list');
+            const themeSelect = document.getElementById('theme-select');
+            if (themeSelect.value === "") return;
+            currentTheme = themeSelect.value;
+            const optText = themeSelect.options[themeSelect.selectedIndex].text;
+            const themeName = optText.includes('-') ? optText.split('-')[1].trim() : optText;
+            document.getElementById('front-board-title').innerText = `🏆 ${themeName} 榜`;
+            listDiv.innerHTML = "<div style='text-align:center;font-size:13px;opacity:0.7;'>📡 讀取中...</div>";
+            fetch(`${GOOGLE_API_URL}?action=get&theme=memory-${currentTheme}`)
+                .then(r => r.json()).then(board => {
+                    listDiv.innerHTML = "";
+                    if (!board || board.length === 0) { listDiv.innerHTML = "<div style='text-align:center;padding:8px;font-size:13px;opacity:0.7;'>尚無紀錄，搶下第一名！</div>"; return; }
+                    board.forEach((p, i) => {
+                        const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+                        listDiv.innerHTML += `<div class='front-board-row'><span>${rank} ${p.name}</span><span>${p.score} pts</span></div>`;
+                    });
+                }).catch(() => { listDiv.innerHTML = "<div style='text-align:center;opacity:0.6;font-size:13px;'>連線失敗 😢</div>"; });
+        }
+
+        async function startGame() {
+            const nameInput = document.getElementById('player-name').value.trim();
+            const themeSelect = document.getElementById('theme-select');
+            const errorMsg = document.getElementById('error-msg');
+            errorMsg.style.display = "none";
+
+            if (nameInput === "") { errorMsg.innerText = "⚠️ 請輸入姓名！"; errorMsg.style.display = "block"; return; }
+            if (badWords.some(b => nameInput.toLowerCase().replace(/\s+/g, '').includes(b))) { errorMsg.innerText = "⚠️ 請使用有禮貌的名字喔！😇"; errorMsg.style.display = "block"; return; }
+            if (themeSelect.value === "") { errorMsg.innerText = "⚠️ 請選擇關卡！"; errorMsg.style.display = "block"; return; }
+
+            playerName = nameInput;
+            currentTheme = themeSelect.value;
+            totalPairs = parseInt(document.getElementById('pairs-select').value);
+
+            let bank;
+            try {
+                const res = await fetch(`data/${currentTheme}.json`);
+                bank = await res.json();
+            } catch(e) {
+                errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
+            }
+
+            fullWordBank = bank;
+            initGame(bank);
+        }
+
+        function initGame(bank) {
+            matchedCount = 0; missCount = 0; firstCard = null; isLocked = false;
+            clearInterval(timerInterval); seconds = 0;
+
+            const pairs = Math.min(totalPairs, bank.length);
+            const shuffled = [...bank].sort(() => Math.random() - 0.5).slice(0, pairs);
+
+            // Build card objects: one EN + one CH per word
+            const cards = [];
+            shuffled.forEach(item => {
+                cards.push({ word: item.en, display: item.en, type: 'en' });
+                cards.push({ word: item.en, display: item.ch, type: 'ch' });
+            });
+            cards.sort(() => Math.random() - 0.5);
+
+            renderGrid(cards, pairs);
+
+            document.getElementById('match-val').textContent = `0 / ${pairs}`;
+            document.getElementById('miss-val').textContent = '0';
+            document.getElementById('timer-val').textContent = '00:00';
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('end-msg').style.display = 'none';
+            document.getElementById('header').style.visibility = 'visible';
+            document.getElementById('game-area').style.visibility = 'visible';
+
+            if (!isMuted) document.getElementById('bgm').play().catch(() => {});
+
+            timerInterval = setInterval(() => {
+                seconds++;
+                const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+                const s = String(seconds % 60).padStart(2, '0');
+                document.getElementById('timer-val').textContent = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function renderGrid(cards, pairs) {
+            const grid = document.getElementById('card-grid');
+            grid.innerHTML = "";
+
+            // Grid columns: 4 cols for 6/8 pairs, 5 cols for 10 pairs
+            const cols = pairs <= 8 ? 4 : 5;
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            // Card height based on grid
+            const gameArea = document.getElementById('game-area');
+            const availH = gameArea.clientHeight - 20;
+            const rows = Math.ceil(cards.length / cols);
+            const cardH = Math.min(100, Math.floor((availH - (rows - 1) * 8) / rows));
+            const fontSize = Math.max(10, Math.min(16, cardH * 0.22));
+
+            cards.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.height = cardH + 'px';
+                card.dataset.word = item.word;
+                card.dataset.type = item.type;
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-back"><span class="card-back-icon">🃏</span></div>
+                        <div class="card-face card-front ${item.type}">
+                            <span class="card-type-badge">${item.type === 'en' ? 'English' : '中文'}</span>
+                            <span class="card-text" style="font-size:${item.type === 'ch' ? fontSize * 1.3 : fontSize}px;">${item.display}</span>
+                        </div>
+                    </div>`;
+                card.addEventListener('pointerdown', () => handleCardClick(card));
+                grid.appendChild(card);
+            });
+        }
+
+        function handleCardClick(card) {
+            if (isLocked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+            card.classList.add('flipped');
+
+            if (!firstCard) { firstCard = card; return; }
+
+            isLocked = true;
+            const second = card;
+
+            if (firstCard.dataset.word === second.dataset.word && firstCard.dataset.type !== second.dataset.type) {
+                // Match!
+                matchedCount++;
+                firstCard.classList.add('matched');
+                second.classList.add('matched');
+                document.getElementById('match-val').textContent = `${matchedCount} / ${Math.min(totalPairs, fullWordBank.length)}`;
+                if (!isMuted) { const sfx = document.getElementById('sfxMatch'); sfx.currentTime = 0; sfx.play().catch(() => {}); }
+                showBurst(second.getBoundingClientRect().left + 30, second.getBoundingClientRect().top, '✓', '#00b894');
+                firstCard = null; isLocked = false;
+                if (matchedCount === Math.min(totalPairs, fullWordBank.length)) setTimeout(endGame, 600);
+            } else {
+                // Miss
+                missCount++;
+                document.getElementById('miss-val').textContent = missCount;
+                firstCard.classList.add('mismatch');
+                second.classList.add('mismatch');
+                if (!isMuted) { const sfx = document.getElementById('sfxMiss'); sfx.currentTime = 0; sfx.play().catch(() => {}); }
+                const f = firstCard, s = second;
+                setTimeout(() => {
+                    f.classList.remove('flipped', 'mismatch');
+                    s.classList.remove('flipped', 'mismatch');
+                    firstCard = null; isLocked = false;
+                }, 900);
+            }
+        }
+
+        function showBurst(x, y, txt, color) {
+            const div = document.createElement('div'); div.className = 'float-num'; div.textContent = txt;
+            div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color;
+            document.body.appendChild(div); setTimeout(() => div.remove(), 700);
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            if (!isMuted) { document.getElementById('bgm').pause(); const sfx = document.getElementById('sfxVictory'); sfx.currentTime = 0; sfx.play().catch(() => {}); }
+
+            const pairs = Math.min(totalPairs, fullWordBank.length);
+            const score = Math.max(50, 1000 - missCount * 30 - Math.floor(seconds * 1.5));
+            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+            const s = String(seconds % 60).padStart(2, '0');
+
+            document.getElementById('end-subtitle').textContent = `${playerName}，全部配對完成！`;
+            document.getElementById('score-breakdown').innerHTML =
+                `⏱ 完成時間：${m}:${s}<br>❌ 失誤次數：${missCount} 次<br>🃏 配對數量：${pairs} 對`;
+            document.getElementById('final-score').textContent = `${score} pts`;
+            document.getElementById('end-msg').style.display = 'flex';
+
+            const themeSelect = document.getElementById('theme-select');
+            const themeName = themeSelect.options[themeSelect.selectedIndex].text.split('-')[1]?.trim() || currentTheme;
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=${m}:${s}&theme=memory-${currentTheme}&ip=${userIP}`)
+                .then(r => r.json()).then(board => {
+                    const list = document.getElementById('leaderboard-list');
+                    list.innerHTML = "";
+                    if (!board || board.length === 0) return;
+                    board.forEach((p, i) => {
+                        const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+                        list.innerHTML += `<div class='board-row'><span>${rank} ${p.name}</span><span style='color:var(--primary)'>${p.score} pts</span></div>`;
+                    });
+                }).catch(() => {});
+        }
+
+        function replayGame() {
+            document.getElementById('end-msg').style.display = 'none';
+            document.getElementById('header').style.visibility = 'hidden';
+            document.getElementById('game-area').style.visibility = 'hidden';
+            document.getElementById('start-overlay').style.display = 'flex';
+            document.getElementById('bgm').pause();
+            document.getElementById('bgm').currentTime = 0;
+        }
+
+        function exitGame() { replayGame(); }
+    </script>
+</body>
+</html>
