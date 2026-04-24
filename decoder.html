@@ -148,6 +148,15 @@
 
         <input type="text" id="player-name" class="name-input" placeholder="輸入特務姓名..." autocomplete="off" maxlength="12">
         
+        <div style="display:flex; gap:24px; margin-bottom:15px; flex-shrink:0;">
+            <label style="color:white; font-size:16px; font-weight:900; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="game-mode" id="mode-timed" value="timed" checked style="width:16px;height:16px;"> ⏱️ 計時挑戰
+            </label>
+            <label style="color:var(--gold); font-size:16px; font-weight:900; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="game-mode" id="mode-classroom" value="classroom" style="width:16px;height:16px;"> 📚 上課模式
+            </label>
+        </div>
+
         <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
             <option value="" disabled selected hidden>▼ 請先選擇挑戰關卡...</option>
             <optgroup label="四年級 (Grade 4)">
@@ -173,7 +182,7 @@
     <div id="header">
         <div class="stat-pill">👤 <span id="display-name">Player</span></div>
         <div class="stat-pill">🏆 <span id="score-val" style="color:var(--gold);">0</span></div>
-        <div class="stat-pill">⏱️ <span id="timer-val" style="color:var(--error);">90</span>s</div>
+        <div class="stat-pill">⏱️ <span id="timer-val" style="color:var(--error);">90</span><span id="timer-unit">s</span></div>
         <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
     </div>
 
@@ -190,6 +199,8 @@
             <input type="text" id="answer-input" placeholder="輸入解出的單字..." autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="none" onkeypress="if(event.key === 'Enter') checkAnswer()">
             <button id="submit-btn" onclick="checkAnswer()">解鎖</button>
         </div>
+
+        <button id="end-practice-btn" onclick="endGame()" style="display:none; background:var(--primary); color:white; border:none; border-radius:15px; padding:12px 35px; font-size:18px; font-weight:900; cursor:pointer; box-shadow:0 5px 0 #1a252f; margin-top:10px; font-family:'Quicksand',sans-serif; flex-shrink:0;">📋 結束練習</button>
     </div>
 
     <div id="secret-modal">
@@ -203,7 +214,7 @@
             <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: #2d3436; text-align: center;">
                 解碼總分：<br><span id="final-total-display" style="color:var(--error); font-size:45px;">0</span> pts
             </div>
-            <h2 class="board-row" style="color: var(--primary); justify-content: center; border-top: 2px dashed #ddd; padding-top: 15px;">🌍 解碼英雄榜</h2>
+            <h2 id="end-board-header" class="board-row" style="color: var(--primary); justify-content: center; border-top: 2px dashed #ddd; padding-top: 15px;">🌍 解碼英雄榜</h2>
             <div id="leaderboard-list" style="max-height: 150px; overflow-y: auto;"></div>
         </div>
         <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:50px; font-weight:900; cursor:pointer; margin-bottom: 10px;">再玩一次</button>
@@ -221,14 +232,15 @@
         // ✨ 題庫設定 ✨
 
         let score = 0;
-        let isPlaying = false, isMuted = false;
+        let isPlaying = false, isMuted = false, isClassroomMode = false;
         let playerName = "Player", currentTheme = "";
-        
+
         let gameWords = [];
+        let wordBank = [];
         let currentWordIndex = 0;
         let currentWord = "";
-        
-        let seconds = 90; // 90秒極限挑戰
+
+        let seconds = 90;
         let mainTimer;
         
         // 數字對應字母的映射表
@@ -344,37 +356,47 @@
                 errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
             }
 
+            isClassroomMode = document.getElementById('mode-classroom').checked;
+
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('header').style.visibility = 'visible';
             document.getElementById('game-area').style.visibility = 'visible';
 
             score = 0; seconds = 90;
             document.getElementById('score-val').innerText = score;
-            document.getElementById('timer-val').innerText = seconds;
 
             bgm.play().catch(e => console.log(e));
             secretBgm.onended = function() { bgm.play(); };
 
             generateMapping();
 
-            gameWords = [...bank].sort(() => Math.random() - 0.5);
+            wordBank = [...bank];
+            gameWords = [...wordBank].sort(() => Math.random() - 0.5);
             currentWordIndex = 0;
-            
+
             isPlaying = true;
-            
-            mainTimer = setInterval(() => {
-                seconds--;
+
+            if (isClassroomMode) {
+                document.getElementById('timer-val').innerText = '∞';
+                document.getElementById('timer-unit').style.display = 'none';
+                document.getElementById('end-practice-btn').style.display = 'block';
+            } else {
                 document.getElementById('timer-val').innerText = seconds;
-                if(seconds <= 0) endGame();
-            }, 1000);
+                document.getElementById('timer-unit').style.display = '';
+                mainTimer = setInterval(() => {
+                    seconds--;
+                    document.getElementById('timer-val').innerText = seconds;
+                    if(seconds <= 0) endGame();
+                }, 1000);
+            }
 
             loadNextWord();
         }
 
         function loadNextWord() {
             if (currentWordIndex >= gameWords.length) {
-                // 如果題庫用完，重新打亂再玩 (無盡模式直到時間結束)
-                gameWords = [...wordBanks[currentTheme]].sort(() => Math.random() - 0.5);
+                // 如果題庫用完，重新打亂再玩
+                gameWords = [...wordBank].sort(() => Math.random() - 0.5);
                 currentWordIndex = 0;
             }
             
@@ -446,24 +468,34 @@
         }
 
         function endGame() {
-            isPlaying = false; 
+            isPlaying = false;
             clearInterval(mainTimer);
             bgm.pause(); secretBgm.pause();
-            
-            document.getElementById('header').style.visibility = 'none';
+
+            document.getElementById('header').style.visibility = 'hidden';
             document.getElementById('game-area').style.display = 'none';
-            document.getElementById('final-total-display').textContent = score; 
+            document.getElementById('final-total-display').textContent = score;
             document.getElementById('end-msg').style.display = "flex";
-            
-            const listDiv = document.getElementById('leaderboard-list'); 
-            const themeName = document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text.split(':')[0].substring(3);
+
+            if (isClassroomMode) {
+                document.getElementById('end-title').innerText = '練習完成！📚';
+                document.getElementById('end-board-header').style.display = 'none';
+                document.getElementById('leaderboard-list').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('end-title').innerText = '時間到！🏁';
+            document.getElementById('end-board-header').style.display = '';
+            document.getElementById('leaderboard-list').style.display = '';
+
+            const listDiv = document.getElementById('leaderboard-list');
             listDiv.innerHTML = "<div style='text-align:center; padding: 15px; font-weight:700; color:var(--primary); font-size:20px;'>📡 上傳成績中...</div>";
-            
+
             fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=90s&theme=${currentTheme}&ip=${userIP}`).then(r => r.json()).then(board => {
                 listDiv.innerHTML = ""; if (!board || board.length === 0) return;
-                board.slice(0,5).forEach((p, i) => { 
-                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; 
-                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; 
+                board.slice(0,5).forEach((p, i) => {
+                    let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
+                    listDiv.innerHTML += `<div class='board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`;
                 });
             }).catch(() => listDiv.innerHTML = "<div style='text-align:center; color:var(--error);'>連線失敗</div>");
         }
