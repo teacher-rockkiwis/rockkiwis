@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr. ROCK - Word Scramble</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        :root {
+            --primary: #6c3483; --secondary: #5b2c6f; --success: #27ae60; --error: #c0392b;
+            --bg: #f5eef8; --text-dark: #2d3436; --gold: #f39c12;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; outline: none; }
+        body, html {
+            background-color: var(--bg); margin: 0; padding: 0;
+            height: 100dvh; width: 100vw; font-family: 'Quicksand', sans-serif;
+            overflow: hidden; display: flex; flex-direction: column; user-select: none;
+        }
+
+        .sound-toggle {
+            position: fixed; top: max(15px, env(safe-area-inset-top)); right: 15px;
+            background: rgba(255,255,255,0.9); border: 3px solid var(--success);
+            border-radius: 50px; padding: 8px 15px; font-size: 16px; font-weight: 900;
+            cursor: pointer; color: #2d3436; z-index: 50000; transition: 0.2s;
+        }
+        .exit-btn {
+            position: fixed; top: max(15px, env(safe-area-inset-top)); left: 15px;
+            background: rgba(231,76,60,0.9); color: white; border: none; padding: 8px 15px;
+            border-radius: 10px; font-weight: 900; font-size: 16px; cursor: pointer;
+            z-index: 50000; box-shadow: 0 4px 0 #c0392b;
+        }
+
+        #header {
+            height: 60px; background: rgba(255,255,255,0.95); border-bottom: 3px solid var(--primary);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 0 140px 0 10px; flex-shrink: 0; visibility: hidden; z-index: 100;
+        }
+        .stat-pill { background: #f1f2f6; padding: 5px 15px; border-radius: 10px; font-weight: 900; font-size: 18px; color: #2d3436; }
+
+        #game-area {
+            flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px 15px; visibility: hidden; width: 100%; max-width: 700px; margin: 0 auto;
+            gap: 24px;
+        }
+
+        /* Hint */
+        #hint-box {
+            background: white; border-radius: 20px; border: 4px solid var(--primary);
+            padding: 15px 30px; text-align: center; width: 100%; max-width: 520px;
+            box-shadow: 0 8px 20px rgba(108,52,131,0.15);
+        }
+        #hint-label { font-size: 12px; color: #9b59b6; font-weight: 900; letter-spacing: 3px; margin-bottom: 6px; }
+        #hint-text { font-size: 38px; font-weight: 900; color: var(--primary); line-height: 1.2; }
+
+        /* Slots */
+        #slots-container {
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            gap: 6px; width: 100%; max-width: 600px; min-height: 68px;
+        }
+        .slot {
+            width: 52px; height: 62px; border: 3px dashed #ce9de8; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; font-weight: 900; color: var(--primary);
+            background: white; transition: 0.12s;
+        }
+        .slot.next { border-color: var(--gold); border-style: solid; background: #fef9ec; }
+        .slot.filled {
+            border: 3px solid var(--primary); background: var(--primary); color: white;
+            cursor: pointer; box-shadow: 0 4px 0 var(--secondary);
+        }
+        .slot.filled:active { transform: translateY(4px); box-shadow: 0 0 0 var(--secondary); }
+        .slot-space {
+            width: 18px; display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: #ce9de8; font-weight: 900; pointer-events: none;
+        }
+
+        /* Tiles */
+        #tiles-container {
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            gap: 8px; width: 100%; max-width: 600px; min-height: 72px;
+        }
+        .tile {
+            width: 56px; height: 64px; background: white; border-radius: 12px;
+            border: 3px solid var(--primary); display: flex; align-items: center; justify-content: center;
+            font-size: 30px; font-weight: 900; color: var(--primary); cursor: pointer;
+            box-shadow: 0 6px 0 var(--secondary); transition: 0.1s;
+        }
+        .tile:active { transform: translateY(6px); box-shadow: 0 0 0 var(--secondary); }
+        .tile.placed { opacity: 0; pointer-events: none; }
+
+        /* Buttons */
+        #clear-btn {
+            background: #e74c3c; color: white; border: none; border-radius: 50px;
+            padding: 11px 32px; font-size: 17px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 5px 0 #c0392b; font-family: 'Quicksand', sans-serif; transition: 0.1s;
+        }
+        #clear-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #c0392b; }
+        #end-practice-btn {
+            display: none; background: var(--primary); color: white; border: none;
+            border-radius: 50px; padding: 11px 28px; font-size: 17px; font-weight: 900;
+            cursor: pointer; box-shadow: 0 5px 0 var(--secondary); font-family: 'Quicksand', sans-serif;
+        }
+
+        /* Overlays */
+        #start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex;
+            flex-direction: column; justify-content: flex-start; align-items: center;
+            z-index: 60000; overflow-y: auto; padding: 40px 20px 20px 20px;
+            background: rgba(78, 35, 100, 0.96);
+        }
+        #end-msg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none;
+            flex-direction: column; justify-content: flex-start; align-items: center;
+            z-index: 60000; overflow-y: auto; padding: 30px 20px 20px 20px;
+            background: rgba(255,255,255,0.98); text-align: center;
+        }
+
+        .name-input {
+            font-size: 22px; padding: 12px 20px; border-radius: 15px; border: none;
+            text-align: center; font-family: 'Quicksand', sans-serif; font-weight: 700;
+            margin-bottom: 15px; width: 90%; max-width: 350px; outline: none;
+            flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .start-btn-main {
+            background: var(--gold); color: #2d3436; border: none; padding: 15px 40px;
+            font-size: 26px; border-radius: 50px; font-family: 'Quicksand', sans-serif;
+            font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #d4ac0d;
+            transition: 0.1s; margin-bottom: 20px; flex-shrink: 0;
+        }
+        .start-btn-main:active { transform: translateY(6px); box-shadow: 0 0 0 #d4ac0d; }
+        select.theme-select {
+            width: 90%; max-width: 350px; font-size: 16px; padding: 12px 15px; border-radius: 15px;
+            border: none; outline: none; font-family: 'Quicksand'; font-weight: 700;
+            margin-bottom: 15px; flex-shrink: 0; color: #2c3e50; background-color: #fff;
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 15px center;
+            background-size: 16px; padding-right: 40px;
+        }
+        .front-leaderboard {
+            background: rgba(255,255,255,0.95); border-radius: 15px; padding: 15px;
+            width: 320px; max-width: 95%; margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #2d3436; text-align: left;
+        }
+        .front-leaderboard h3 { margin: 0 0 10px 0; color: var(--primary); text-align: center; font-size: 20px; font-weight: 900; }
+        #front-leaderboard-list { max-height: 180px; overflow-y: auto; }
+        #front-leaderboard-list::-webkit-scrollbar { width: 6px; }
+        #front-leaderboard-list::-webkit-scrollbar-thumb { background: #ce9de8; border-radius: 10px; }
+        .front-board-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #dfe6e9; font-size: 16px; font-weight: 700; }
+        .front-board-row:last-child { border-bottom: none; }
+
+        .result-panel { background: white; border: 4px solid var(--primary); border-radius: 20px; padding: 20px; width: 95%; max-width: 400px; margin: 10px 0 20px 0; text-align: left; flex-shrink: 0; }
+        .board-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #dfe6e9; font-size: 16px; font-weight: 700; color: #2d3436; }
+
+        .float-num { position: fixed; pointer-events: none; font-weight: 900; font-size: 60px; z-index: 30000; text-shadow: 3px 3px 0 white, -3px -3px 0 white; animation: burst 0.8s forwards; }
+        @keyframes burst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.5) translateY(-30px); opacity: 1; } 100% { transform: scale(1.2) translateY(-150px); opacity: 0; } }
+        .shake { animation: shake 0.35s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%,90% { transform: translate3d(-5px,0,0); } 20%,80% { transform: translate3d(5px,0,0); } 30%,50%,70% { transform: translate3d(-10px,0,0); } 40%,60% { transform: translate3d(10px,0,0); } }
+        @keyframes correctPop { 0% { transform: scale(1); } 40% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        .correct-pop { animation: correctPop 0.3s ease; }
+
+        @media screen and (max-width: 768px) {
+            .sound-toggle { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); right: 5px; }
+            .exit-btn { font-size: 12px; padding: 6px 12px; top: max(5px, env(safe-area-inset-top)); left: 5px; }
+            #header { padding: 0 100px 0 5px; height: 50px; }
+            .stat-pill { font-size: 13px !important; padding: 4px 6px; }
+            #hint-text { font-size: 28px; }
+            .slot { width: 44px; height: 54px; font-size: 22px; border-radius: 10px; }
+            .tile { width: 48px; height: 56px; font-size: 26px; }
+            #game-area { gap: 16px; }
+        }
+    </style>
+    <script src="common.js"></script>
+</head>
+<body>
+
+    <audio id="bgm" src="bgm/music.mp3" loop></audio>
+    <audio id="sfx-hit" src="bgm/bingo.mp3"></audio>
+    <audio id="sfx-wrong" src="bgm/fail.mp3"></audio>
+
+    <button id="sound-btn" class="sound-toggle" onclick="toggleSound(event)">🔊 音效：開</button>
+
+    <div id="start-overlay">
+        <h1 style="font-size: 48px; color: var(--gold); text-shadow: 0 5px 15px rgba(0,0,0,0.5); text-align: center; margin-bottom: 5px; margin-top: 20px;">🔀 Word Scramble</h1>
+        <p style="color: #e8d5f5; font-size: 15px; margin-bottom: 20px; text-align: center; line-height: 1.7;">
+            字母大亂鬥！<br>看中文提示，點擊打散的字母磚，<br>依正確順序拼出英文單字！
+        </p>
+
+        <div id="error-msg"></div>
+
+        <input type="text" id="player-name" class="name-input" placeholder="輸入玩家姓名..." autocomplete="off" maxlength="12">
+
+        <div style="display:flex; gap:24px; margin-bottom:15px; flex-shrink:0;">
+            <label style="color:white; font-size:16px; font-weight:900; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="game-mode" id="mode-timed" value="timed" checked style="width:16px;height:16px;"> ⏱️ 計時挑戰
+            </label>
+            <label style="color:var(--gold); font-size:16px; font-weight:900; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="game-mode" id="mode-classroom" value="classroom" style="width:16px;height:16px;"> 📚 上課模式
+            </label>
+        </div>
+
+        <select id="theme-select" class="theme-select" onchange="fetchFrontLeaderboard()">
+            <option value="" disabled selected hidden>▼ 請先選擇挑戰關卡...</option>
+            <optgroup label="四年級 (Grade 4)">
+                <option value="spell-g4-unit1">🏠 G4 Unit 1 - Home Space</option>
+                <option value="spell-g4-unit2">🏃 G4 Unit 2 - Actions</option>
+                <option value="spell-g4-unit3">🍔 G4 Unit 3 - Food & Drinks</option>
+            </optgroup>
+            <optgroup label="五年級 (Grade 5)">
+                <option value="spell-g5-unit1">🦴 G5 Unit 1 - Body Parts</option>
+                <option value="spell-g5-unit2">🤒 G5 Unit 2 - Sickness</option>
+                <option value="spell-g5-unit3">🍽️ G5 Unit 3 - Meals & Food</option>
+            </optgroup>
+        </select>
+
+        <button class="start-btn-main" onclick="startGame()">開始拼字！</button>
+
+        <div class="front-leaderboard">
+            <h3>🏆 拼字英雄榜</h3>
+            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">請先選擇上方關卡，以查看英雄榜！</div></div>
+        </div>
+    </div>
+
+    <div id="header">
+        <div class="stat-pill">👤 <span id="display-name">Player</span></div>
+        <div class="stat-pill">🏆 <span id="score-val" style="color:var(--gold);">0</span></div>
+        <div class="stat-pill">⏱️ <span id="timer-val" style="color:var(--error);">90</span><span id="timer-unit">s</span></div>
+        <button class="exit-btn" onclick="location.href='index.html'">🚪 離開</button>
+    </div>
+
+    <div id="game-area">
+        <div id="hint-box">
+            <div id="hint-label">WHAT IS THIS WORD?</div>
+            <div id="hint-text">？</div>
+        </div>
+
+        <div id="slots-container"></div>
+        <div id="tiles-container"></div>
+
+        <div style="display:flex; gap:12px; align-items:center; flex-shrink:0;">
+            <button id="clear-btn" onclick="clearSlots()">🔄 重置</button>
+            <button id="end-practice-btn" onclick="endGame()">📋 結束練習</button>
+        </div>
+    </div>
+
+    <div id="end-msg">
+        <h1 id="end-title" style="font-size: 45px; color: var(--primary); margin: 0; margin-top: 10px;">時間到！🏁</h1>
+        <div class="result-panel">
+            <div style="background: #f1f2f6; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-size: 20px; font-weight: 700; color: #2d3436; text-align: center;">
+                拼字總分：<br><span id="final-total-display" style="color:var(--error); font-size:45px;">0</span> pts
+            </div>
+            <h2 id="end-board-header" class="board-row" style="color: var(--primary); justify-content: center; border-top: 2px dashed #ddd; padding-top: 15px;">🌍 拼字英雄榜</h2>
+            <div id="leaderboard-list" style="max-height: 150px; overflow-y: auto;"></div>
+        </div>
+        <button onclick="location.reload()" style="padding:12px 40px; font-size:20px; background:var(--primary); color:white; border:none; border-radius:50px; font-weight:900; cursor:pointer; margin-bottom:10px; font-family:'Quicksand',sans-serif;">再玩一次</button>
+    </div>
+
+    <script>
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { e.preventDefault(); return false; }
+        });
+
+        let userIP = "Unknown";
+        let score = 0, seconds = 90;
+        let isPlaying = false, isMuted = false, isClassroomMode = false;
+        let playerName = "Player", currentTheme = "";
+        let mainTimer;
+        let wordBank = [], gameWords = [], currentWordIndex = 0;
+        let currentWord = "";
+        let tiles = [];  // [{id, letter, placed}]
+        let slots = [];  // [{tileId, isSpace}]
+
+        const bgm = document.getElementById('bgm');
+        const sfxHit = document.getElementById('sfx-hit');
+        const sfxWrong = document.getElementById('sfx-wrong');
+        bgm.volume = 0.4; sfxHit.volume = 0.6; sfxWrong.volume = 0.6;
+
+        window.onload = function() {
+            fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { userIP = d.ip; }).catch(() => {});
+            fetchFrontLeaderboard();
+        };
+
+        // 鍵盤支援：打字直接放字母磚，Backspace 退回最後一個
+        document.addEventListener('keydown', function(e) {
+            if (!isPlaying) return;
+            if (e.key === 'Backspace') {
+                const lastFilled = [...slots].reverse().find(s => !s.isSpace && s.tileId !== null);
+                if (lastFilled) returnFromSlot(slots.indexOf(lastFilled));
+                return;
+            }
+            if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+                const letter = e.key.toLowerCase();
+                const tile = tiles.find(t => t.letter === letter && !t.placed);
+                if (tile) placeTile(tile.id);
+            }
+        });
+
+        function fetchFrontLeaderboard() {
+            const listDiv = document.getElementById('front-leaderboard-list');
+            const themeVal = document.getElementById('theme-select').value;
+            if (!themeVal) {
+                listDiv.innerHTML = "<div style='text-align:center;padding:10px;font-size:14px;color:#636e72;'>請先選擇上方關卡！</div>";
+                return;
+            }
+            listDiv.innerHTML = "<div style='text-align:center;font-size:14px;color:#636e72;'>📡 讀取中...</div>";
+            const lbTheme = 'scramble-' + themeVal.replace('spell-', '');
+            fetch(`${GOOGLE_API_URL}?action=get&theme=${lbTheme}`)
+                .then(r => r.json())
+                .then(board => {
+                    listDiv.innerHTML = "";
+                    if (!board || board.length === 0) { listDiv.innerHTML = "<div style='padding:5px;font-size:14px;'>目前無紀錄，搶下首殺！</div>"; return; }
+                    board.slice(0, 5).forEach((p, i) => {
+                        const rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+                        listDiv.innerHTML += `<div class='front-board-row'><span>${rank} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`;
+                    });
+                }).catch(() => listDiv.innerHTML = "<div style='text-align:center;color:var(--error);'>連線失敗 😢</div>");
+        }
+
+        async function startGame() {
+            const inputName = document.getElementById('player-name').value.trim();
+            const errorMsg = document.getElementById('error-msg');
+            const themeVal = document.getElementById('theme-select').value;
+            errorMsg.style.display = "none";
+
+            if (!inputName) { errorMsg.innerText = "⚠️ 請輸入玩家姓名！"; errorMsg.style.display = "block"; return; }
+            if (badWords.some(b => inputName.toLowerCase().replace(/\s+/g,'').includes(b))) { errorMsg.innerText = "⚠️ 請保持禮貌喔！😇"; errorMsg.style.display = "block"; return; }
+            if (!themeVal) { errorMsg.innerText = "⚠️ 請先選擇挑戰關卡！"; errorMsg.style.display = "block"; return; }
+
+            playerName = inputName;
+            currentTheme = themeVal;
+            isClassroomMode = document.getElementById('mode-classroom').checked;
+            document.getElementById('display-name').innerText = playerName;
+
+            let bank;
+            try {
+                const res = await fetch(`data/${currentTheme}.json`);
+                bank = await res.json();
+            } catch(e) {
+                errorMsg.innerText = "⚠️ 題庫載入失敗，請重新整理！"; errorMsg.style.display = "block"; return;
+            }
+
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('header').style.visibility = 'visible';
+            document.getElementById('game-area').style.visibility = 'visible';
+
+            score = 0; seconds = 90;
+            document.getElementById('score-val').innerText = score;
+            bgm.play().catch(() => {});
+
+            wordBank = [...bank];
+            gameWords = [...wordBank].sort(() => Math.random() - 0.5);
+            currentWordIndex = 0;
+            isPlaying = true;
+
+            if (isClassroomMode) {
+                document.getElementById('timer-val').innerText = '∞';
+                document.getElementById('timer-unit').style.display = 'none';
+                document.getElementById('end-practice-btn').style.display = 'block';
+            } else {
+                document.getElementById('timer-val').innerText = seconds;
+                document.getElementById('timer-unit').style.display = '';
+                mainTimer = setInterval(() => {
+                    seconds--;
+                    document.getElementById('timer-val').innerText = seconds;
+                    if (seconds <= 0) endGame();
+                }, 1000);
+            }
+
+            loadNextWord();
+        }
+
+        function scramble(letters) {
+            const arr = [...letters];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            // 確保結果跟原本不一樣
+            if (arr.length > 1 && arr.join('') === letters.join('')) {
+                [arr[0], arr[1]] = [arr[1], arr[0]];
+            }
+            return arr;
+        }
+
+        function loadNextWord() {
+            if (currentWordIndex >= gameWords.length) {
+                gameWords = [...wordBank].sort(() => Math.random() - 0.5);
+                currentWordIndex = 0;
+            }
+            const wordObj = gameWords[currentWordIndex];
+            currentWord = wordObj.en.toLowerCase();
+            document.getElementById('hint-text').innerText = wordObj.ch;
+
+            const letters = currentWord.replace(/\s/g, '').split('');
+            const scrambled = scramble(letters);
+            tiles = scrambled.map((letter, id) => ({ id, letter, placed: false }));
+
+            // 建立 slots（空格只是視覺分隔）
+            slots = [];
+            for (const char of currentWord) {
+                slots.push({ tileId: null, isSpace: char === ' ' });
+            }
+
+            renderSlots();
+            renderTiles();
+        }
+
+        function renderSlots() {
+            const container = document.getElementById('slots-container');
+            container.innerHTML = '';
+            let foundNext = false;
+            slots.forEach((slot, i) => {
+                if (slot.isSpace) {
+                    const sep = document.createElement('div');
+                    sep.className = 'slot-space';
+                    sep.innerText = '·';
+                    container.appendChild(sep);
+                } else {
+                    const div = document.createElement('div');
+                    const isFilled = slot.tileId !== null;
+                    const isNext = !isFilled && !foundNext;
+                    if (isNext) foundNext = true;
+                    div.className = 'slot' + (isFilled ? ' filled' : isNext ? ' next' : '');
+                    if (isFilled) {
+                        const tile = tiles.find(t => t.id === slot.tileId);
+                        div.innerText = tile ? tile.letter.toUpperCase() : '';
+                        div.onclick = () => returnFromSlot(i);
+                    }
+                    container.appendChild(div);
+                }
+            });
+        }
+
+        function renderTiles() {
+            const container = document.getElementById('tiles-container');
+            container.innerHTML = '';
+            tiles.forEach(tile => {
+                const div = document.createElement('div');
+                div.className = 'tile' + (tile.placed ? ' placed' : '');
+                div.innerText = tile.letter.toUpperCase();
+                if (!tile.placed) div.onclick = () => placeTile(tile.id);
+                container.appendChild(div);
+            });
+        }
+
+        function placeTile(tileId) {
+            if (!isPlaying) return;
+            const nextSlot = slots.find(s => !s.isSpace && s.tileId === null);
+            if (!nextSlot) return;
+            nextSlot.tileId = tileId;
+            tiles.find(t => t.id === tileId).placed = true;
+            renderSlots();
+            renderTiles();
+            if (slots.every(s => s.isSpace || s.tileId !== null)) checkAnswer();
+        }
+
+        function returnFromSlot(slotIndex) {
+            if (!isPlaying) return;
+            const slot = slots[slotIndex];
+            if (!slot || slot.tileId === null) return;
+            tiles.find(t => t.id === slot.tileId).placed = false;
+            slot.tileId = null;
+            renderSlots();
+            renderTiles();
+        }
+
+        function clearSlots() {
+            if (!isPlaying) return;
+            slots.forEach(s => { if (!s.isSpace) s.tileId = null; });
+            tiles.forEach(t => t.placed = false);
+            renderSlots();
+            renderTiles();
+        }
+
+        function checkAnswer() {
+            const userAns = slots
+                .filter(s => !s.isSpace)
+                .map(s => { const t = tiles.find(x => x.id === s.tileId); return t ? t.letter : ''; })
+                .join('');
+            const target = currentWord.replace(/\s/g, '');
+
+            if (userAns === target) {
+                if (!isMuted) { sfxHit.currentTime = 0; sfxHit.play().catch(() => {}); }
+                score += 10;
+                document.getElementById('score-val').innerText = score;
+
+                const slotsEl = document.getElementById('slots-container');
+                slotsEl.classList.add('correct-pop');
+                setTimeout(() => slotsEl.classList.remove('correct-pop'), 300);
+
+                const rect = slotsEl.getBoundingClientRect();
+                showBurst(rect.left + rect.width / 2, rect.top, '+10', '#27ae60');
+
+                currentWordIndex++;
+                setTimeout(loadNextWord, 420);
+            } else {
+                if (!isMuted) { sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {}); }
+                const slotsEl = document.getElementById('slots-container');
+                slotsEl.classList.add('shake');
+                setTimeout(() => { slotsEl.classList.remove('shake'); clearSlots(); }, 380);
+            }
+        }
+
+        function showBurst(x, y, txt, color) {
+            const div = document.createElement('div');
+            div.className = 'float-num'; div.textContent = txt;
+            div.style.left = x + 'px'; div.style.top = y + 'px'; div.style.color = color;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 800);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(mainTimer);
+            bgm.pause();
+            document.getElementById('header').style.visibility = 'hidden';
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('final-total-display').textContent = score;
+            document.getElementById('end-msg').style.display = 'flex';
+
+            if (isClassroomMode) {
+                document.getElementById('end-title').innerText = '練習完成！📚';
+                document.getElementById('end-board-header').style.display = 'none';
+                document.getElementById('leaderboard-list').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('end-title').innerText = '時間到！🏁';
+            document.getElementById('end-board-header').style.display = '';
+            document.getElementById('leaderboard-list').style.display = '';
+
+            const listDiv = document.getElementById('leaderboard-list');
+            listDiv.innerHTML = "<div style='text-align:center;padding:15px;font-weight:700;color:var(--primary);font-size:20px;'>📡 上傳成績中...</div>";
+            const lbTheme = 'scramble-' + currentTheme.replace('spell-', '');
+            fetch(`${GOOGLE_API_URL}?action=save&name=${encodeURIComponent(playerName)}&score=${score}&time=90s&theme=${lbTheme}&ip=${userIP}`)
+                .then(r => r.json())
+                .then(board => {
+                    listDiv.innerHTML = "";
+                    if (!board || board.length === 0) return;
+                    board.slice(0, 5).forEach((p, i) => {
+                        const rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+                        listDiv.innerHTML += `<div class='board-row'><span>${rank} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`;
+                    });
+                }).catch(() => listDiv.innerHTML = "<div style='text-align:center;color:var(--error);'>連線失敗</div>");
+        }
+    </script>
+</body>
+</html>
