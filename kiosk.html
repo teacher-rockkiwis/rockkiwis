@@ -208,11 +208,39 @@
             cursor: pointer; box-shadow: 0 5px 0 #1e8449;
         }
 
+        /* ── Patience bar ── */
+        #patience-wrap {
+            width: 100%; max-width: 700px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        #patience-label { font-size: 13px; font-weight: 900; color: #bdc3c7; white-space: nowrap; }
+        #patience-track {
+            flex: 1; height: 14px; background: rgba(255,255,255,0.1);
+            border-radius: 10px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        #patience-fill {
+            height: 100%; width: 100%; border-radius: 10px;
+            background: #27ae60; transition: width 0.9s linear, background-color 0.4s;
+        }
+        #patience-countdown {
+            font-size: 18px; font-weight: 900; color: white;
+            min-width: 42px; text-align: right; transition: color 0.4s;
+        }
+        #patience-status {
+            font-size: 13px; font-weight: 900; color: #f39c12;
+            display: none; animation: blink 0.6s infinite alternate;
+        }
+        @keyframes blink { from { opacity: 1; } to { opacity: 0.3; } }
+
         /* ── Animations ── */
         .bounce-in { animation: bounceIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
         @keyframes bounceIn { 0%{transform:scale(0)} 80%{transform:scale(1.08)} 100%{transform:scale(1)} }
         .shake { animation: shake 0.35s ease; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+        @keyframes walkAway { 0%{transform:translateX(0);opacity:1} 100%{transform:translateX(80px);opacity:0} }
+        .walk-away { animation: walkAway 0.5s ease forwards; }
+        @keyframes impatient { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-8deg)} 75%{transform:rotate(8deg)} }
+        .impatient { animation: impatient 0.4s infinite; }
 
         /* ── Back button ── */
         #back-btn {
@@ -276,6 +304,14 @@
                 </div>
                 <div id="bubble-hint">👆 在下方 Kiosk 點選對應的品項，再按 DONE</div>
             </div>
+        </div>
+
+        <!-- Patience bar -->
+        <div id="patience-wrap">
+            <span id="patience-label">😊 耐心：</span>
+            <div id="patience-track"><div id="patience-fill"></div></div>
+            <span id="patience-countdown">10s</span>
+            <span id="patience-status">⚠️ 快點！</span>
         </div>
 
         <div id="game-row">
@@ -352,11 +388,17 @@
 
         // ─── Game state ───────────────────────────────────────────
         let totalRounds, maxItems, currentRound, score, roundResults;
-        let currentOrder = [];   // array of menu item objects
-        let playerPicks = new Set(); // set of item names
+        let currentOrder = [];
+        let playerPicks = new Set();
         let currentPhrase = '';
         let currentCustomer = '🧑';
         const CUSTOMERS = ['🧑','👩','👨','🧒','👧','🧓','👴','👩‍🦱','👨‍🦲'];
+
+        // ─── Patience timer ───────────────────────────────────────
+        const PATIENCE_MAX  = 10;   // seconds before customer leaves
+        const PATIENCE_WARN = 5;    // seconds — half points after this
+        let patienceInterval = null;
+        let elapsedSeconds   = 0;
 
         const sfxCorrect = document.getElementById('sfx-correct');
         const sfxWrong   = document.getElementById('sfx-wrong');
@@ -407,6 +449,19 @@
 
         // ─── New round ────────────────────────────────────────────
         function newRound() {
+            clearPatienceTimer();
+            elapsedSeconds = 0;
+            // Reset patience bar to full green
+            const fill = document.getElementById('patience-fill');
+            fill.style.transition = 'none';
+            fill.style.width = '100%';
+            fill.style.backgroundColor = '#27ae60';
+            document.getElementById('patience-countdown').textContent = PATIENCE_MAX + 's';
+            document.getElementById('patience-countdown').style.color = 'white';
+            document.getElementById('patience-status').style.display = 'none';
+            document.getElementById('patience-label').textContent = '😊 耐心：';
+            setTimeout(() => { fill.style.transition = 'width 0.9s linear, background-color 0.4s'; }, 50);
+
             playerPicks.clear();
             document.querySelectorAll('.food-item').forEach(el => {
                 el.classList.remove('selected','wrong-pick');
@@ -443,15 +498,93 @@
             setTimeout(speakOrder, 400);
         }
 
+        // ─── Patience timer logic ─────────────────────────────────
+        function startPatienceTimer() {
+            if (patienceInterval) return; // already running
+            elapsedSeconds = 0;
+            updatePatienceBar();
+            patienceInterval = setInterval(() => {
+                elapsedSeconds++;
+                updatePatienceBar();
+                if (elapsedSeconds >= PATIENCE_MAX) {
+                    clearPatienceTimer();
+                    customerLeaves();
+                }
+            }, 1000);
+        }
+
+        function clearPatienceTimer() {
+            clearInterval(patienceInterval);
+            patienceInterval = null;
+        }
+
+        function updatePatienceBar() {
+            const remaining = Math.max(0, PATIENCE_MAX - elapsedSeconds);
+            const pct  = (remaining / PATIENCE_MAX) * 100;
+            const fill = document.getElementById('patience-fill');
+            const countdown = document.getElementById('patience-countdown');
+            const status    = document.getElementById('patience-status');
+            const label     = document.getElementById('patience-label');
+            const avatar    = document.getElementById('customer-avatar');
+
+            fill.style.width = pct + '%';
+
+            if (remaining > PATIENCE_WARN) {
+                fill.style.backgroundColor = '#27ae60';
+                countdown.style.color = 'white';
+                status.style.display = 'none';
+                label.textContent = '😊 耐心：';
+                avatar.classList.remove('impatient');
+            } else if (remaining > 2) {
+                fill.style.backgroundColor = '#f39c12';
+                countdown.style.color = '#f39c12';
+                status.style.display = 'inline';
+                label.textContent = '😠 耐心：';
+                avatar.classList.add('impatient');
+            } else {
+                fill.style.backgroundColor = '#e74c3c';
+                countdown.style.color = '#e74c3c';
+                status.style.display = 'inline';
+                label.textContent = '😡 耐心：';
+                avatar.classList.add('impatient');
+            }
+
+            countdown.textContent = remaining + 's';
+        }
+
+        function customerLeaves() {
+            speechSynthesis.cancel();
+            const avatar = document.getElementById('customer-avatar');
+            avatar.classList.remove('impatient');
+            avatar.classList.add('walk-away');
+
+            const correctNames = currentOrder.map(i => `${i.emoji} ${i.name}`).join('、');
+            score += 0;
+            roundResults.push('none');
+
+            document.getElementById('result-icon').textContent  = '😤';
+            document.getElementById('result-title').textContent = '客人走了！';
+            document.getElementById('result-title').style.color = '#e74c3c';
+            document.getElementById('result-detail').innerHTML  =
+                `等太久，客人離開了！<br>正確答案是：<strong>${correctNames}</strong>`;
+            setTimeout(() => {
+                document.getElementById('result-overlay').style.display = 'flex';
+            }, 550);
+        }
+
         // ─── TTS ─────────────────────────────────────────────────
         function speakOrder() {
-            if (!window.speechSynthesis) return;
+            if (!window.speechSynthesis) { startPatienceTimer(); return; }
             speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(currentPhrase);
-            utter.lang  = 'en-US';
-            utter.rate  = 0.82;
-            utter.pitch = 1.05;
+            const utter    = new SpeechSynthesisUtterance(currentPhrase);
+            utter.lang     = 'en-US';
+            utter.rate     = 0.82;
+            utter.pitch    = 1.05;
+            utter.onend    = () => startPatienceTimer();
+            utter.onerror  = () => startPatienceTimer();
             speechSynthesis.speak(utter);
+            // Fallback: if TTS stalls, start timer after 5s anyway
+            setTimeout(() => { if (!patienceInterval) startPatienceTimer(); }, 5000);
         }
         function replayTTS() { speakOrder(); }
 
@@ -508,12 +641,14 @@
                 return;
             }
 
+            clearPatienceTimer();
+            document.getElementById('customer-avatar').classList.remove('impatient');
+
             const required = new Set(currentOrder.map(i => i.name));
             const correct  = [...required].every(n => playerPicks.has(n));
             const noExtra  = playerPicks.size === required.size;
             const isWin    = correct && noExtra;
 
-            // Highlight wrong picks
             if (!isWin) {
                 playerPicks.forEach(name => {
                     if (!required.has(name)) {
@@ -523,9 +658,14 @@
                 });
             }
 
-            const pts = isWin ? 10 : 0;
+            // Scoring: full (10) if answered before PATIENCE_WARN, half (5) after
+            let pts = 0, resultKey = 'miss';
+            if (isWin) {
+                if (elapsedSeconds < PATIENCE_WARN) { pts = 10; resultKey = 'full'; }
+                else                                { pts = 5;  resultKey = 'half'; }
+            }
             score += pts;
-            roundResults.push(isWin);
+            roundResults.push(resultKey);
 
             if (isWin) {
                 sfxCorrect.currentTime = 0; sfxCorrect.play().catch(() => {});
@@ -533,14 +673,19 @@
                 sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {});
             }
 
-            // Show result card
-            document.getElementById('result-icon').textContent  = isWin ? '✅' : '❌';
-            document.getElementById('result-title').textContent = isWin ? 'Correct! 正確！' : 'Oops! 答錯了';
-            document.getElementById('result-title').style.color = isWin ? '#27ae60' : '#e74c3c';
+            const icon  = resultKey === 'full' ? '⚡' : resultKey === 'half' ? '🐢' : '❌';
+            const title = resultKey === 'full' ? 'Perfect! +10' : resultKey === 'half' ? 'Correct! +5' : 'Oops! 答錯了';
+            const color = isWin ? '#27ae60' : '#e74c3c';
+            document.getElementById('result-icon').textContent  = icon;
+            document.getElementById('result-title').textContent = title;
+            document.getElementById('result-title').style.color = color;
 
             const correctNames = currentOrder.map(i => `${i.emoji} ${i.name}`).join('、');
+            const timeMsg = resultKey === 'full' ? '⚡ 超快！滿分 +10'
+                          : resultKey === 'half' ? `⏱️ 慢了（${elapsedSeconds}秒），扣一半 +5`
+                          : '';
             document.getElementById('result-detail').innerHTML = isWin
-                ? `+10 分！<br>客人點的是：${correctNames}`
+                ? `${timeMsg}<br>客人點的是：${correctNames}`
                 : `正確答案是：<br><strong>${correctNames}</strong>`;
 
             document.getElementById('result-overlay').style.display = 'flex';
@@ -550,10 +695,15 @@
         // ─── Next round / end ─────────────────────────────────────
         function nextRound() {
             document.getElementById('result-overlay').style.display = 'none';
+            document.getElementById('customer-avatar').classList.remove('walk-away');
 
-            // Mark dot done
             const dot = document.getElementById(`dot-${currentRound}`);
-            if (dot) { dot.classList.remove('active'); dot.classList.add('done'); dot.textContent = roundResults[currentRound-1] ? '✓' : '✗'; }
+            if (dot) {
+                dot.classList.remove('active'); dot.classList.add('done');
+                const r = roundResults[currentRound - 1];
+                dot.textContent = r === 'full' ? '⚡' : r === 'half' ? '½' : '✗';
+                dot.style.fontSize = '10px';
+            }
 
             if (currentRound >= totalRounds) {
                 endGame();
@@ -582,7 +732,9 @@
             document.getElementById('final-score').textContent = score;
 
             const reviewEl = document.getElementById('score-review');
-            reviewEl.innerHTML = roundResults.map(r => `<span class="review-dot">${r ? '✅' : '❌'}</span>`).join('');
+            reviewEl.innerHTML = roundResults.map(r =>
+                `<span class="review-dot">${r === 'full' ? '⚡' : r === 'half' ? '🐢' : '❌'}</span>`
+            ).join('');
         }
     </script>
 </body>
