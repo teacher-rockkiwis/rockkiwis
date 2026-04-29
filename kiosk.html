@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr. ROCK - Kiosk Order Game</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        :root {
+            --kiosk-frame: #2c3e50; --kiosk-screen: #f8f9fa; --kiosk-header: #e74c3c;
+            --primary: #27ae60; --gold: #f39c12; --error: #e74c3c;
+            --text-dark: #2d3436; --bg: #1a252f;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; outline: none; }
+        body, html {
+            margin: 0; padding: 0; min-height: 100dvh; width: 100vw;
+            font-family: 'Quicksand', sans-serif; background: var(--bg);
+            display: flex; flex-direction: column; user-select: none; overflow-x: hidden;
+        }
+
+        /* ── Start overlay ── */
+        #start-overlay {
+            position: fixed; inset: 0; z-index: 90000;
+            background: rgba(26,37,47,0.97);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 18px; padding: 30px 20px;
+        }
+        #start-overlay h1 { font-size: 46px; color: var(--gold); margin: 0; text-align: center; text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        #start-overlay p  { color: #bdc3c7; font-size: 16px; margin: 0; text-align: center; line-height: 1.7; }
+        .start-select {
+            width: 90%; max-width: 340px; font-size: 17px; padding: 13px 15px; border-radius: 15px;
+            border: none; font-family: 'Quicksand'; font-weight: 700; color: #2c3e50;
+            background: white; appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 14px center; background-size: 16px; padding-right: 40px;
+        }
+        .start-btn {
+            background: var(--gold); color: #2d3436; border: none; padding: 15px 50px;
+            font-size: 24px; border-radius: 50px; font-family: 'Quicksand'; font-weight: 900;
+            cursor: pointer; box-shadow: 0 6px 0 #d4ac0d;
+        }
+        .start-btn:active { transform: translateY(6px); box-shadow: none; }
+        #start-error { color: #e74c3c; font-weight: 900; font-size: 15px; display: none; }
+
+        /* ── Main layout ── */
+        #main-layout {
+            display: none; flex-direction: column; align-items: center;
+            width: 100%; max-width: 1100px; margin: 0 auto;
+            padding: 15px 12px 20px 12px; gap: 16px; flex-grow: 1;
+        }
+
+        /* ── Round & score bar ── */
+        #top-bar {
+            width: 100%; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 4px;
+        }
+        .bar-pill {
+            background: rgba(255,255,255,0.1); border-radius: 50px; padding: 8px 20px;
+            font-size: 18px; font-weight: 900; color: white;
+        }
+        #round-dots { display: flex; gap: 8px; }
+        .round-dot {
+            width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4);
+            background: transparent; transition: 0.3s;
+        }
+        .round-dot.done  { background: var(--primary); border-color: var(--primary); }
+        .round-dot.active{ background: var(--gold);    border-color: var(--gold); }
+
+        /* ── Customer bubble ── */
+        #customer-area {
+            width: 100%; max-width: 700px;
+            display: flex; align-items: flex-start; gap: 14px;
+        }
+        #customer-avatar {
+            font-size: 52px; flex-shrink: 0; line-height: 1;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;
+        }
+        #bubble-wrap { flex: 1; }
+        #customer-bubble {
+            background: white; border-radius: 18px 18px 18px 4px;
+            padding: 14px 18px; font-size: 19px; font-weight: 900; color: var(--text-dark);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.2); min-height: 54px;
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        #order-text { flex: 1; line-height: 1.4; }
+        #replay-btn {
+            background: var(--gold); border: none; border-radius: 50%; width: 40px; height: 40px;
+            font-size: 20px; cursor: pointer; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 3px 0 #d4ac0d;
+        }
+        #replay-btn:active { transform: translateY(3px); box-shadow: none; }
+        #bubble-hint { color: #bdc3c7; font-size: 13px; font-weight: 700; margin-top: 5px; padding-left: 4px; }
+
+        /* ── Two-column layout on wide screens ── */
+        #game-row {
+            width: 100%; display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;
+        }
+
+        /* ── Kiosk machine ── */
+        #kiosk-machine {
+            flex: 1; min-width: 280px; max-width: 560px;
+            background: var(--kiosk-frame); border-radius: 24px;
+            padding: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 5px solid #34495e;
+        }
+        #kiosk-header {
+            background: var(--kiosk-header); border-radius: 12px 12px 0 0;
+            padding: 10px; text-align: center; font-size: 20px; font-weight: 900;
+            color: white; letter-spacing: 1px; margin-bottom: 10px;
+        }
+        #kiosk-screen {
+            background: var(--kiosk-screen); border-radius: 10px;
+            padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+        }
+        .food-item {
+            background: white; border-radius: 12px; padding: 8px 4px;
+            text-align: center; cursor: pointer; border: 3px solid transparent;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1); transition: 0.12s;
+            position: relative;
+        }
+        .food-item:active { transform: scale(0.94); }
+        .food-item.selected { border-color: var(--primary); background: #eafaf1; }
+        .food-item.wrong-pick { border-color: var(--error); background: #fdf2f2; }
+        .food-emoji { font-size: 42px; line-height: 1.1; margin-bottom: 4px; display: block; }
+        .food-name { font-size: 11px; font-weight: 900; color: var(--text-dark); line-height: 1.2; margin-bottom: 3px; }
+        .food-price { font-size: 15px; font-weight: 900; color: var(--error); }
+        .food-check {
+            position: absolute; top: 4px; right: 6px;
+            font-size: 18px; display: none;
+        }
+        .food-item.selected .food-check { display: block; }
+
+        #kiosk-buttons {
+            display: flex; gap: 10px; margin-top: 10px;
+        }
+        .kiosk-btn {
+            flex: 1; padding: 13px; border-radius: 10px; border: none;
+            font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Quicksand';
+            transition: 0.1s;
+        }
+        #cancel-btn { background: #e74c3c; color: white; box-shadow: 0 4px 0 #c0392b; }
+        #cancel-btn:active { transform: translateY(4px); box-shadow: none; }
+        #done-btn   { background: #27ae60; color: white; box-shadow: 0 4px 0 #1e8449; }
+        #done-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* ── Order panel (right side) ── */
+        #order-panel {
+            width: 240px; flex-shrink: 0;
+            background: rgba(255,255,255,0.05); border-radius: 20px;
+            padding: 16px; display: flex; flex-direction: column; gap: 10px;
+        }
+        #order-panel h3 {
+            margin: 0; color: white; font-size: 18px; text-align: center;
+            border-bottom: 2px dashed rgba(255,255,255,0.2); padding-bottom: 10px;
+        }
+        #order-items { flex: 1; min-height: 80px; }
+        .order-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 15px; font-weight: 700;
+        }
+        .order-row span:first-child { display: flex; align-items: center; gap: 6px; }
+        #order-total {
+            color: var(--gold); font-size: 20px; font-weight: 900; text-align: right;
+            border-top: 2px solid rgba(255,165,0,0.3); padding-top: 10px;
+        }
+        #order-empty { color: rgba(255,255,255,0.4); font-size: 14px; text-align: center; padding: 20px 0; }
+
+        /* ── Result overlay ── */
+        #result-overlay {
+            position: fixed; inset: 0; z-index: 80000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.75); gap: 20px; padding: 20px;
+        }
+        #result-card {
+            background: white; border-radius: 30px; padding: 30px 40px; text-align: center;
+            max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+        #result-icon { font-size: 70px; margin-bottom: 10px; }
+        #result-title { font-size: 32px; font-weight: 900; margin: 0 0 10px 0; }
+        #result-detail { font-size: 16px; color: #636e72; font-weight: 700; line-height: 1.6; }
+        #next-btn {
+            background: var(--gold); color: #2d3436; border: none; padding: 14px 50px;
+            font-size: 22px; border-radius: 50px; font-family: 'Quicksand'; font-weight: 900;
+            cursor: pointer; box-shadow: 0 6px 0 #d4ac0d;
+        }
+        #next-btn:active { transform: translateY(6px); box-shadow: none; }
+
+        /* ── End screen ── */
+        #end-overlay {
+            position: fixed; inset: 0; z-index: 80000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(26,37,47,0.97); gap: 20px; padding: 20px;
+        }
+        #end-overlay h1 { font-size: 42px; color: var(--gold); margin: 0; text-align: center; }
+        #score-display {
+            background: white; border-radius: 25px; padding: 25px 50px; text-align: center;
+        }
+        #score-display .big-score { font-size: 70px; font-weight: 900; color: var(--error); line-height: 1; }
+        #score-display .score-label { font-size: 20px; font-weight: 700; color: #636e72; }
+        #score-review { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .review-dot { font-size: 30px; }
+        #replay-game-btn {
+            background: var(--primary); color: white; border: none; padding: 14px 45px;
+            font-size: 20px; border-radius: 50px; font-family: 'Quicksand'; font-weight: 900;
+            cursor: pointer; box-shadow: 0 5px 0 #1e8449;
+        }
+
+        /* ── Animations ── */
+        .bounce-in { animation: bounceIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
+        @keyframes bounceIn { 0%{transform:scale(0)} 80%{transform:scale(1.08)} 100%{transform:scale(1)} }
+        .shake { animation: shake 0.35s ease; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+
+        /* ── Back button ── */
+        #back-btn {
+            position: fixed; top: max(12px,env(safe-area-inset-top)); left: 12px;
+            background: rgba(231,76,60,0.85); color: white; border: none;
+            padding: 8px 14px; border-radius: 10px; font-weight: 900; font-size: 14px;
+            cursor: pointer; z-index: 50000; box-shadow: 0 3px 0 #c0392b;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            #order-panel { width: 100%; }
+            .food-emoji { font-size: 34px; }
+            .food-name { font-size: 10px; }
+            #customer-bubble { font-size: 16px; }
+            #kiosk-screen { gap: 6px; padding: 8px; }
+            .food-item { padding: 6px 3px; }
+        }
+    </style>
+    <script src="common.js"></script>
+</head>
+<body>
+
+    <audio id="sfx-correct" src="bgm/bingo.mp3"></audio>
+    <audio id="sfx-wrong"   src="bgm/fail.mp3"></audio>
+
+    <button id="back-btn" onclick="location.href='teacher.html'">🔙 回去</button>
+
+    <!-- ── Start Screen ── -->
+    <div id="start-overlay">
+        <h1>🏪 Kiosk Order Game</h1>
+        <p>系統會自動扮演客人說出餐點需求<br>學生在 Kiosk 螢幕上點選正確的品項！</p>
+        <div id="start-error"></div>
+        <select id="rounds-select" class="start-select">
+            <option value="5">5 輪（快速體驗）</option>
+            <option value="8">8 輪（標準上課）</option>
+            <option value="12">12 輪（深度練習）</option>
+        </select>
+        <select id="difficulty-select" class="start-select">
+            <option value="1">簡單：每次點 1 樣</option>
+            <option value="2" selected>普通：每次點 1–2 樣</option>
+            <option value="3">困難：每次點 1–3 樣</option>
+        </select>
+        <button class="start-btn" onclick="startGame()">開始上課！🍔</button>
+    </div>
+
+    <!-- ── Main Game ── -->
+    <div id="main-layout">
+        <div id="top-bar">
+            <div class="bar-pill">🏆 <span id="score-val">0</span> 分</div>
+            <div id="round-dots"></div>
+            <div class="bar-pill">第 <span id="round-val">1</span> 輪</div>
+        </div>
+
+        <div id="customer-area">
+            <div id="customer-avatar">🧑</div>
+            <div id="bubble-wrap">
+                <div id="customer-bubble">
+                    <span id="order-text">…</span>
+                    <button id="replay-btn" onclick="replayTTS()">🔊</button>
+                </div>
+                <div id="bubble-hint">👆 在下方 Kiosk 點選對應的品項，再按 DONE</div>
+            </div>
+        </div>
+
+        <div id="game-row">
+            <!-- Kiosk Machine -->
+            <div id="kiosk-machine">
+                <div id="kiosk-header">🍽️ ROCK'S KITCHEN</div>
+                <div id="kiosk-screen"></div>
+                <div id="kiosk-buttons">
+                    <button class="kiosk-btn" id="cancel-btn" onclick="cancelOrder()">❌ CANCEL ORDER</button>
+                    <button class="kiosk-btn" id="done-btn"   onclick="confirmOrder()">✅ DONE</button>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div id="order-panel">
+                <h3>🧾 Your Order</h3>
+                <div id="order-items">
+                    <div id="order-empty">尚未點選任何品項</div>
+                </div>
+                <div id="order-total" style="display:none">
+                    合計：$<span id="total-val">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Round Result ── -->
+    <div id="result-overlay">
+        <div id="result-card">
+            <div id="result-icon"></div>
+            <h2 id="result-title"></h2>
+            <p id="result-detail"></p>
+        </div>
+        <button id="next-btn" onclick="nextRound()">下一位客人 →</button>
+    </div>
+
+    <!-- ── End Screen ── -->
+    <div id="end-overlay">
+        <h1>遊戲結束！🎉</h1>
+        <div id="score-display">
+            <div class="big-score"><span id="final-score">0</span></div>
+            <div class="score-label">分（滿分 <span id="max-score">50</span>）</div>
+        </div>
+        <div id="score-review"></div>
+        <button id="replay-game-btn" onclick="location.reload()">再玩一次</button>
+        <button onclick="location.href='teacher.html'" style="background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.3);padding:12px 35px;font-size:18px;border-radius:50px;font-weight:900;cursor:pointer;font-family:'Quicksand';">🔙 回老師頁面</button>
+    </div>
+
+    <script>
+        // ─── Food menu ───────────────────────────────────────────
+        const MENU = [
+            { name: 'hamburger',       emoji: '🍔', price: 90  },
+            { name: 'hot dog',         emoji: '🌭', price: 70  },
+            { name: 'juice',           emoji: '🧃', price: 20  },
+            { name: 'milk',            emoji: '🥛', price: 25  },
+            { name: 'water',           emoji: '💧', price: 10  },
+            { name: 'ice cream',       emoji: '🍦', price: 30  },
+            { name: 'apple pie',       emoji: '🥧', price: 45  },
+            { name: 'chicken nuggets', emoji: '🍗', price: 65  },
+            { name: 'Coke',            emoji: '🥤', price: 30  },
+            { name: 'salad',           emoji: '🥗', price: 35  },
+            { name: 'tea',             emoji: '🍵', price: 15  },
+            { name: 'milkshake',       emoji: '🧋', price: 50  },
+            { name: 'chips',           emoji: '🍟', price: 40  },
+            { name: 'hash brown',      emoji: '🥞', price: 35  },
+        ];
+
+        // Uncountable / plural → 'some'; vowel start → 'an'; else → 'a'
+        const UNCOUNTABLE = ['water','juice','milk','tea','chicken nuggets','chips'];
+        function article(name) {
+            if (UNCOUNTABLE.includes(name.toLowerCase())) return 'some';
+            return /^[aeiou]/i.test(name) ? 'an' : 'a';
+        }
+
+        // ─── Game state ───────────────────────────────────────────
+        let totalRounds, maxItems, currentRound, score, roundResults;
+        let currentOrder = [];   // array of menu item objects
+        let playerPicks = new Set(); // set of item names
+        let currentPhrase = '';
+        let currentCustomer = '🧑';
+        const CUSTOMERS = ['🧑','👩','👨','🧒','👧','🧓','👴','👩‍🦱','👨‍🦲'];
+
+        const sfxCorrect = document.getElementById('sfx-correct');
+        const sfxWrong   = document.getElementById('sfx-wrong');
+        sfxCorrect.volume = 0.5; sfxWrong.volume = 0.5;
+
+        // ─── Start ───────────────────────────────────────────────
+        function startGame() {
+            totalRounds = parseInt(document.getElementById('rounds-select').value);
+            maxItems    = parseInt(document.getElementById('difficulty-select').value);
+            currentRound = 1; score = 0; roundResults = [];
+
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('main-layout').style.display  = 'flex';
+            document.getElementById('max-score').textContent = totalRounds * 10;
+
+            buildKiosk();
+            buildRoundDots();
+            newRound();
+        }
+
+        function buildKiosk() {
+            const screen = document.getElementById('kiosk-screen');
+            screen.innerHTML = '';
+            MENU.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'food-item';
+                div.dataset.name = item.name;
+                div.innerHTML = `
+                    <span class="food-emoji">${item.emoji}</span>
+                    <div class="food-name">${item.name}</div>
+                    <div class="food-price">$${item.price}</div>
+                    <span class="food-check">✅</span>`;
+                div.onclick = () => toggleItem(item.name);
+                screen.appendChild(div);
+            });
+        }
+
+        function buildRoundDots() {
+            const container = document.getElementById('round-dots');
+            container.innerHTML = '';
+            for (let i = 1; i <= totalRounds; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'round-dot' + (i === 1 ? ' active' : '');
+                dot.id = `dot-${i}`;
+                container.appendChild(dot);
+            }
+        }
+
+        // ─── New round ────────────────────────────────────────────
+        function newRound() {
+            playerPicks.clear();
+            document.querySelectorAll('.food-item').forEach(el => {
+                el.classList.remove('selected','wrong-pick');
+            });
+            updateOrderPanel();
+
+            // Pick random customer avatar
+            currentCustomer = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
+            document.getElementById('customer-avatar').textContent = currentCustomer;
+
+            // Generate order: 1 to maxItems unique items
+            const count = Math.floor(Math.random() * maxItems) + 1;
+            const shuffled = [...MENU].sort(() => Math.random() - 0.5);
+            currentOrder = shuffled.slice(0, count);
+
+            // Build phrase
+            const names = currentOrder.map(i => i.name);
+            if (names.length === 1) {
+                currentPhrase = `I'd like ${article(names[0])} ${names[0]}, please.`;
+            } else if (names.length === 2) {
+                currentPhrase = `Can I have ${article(names[0])} ${names[0]} and ${article(names[1])} ${names[1]}, please?`;
+            } else {
+                const last = names[names.length - 1];
+                const rest = names.slice(0, -1).map(n => `${article(n)} ${n}`).join(', ');
+                currentPhrase = `I'll have ${rest}, and ${article(last)} ${last}, please.`;
+            }
+
+            document.getElementById('order-text').textContent = currentPhrase;
+            document.getElementById('round-val').textContent = currentRound;
+            document.getElementById('score-val').textContent = score;
+            updateDots();
+
+            // Auto-speak after short delay
+            setTimeout(speakOrder, 400);
+        }
+
+        // ─── TTS ─────────────────────────────────────────────────
+        function speakOrder() {
+            if (!window.speechSynthesis) return;
+            speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(currentPhrase);
+            utter.lang  = 'en-US';
+            utter.rate  = 0.82;
+            utter.pitch = 1.05;
+            speechSynthesis.speak(utter);
+        }
+        function replayTTS() { speakOrder(); }
+
+        // ─── Item selection ───────────────────────────────────────
+        function toggleItem(name) {
+            const el = document.querySelector(`.food-item[data-name="${CSS.escape(name)}"]`);
+            if (playerPicks.has(name)) {
+                playerPicks.delete(name);
+                el.classList.remove('selected');
+            } else {
+                playerPicks.add(name);
+                el.classList.add('selected');
+                el.classList.add('bounce-in');
+                setTimeout(() => el.classList.remove('bounce-in'), 400);
+            }
+            updateOrderPanel();
+        }
+
+        function cancelOrder() {
+            playerPicks.clear();
+            document.querySelectorAll('.food-item').forEach(el => el.classList.remove('selected','wrong-pick'));
+            updateOrderPanel();
+        }
+
+        function updateOrderPanel() {
+            const container = document.getElementById('order-items');
+            const totalEl   = document.getElementById('order-total');
+            const emptyEl   = document.getElementById('order-empty');
+
+            if (playerPicks.size === 0) {
+                container.innerHTML = '';
+                container.appendChild(document.getElementById('order-empty') || Object.assign(document.createElement('div'), {id:'order-empty', textContent:'尚未點選任何品項', style:'color:rgba(255,255,255,0.4);font-size:14px;text-align:center;padding:20px 0'}));
+                totalEl.style.display = 'none';
+                return;
+            }
+
+            let html = '', total = 0;
+            playerPicks.forEach(name => {
+                const item = MENU.find(m => m.name === name);
+                if (!item) return;
+                total += item.price;
+                html += `<div class="order-row"><span>${item.emoji} ${item.name}</span><span>$${item.price}</span></div>`;
+            });
+            container.innerHTML = html;
+            totalEl.style.display = 'block';
+            document.getElementById('total-val').textContent = total;
+        }
+
+        // ─── Confirm & check ──────────────────────────────────────
+        function confirmOrder() {
+            if (playerPicks.size === 0) {
+                document.getElementById('kiosk-machine').classList.add('shake');
+                setTimeout(() => document.getElementById('kiosk-machine').classList.remove('shake'), 350);
+                return;
+            }
+
+            const required = new Set(currentOrder.map(i => i.name));
+            const correct  = [...required].every(n => playerPicks.has(n));
+            const noExtra  = playerPicks.size === required.size;
+            const isWin    = correct && noExtra;
+
+            // Highlight wrong picks
+            if (!isWin) {
+                playerPicks.forEach(name => {
+                    if (!required.has(name)) {
+                        document.querySelector(`.food-item[data-name="${CSS.escape(name)}"]`)
+                            ?.classList.add('wrong-pick');
+                    }
+                });
+            }
+
+            const pts = isWin ? 10 : 0;
+            score += pts;
+            roundResults.push(isWin);
+
+            if (isWin) {
+                sfxCorrect.currentTime = 0; sfxCorrect.play().catch(() => {});
+            } else {
+                sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {});
+            }
+
+            // Show result card
+            document.getElementById('result-icon').textContent  = isWin ? '✅' : '❌';
+            document.getElementById('result-title').textContent = isWin ? 'Correct! 正確！' : 'Oops! 答錯了';
+            document.getElementById('result-title').style.color = isWin ? '#27ae60' : '#e74c3c';
+
+            const correctNames = currentOrder.map(i => `${i.emoji} ${i.name}`).join('、');
+            document.getElementById('result-detail').innerHTML = isWin
+                ? `+10 分！<br>客人點的是：${correctNames}`
+                : `正確答案是：<br><strong>${correctNames}</strong>`;
+
+            document.getElementById('result-overlay').style.display = 'flex';
+            speechSynthesis.cancel();
+        }
+
+        // ─── Next round / end ─────────────────────────────────────
+        function nextRound() {
+            document.getElementById('result-overlay').style.display = 'none';
+
+            // Mark dot done
+            const dot = document.getElementById(`dot-${currentRound}`);
+            if (dot) { dot.classList.remove('active'); dot.classList.add('done'); dot.textContent = roundResults[currentRound-1] ? '✓' : '✗'; }
+
+            if (currentRound >= totalRounds) {
+                endGame();
+            } else {
+                currentRound++;
+                newRound();
+            }
+        }
+
+        function updateDots() {
+            for (let i = 1; i <= totalRounds; i++) {
+                const d = document.getElementById(`dot-${i}`);
+                if (!d) continue;
+                if (i < currentRound) {
+                    // already done — keeps its ✓/✗
+                } else if (i === currentRound) {
+                    d.classList.add('active');
+                } else {
+                    d.classList.remove('active','done');
+                }
+            }
+        }
+
+        function endGame() {
+            document.getElementById('end-overlay').style.display = 'flex';
+            document.getElementById('final-score').textContent = score;
+
+            const reviewEl = document.getElementById('score-review');
+            reviewEl.innerHTML = roundResults.map(r => `<span class="review-dot">${r ? '✅' : '❌'}</span>`).join('');
+        }
+    </script>
+</body>
+</html>
