@@ -196,7 +196,7 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
   <div class="patience-wrap">
     <span class="patience-label" id="c-pat-label">😊 耐心：</span>
     <div class="patience-track"><div class="patience-fill" id="c-pat-fill"></div></div>
-    <span class="patience-num" id="c-pat-num">30s</span>
+    <span class="patience-num" id="c-pat-num">15s</span>
   </div>
   <div class="customer-area">
     <div class="customer-avatar" id="c-avatar">🧑</div>
@@ -240,7 +240,7 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
   <div class="patience-wrap" id="k-patience-wrap" style="display:none">
     <span class="patience-label" id="k-pat-label">⏱️ 剩餘：</span>
     <div class="patience-track"><div class="patience-fill" id="k-pat-fill"></div></div>
-    <span class="patience-num" id="k-pat-num">30s</span>
+    <span class="patience-num" id="k-pat-num">15s</span>
   </div>
   <div class="kitchen-waiting" id="k-waiting"><span class="spin" style="font-size:40px;">⏳</span>等待櫃檯點餐...</div>
   <div id="k-order-ticket" style="display:none">
@@ -306,7 +306,7 @@ let MENU=MENU_G4;
 const UNCOUNTABLE=['water','juice','milk','tea','chicken nuggets','chips','soup','noodles','cereal','seafood','spaghetti','fries','sushi','dumplings','bread','chicken'];
 function article(n){if(UNCOUNTABLE.includes(n.toLowerCase()))return'some';return/^[aeiou]/i.test(n)?'an':'a';}
 const CUSTOMERS=['🧑','👩','👨','🧒','👧','🧓','👴'];
-const PATIENCE_MAX=30, PATIENCE_WARN=15;
+const PATIENCE_MAX=15, PATIENCE_WARN=8;
 
 // ── State ────────────────────────────────────────────────
 let role=''; // 'counter' | 'kitchen'
@@ -512,7 +512,7 @@ function newRoundCounter(){
   document.getElementById('serve-btn').style.display='none';
   // reset patience bar
   ['c','k'].forEach(p=>{const f=document.getElementById(p+'-pat-fill');if(f){f.style.transition='none';f.style.width='100%';f.style.backgroundColor='#27ae60';setTimeout(()=>f.style.transition='width .9s linear,background-color .4s',50);}});
-  document.getElementById('c-pat-num').textContent='30s';
+  document.getElementById('c-pat-num').textContent='15s';
   document.getElementById('c-pat-label').textContent='😊 耐心：';
   const avatar=document.getElementById('c-avatar');
   avatar.classList.remove('impatient','walk-away');
