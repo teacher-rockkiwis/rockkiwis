@@ -95,14 +95,17 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 #kitchen-screen{display:none;flex-direction:column;width:100%;max-width:800px;margin:0 auto;padding:0 14px 20px;gap:14px;flex-grow:1;}
 .kitchen-header{text-align:center;padding:14px;background:var(--orange);color:white;font-size:22px;font-weight:900;}
 .kitchen-waiting{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-grow:1;gap:16px;color:#bdc3c7;font-size:20px;font-weight:900;}
-.prep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;}
-.prep-tile{background:rgba(255,255,255,0.08);border-radius:18px;padding:20px 10px;text-align:center;border:3px solid rgba(255,255,255,0.15);cursor:pointer;transition:.15s;position:relative;}
-.prep-tile.done{background:rgba(39,174,96,0.2);border-color:var(--success);}
-.prep-tile:active{transform:scale(.94);}
-.prep-emoji{font-size:70px;line-height:1;display:block;margin-bottom:10px;}
-.prep-name{font-size:16px;font-weight:900;color:white;margin-bottom:6px;}
-.prep-badge{font-size:12px;font-weight:900;padding:4px 12px;border-radius:50px;background:rgba(255,255,255,0.1);color:#bdc3c7;}
-.prep-tile.done .prep-badge{background:var(--success);color:white;}
+.k-order-ticket{background:#fff8e1;border-radius:16px;padding:14px 18px;font-size:19px;font-weight:900;color:#2d3436;box-shadow:0 4px 14px rgba(0,0,0,0.3);border-left:6px solid var(--gold);}
+.k-order-label{font-size:11px;font-weight:900;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.kitchen-menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;}
+.k-food-item{background:rgba(255,255,255,0.08);border-radius:12px;padding:8px 3px;text-align:center;cursor:pointer;border:3px solid transparent;transition:.12s;position:relative;}
+.k-food-item:active{transform:scale(.93);}
+.k-food-item.k-selected{border-color:var(--success);background:rgba(39,174,96,0.2);}
+.k-food-item.k-wrong{border-color:var(--error);background:rgba(231,76,60,0.2);animation:shake .35s ease;}
+.k-food-item .food-emoji{font-size:30px;line-height:1.1;display:block;margin-bottom:3px;}
+.k-food-item .food-name{font-size:10px;font-weight:900;color:white;line-height:1.2;}
+.k-food-item .food-check{position:absolute;top:2px;right:4px;font-size:12px;display:none;}
+.k-food-item.k-selected .food-check{display:block;}
 .kitchen-done-btn{background:var(--success);color:white;border:none;border-radius:50px;padding:16px;font-size:22px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 6px 0 #1e8449;width:100%;max-width:400px;align-self:center;}
 .kitchen-done-btn:disabled{background:#636e72;box-shadow:none;cursor:default;}
 .kitchen-done-btn:active:not(:disabled){transform:translateY(6px);box-shadow:none;}
@@ -134,7 +137,7 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .walk-away{animation:walkAway .5s ease forwards;}
 @keyframes impatient{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 .impatient{animation:impatient .4s infinite;}
-@media(max-width:640px){.kiosk-screen{grid-template-columns:repeat(3,1fr);}.game-row{flex-direction:column;}.order-panel{width:100%;}.food-emoji{font-size:28px;}.prep-grid{grid-template-columns:repeat(2,1fr);}.prep-emoji{font-size:54px;}}
+@media(max-width:640px){.kiosk-screen{grid-template-columns:repeat(3,1fr);}.game-row{flex-direction:column;}.order-panel{width:100%;}.food-emoji{font-size:28px;}.kitchen-menu-grid{grid-template-columns:repeat(3,1fr);}}
     </style>
     <script src="common.js"></script>
 </head>
@@ -235,7 +238,13 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
     <span class="patience-num" id="k-pat-num">30s</span>
   </div>
   <div class="kitchen-waiting" id="k-waiting"><span class="spin" style="font-size:40px;">⏳</span>等待櫃檯點餐...</div>
-  <div class="prep-grid" id="k-prep-grid" style="display:none"></div>
+  <div id="k-order-ticket" style="display:none">
+    <div class="k-order-ticket">
+      <div class="k-order-label">🎤 客人說了...</div>
+      <div id="k-order-phrase"></div>
+    </div>
+  </div>
+  <div class="kitchen-menu-grid" id="k-menu-grid" style="display:none"></div>
   <button class="kitchen-done-btn" id="k-done-btn" onclick="kitchenReady()" disabled style="display:none">✅ 出餐！</button>
 </div>
 
@@ -551,7 +560,8 @@ function listenRoomCounter(){
 }
 
 // ── Kitchen logic ─────────────────────────────────────────
-let prepDone=new Set();
+let kitchenPicks=new Set();
+let kitchenCorrectOrder=[];
 
 function listenRoomKitchen(){
   roomRef.on('value',snap=>{
@@ -562,15 +572,19 @@ function listenRoomKitchen(){
     totalRounds=d.totalRounds||8;
     if(d.phase==='ordering'||d.phase==='waiting'){
       document.getElementById('k-waiting').style.display='flex';
-      document.getElementById('k-prep-grid').style.display='none';
+      document.getElementById('k-order-ticket').style.display='none';
+      document.getElementById('k-menu-grid').style.display='none';
       document.getElementById('k-done-btn').style.display='none';
       document.getElementById('k-patience-wrap').style.display='none';
       clearPatience(); patienceStart=null;
     }
     if(d.phase==='kitchen_working'&&d.order){
-      buildPrepGrid(d.order);
+      kitchenCorrectOrder=d.order;
+      document.getElementById('k-order-phrase').textContent=d.orderPhrase||'';
+      buildKitchenMenu();
       document.getElementById('k-waiting').style.display='none';
-      document.getElementById('k-prep-grid').style.display='grid';
+      document.getElementById('k-order-ticket').style.display='block';
+      document.getElementById('k-menu-grid').style.display='grid';
       document.getElementById('k-done-btn').style.display='block';
       document.getElementById('k-patience-wrap').style.display='flex';
       if(d.patienceStart&&d.patienceStart!==patienceStart) startPatience(d.patienceStart);
@@ -578,35 +592,45 @@ function listenRoomKitchen(){
     if(d.phase==='kitchen_ready'){
       document.getElementById('k-waiting').innerHTML='<span style="font-size:40px;">✅</span>已通知櫃檯，等待送餐...';
       document.getElementById('k-waiting').style.display='flex';
-      document.getElementById('k-prep-grid').style.display='none';
+      document.getElementById('k-order-ticket').style.display='none';
+      document.getElementById('k-menu-grid').style.display='none';
       document.getElementById('k-done-btn').style.display='none';
     }
     if(d.phase==='result') showResult(d);
   });
 }
 
-function buildPrepGrid(orderArr){
-  prepDone=new Set();
-  const g=document.getElementById('k-prep-grid'); g.innerHTML='';
-  orderArr.forEach(name=>{
-    const item=MENU.find(m=>m.name===name);
-    if(!item)return;
-    const d=document.createElement('div'); d.className='prep-tile'; d.dataset.name=name;
-    d.innerHTML=`<span class="prep-emoji">${item.emoji}</span><div class="prep-name">${item.name}</div><div class="prep-badge" id="badge-${CSS.escape(name)}">準備中 🍳</div>`;
-    d.onclick=()=>markPrepDone(name,d);
-    g.appendChild(d);
+function buildKitchenMenu(){
+  kitchenPicks.clear();
+  const g=document.getElementById('k-menu-grid'); g.innerHTML='';
+  MENU.forEach(item=>{
+    const el=document.createElement('div'); el.className='k-food-item'; el.dataset.name=item.name;
+    el.innerHTML=`<span class="food-emoji">${item.emoji}</span><div class="food-name">${item.name}</div><span class="food-check">✅</span>`;
+    el.onclick=()=>toggleKitchenPick(item.name,el);
+    g.appendChild(el);
   });
   document.getElementById('k-done-btn').disabled=true;
 }
 
-function markPrepDone(name,el){
-  if(prepDone.has(name)){prepDone.delete(name);el.classList.remove('done');document.getElementById('badge-'+CSS.escape(name)).textContent='準備中 🍳';}
-  else{prepDone.add(name);el.classList.add('done');document.getElementById('badge-'+CSS.escape(name)).textContent='✅ 完成';}
-  const allItems=document.querySelectorAll('.prep-tile');
-  document.getElementById('k-done-btn').disabled=prepDone.size<allItems.length;
+function toggleKitchenPick(name,el){
+  el.classList.remove('k-wrong');
+  if(kitchenPicks.has(name)){kitchenPicks.delete(name);el.classList.remove('k-selected');}
+  else{kitchenPicks.add(name);el.classList.add('k-selected','bounce-in');setTimeout(()=>el.classList.remove('bounce-in'),400);}
+  document.getElementById('k-done-btn').disabled=kitchenPicks.size===0;
 }
 
 function kitchenReady(){
+  const correct=new Set(kitchenCorrectOrder);
+  const hasWrong=[...kitchenPicks].some(n=>!correct.has(n));
+  const hasMissing=kitchenPicks.size!==correct.size;
+  if(hasWrong||hasMissing){
+    document.querySelectorAll('.k-food-item').forEach(el=>{
+      if(kitchenPicks.has(el.dataset.name)&&!correct.has(el.dataset.name)) el.classList.add('k-wrong');
+    });
+    const btn=document.getElementById('k-done-btn');
+    btn.classList.add('shake'); setTimeout(()=>btn.classList.remove('shake'),400);
+    return;
+  }
   roomRef.update({phase:'kitchen_ready'});
   document.getElementById('k-done-btn').disabled=true;
 }
