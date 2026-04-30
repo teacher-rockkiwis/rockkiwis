@@ -314,7 +314,7 @@ function selectRole(r){
 function counterCreate(){
   totalRounds=parseInt(document.getElementById('rounds-select').value);
   maxItems=parseInt(document.getElementById('difficulty-select').value);
-  roomRef=db.ref('kiosk-rooms/'+roomCode);
+  roomRef=db.ref('rooms/kiosk-'+roomCode);
   roomRef.set({phase:'waiting',round:1,totalRounds,maxItems,score:0,order:null,orderPhrase:'',patienceStart:null,counterOnline:true,kitchenOnline:false,roundResults:{}});
   roomRef.onDisconnect().remove();
   document.getElementById('counter-waiting').style.display='flex';
@@ -333,7 +333,7 @@ function kitchenJoin(){
   if(code.length!==4){errEl.textContent='⚠️ 請輸入4位數房間號碼';errEl.style.display='block';return;}
   errEl.style.display='none';
   errEl.textContent='';
-  roomCode=code; roomRef=db.ref('kiosk-rooms/'+roomCode);
+  roomCode=code; roomRef=db.ref('rooms/kiosk-'+roomCode);
   // Show loading state
   const btn=document.querySelector('#setup-panel-kitchen .setup-btn');
   btn.textContent='⏳ 連線中...'; btn.disabled=true;
