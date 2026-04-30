@@ -97,15 +97,16 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .kitchen-waiting{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-grow:1;gap:16px;color:#bdc3c7;font-size:20px;font-weight:900;}
 .k-order-ticket{background:#fff8e1;border-radius:16px;padding:14px 18px;font-size:19px;font-weight:900;color:#2d3436;box-shadow:0 4px 14px rgba(0,0,0,0.3);border-left:6px solid var(--gold);}
 .k-order-label{font-size:11px;font-weight:900;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
-.kitchen-menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;}
-.k-food-item{background:rgba(255,255,255,0.08);border-radius:12px;padding:8px 3px;text-align:center;cursor:pointer;border:3px solid transparent;transition:.12s;position:relative;}
-.k-food-item:active{transform:scale(.93);}
-.k-food-item.k-selected{border-color:var(--success);background:rgba(39,174,96,0.2);}
-.k-food-item.k-wrong{border-color:var(--error);background:rgba(231,76,60,0.2);animation:shake .35s ease;}
-.k-food-item .food-emoji{font-size:30px;line-height:1.1;display:block;margin-bottom:3px;}
-.k-food-item .food-name{font-size:10px;font-weight:900;color:white;line-height:1.2;}
-.k-food-item .food-check{position:absolute;top:2px;right:4px;font-size:12px;display:none;}
-.k-food-item.k-selected .food-check{display:block;}
+.k-scramble-list{display:flex;flex-direction:column;gap:14px;width:100%;}
+.k-scramble-item{background:rgba(255,255,255,0.07);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:2px solid transparent;transition:.3s;}
+.k-scramble-item.k-solved{background:rgba(39,174,96,0.12);border-color:var(--success);}
+.k-scramble-emoji{font-size:44px;flex-shrink:0;}
+.k-scramble-halves{display:flex;gap:10px;flex:1;flex-wrap:wrap;}
+.k-half-btn{padding:10px 18px;border-radius:12px;border:3px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:white;font-size:19px;font-weight:900;cursor:pointer;font-family:'Quicksand';transition:.12s;min-width:60px;text-align:center;letter-spacing:1px;}
+.k-half-btn:active{transform:scale(.93);}
+.k-half-btn.k-picked{border-color:var(--gold);background:rgba(243,156,18,0.25);color:var(--gold);}
+.k-half-btn.k-correct{border-color:var(--success);background:rgba(39,174,96,0.2);color:var(--success);cursor:default;}
+.k-solved-label{font-size:13px;font-weight:900;color:var(--success);white-space:nowrap;}
 .kitchen-done-btn{background:var(--success);color:white;border:none;border-radius:50px;padding:16px;font-size:22px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 6px 0 #1e8449;width:100%;max-width:400px;align-self:center;}
 .kitchen-done-btn:disabled{background:#636e72;box-shadow:none;cursor:default;}
 .kitchen-done-btn:active:not(:disabled){transform:translateY(6px);box-shadow:none;}
@@ -137,7 +138,7 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .walk-away{animation:walkAway .5s ease forwards;}
 @keyframes impatient{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 .impatient{animation:impatient .4s infinite;}
-@media(max-width:640px){.kiosk-screen{grid-template-columns:repeat(3,1fr);}.game-row{flex-direction:column;}.order-panel{width:100%;}.food-emoji{font-size:28px;}.kitchen-menu-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.kiosk-screen{grid-template-columns:repeat(3,1fr);}.game-row{flex-direction:column;}.order-panel{width:100%;}.food-emoji{font-size:28px;}.k-scramble-emoji{font-size:34px;}.k-half-btn{font-size:16px;padding:8px 12px;}}
     </style>
     <script src="common.js"></script>
 </head>
@@ -249,7 +250,7 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
       <div id="k-order-phrase"></div>
     </div>
   </div>
-  <div class="kitchen-menu-grid" id="k-menu-grid" style="display:none"></div>
+  <div class="k-scramble-list" id="k-scramble-list" style="display:none"></div>
   <button class="kitchen-done-btn" id="k-done-btn" onclick="kitchenReady()" disabled style="display:none">✅ 出餐！</button>
 </div>
 
@@ -588,9 +589,17 @@ function listenRoomCounter(){
   });
 }
 
-// ── Kitchen logic ─────────────────────────────────────────
-let kitchenPicks=new Set();
-let kitchenCorrectOrder=[];
+// ── Kitchen scramble logic ────────────────────────────────
+let scrambleState=[];
+
+function splitWord(name){
+  // Multi-word: split at first space → two words
+  const sp=name.indexOf(' ');
+  if(sp>0) return [name.slice(0,sp), name.slice(sp+1)];
+  // Single word: split roughly in half
+  const mid=Math.ceil(name.length/2);
+  return [name.slice(0,mid), name.slice(mid)];
+}
 
 function listenRoomKitchen(){
   roomRef.on('value',snap=>{
@@ -602,18 +611,18 @@ function listenRoomKitchen(){
     if(d.phase==='ordering'||d.phase==='waiting'){
       document.getElementById('k-waiting').style.display='flex';
       document.getElementById('k-order-ticket').style.display='none';
-      document.getElementById('k-menu-grid').style.display='none';
+      document.getElementById('k-scramble-list').style.display='none';
       document.getElementById('k-done-btn').style.display='none';
       document.getElementById('k-patience-wrap').style.display='none';
       clearPatience(); patienceStart=null;
     }
     if(d.phase==='kitchen_working'&&d.order){
-      kitchenCorrectOrder=d.order;
+      MENU=d.grade==='g5'?MENU_G5:MENU_G4;
       document.getElementById('k-order-phrase').textContent=d.orderPhrase||'';
-      buildKitchenMenu();
+      buildKitchenScramble(d.order);
       document.getElementById('k-waiting').style.display='none';
       document.getElementById('k-order-ticket').style.display='block';
-      document.getElementById('k-menu-grid').style.display='grid';
+      document.getElementById('k-scramble-list').style.display='flex';
       document.getElementById('k-done-btn').style.display='block';
       document.getElementById('k-patience-wrap').style.display='flex';
       if(d.patienceStart&&d.patienceStart!==patienceStart) startPatience(d.patienceStart);
@@ -622,44 +631,56 @@ function listenRoomKitchen(){
       document.getElementById('k-waiting').innerHTML='<span style="font-size:40px;">✅</span>已通知櫃檯，等待送餐...';
       document.getElementById('k-waiting').style.display='flex';
       document.getElementById('k-order-ticket').style.display='none';
-      document.getElementById('k-menu-grid').style.display='none';
+      document.getElementById('k-scramble-list').style.display='none';
       document.getElementById('k-done-btn').style.display='none';
     }
     if(d.phase==='result') showResult(d);
   });
 }
 
-function buildKitchenMenu(){
-  kitchenPicks.clear();
-  const g=document.getElementById('k-menu-grid'); g.innerHTML='';
-  MENU.forEach(item=>{
-    const el=document.createElement('div'); el.className='k-food-item'; el.dataset.name=item.name;
-    el.innerHTML=`<span class="food-emoji">${item.emoji}</span><div class="food-name">${item.name}</div><span class="food-check">✅</span>`;
-    el.onclick=()=>toggleKitchenPick(item.name,el);
-    g.appendChild(el);
+function buildKitchenScramble(orderArr){
+  scrambleState=orderArr.map(name=>{
+    const [h1,h2]=splitWord(name);
+    const swapped=Math.random()<0.5;
+    return {name,h1,h2,swapped,firstPick:null,solved:false};
+  });
+  const list=document.getElementById('k-scramble-list'); list.innerHTML='';
+  scrambleState.forEach((s,i)=>{
+    const mi=MENU.find(m=>m.name===s.name);
+    const [btnA,btnB]=s.swapped?[s.h2,s.h1]:[s.h1,s.h2];
+    const [idxA,idxB]=s.swapped?[1,0]:[0,1];
+    const div=document.createElement('div'); div.className='k-scramble-item'; div.id='ksi-'+i;
+    div.innerHTML=`<span class="k-scramble-emoji">${mi?mi.emoji:'🍽️'}</span><div class="k-scramble-halves"><button class="k-half-btn" id="khb-${i}-${idxA}" onclick="pickHalf(${i},${idxA})">${btnA}</button><button class="k-half-btn" id="khb-${i}-${idxB}" onclick="pickHalf(${i},${idxB})">${btnB}</button></div><span class="k-solved-label" id="ksl-${i}" style="display:none">✅ ${s.name}</span>`;
+    list.appendChild(div);
   });
   document.getElementById('k-done-btn').disabled=true;
 }
 
-function toggleKitchenPick(name,el){
-  el.classList.remove('k-wrong');
-  if(kitchenPicks.has(name)){kitchenPicks.delete(name);el.classList.remove('k-selected');}
-  else{kitchenPicks.add(name);el.classList.add('k-selected','bounce-in');setTimeout(()=>el.classList.remove('bounce-in'),400);}
-  document.getElementById('k-done-btn').disabled=kitchenPicks.size===0;
+function pickHalf(itemIdx,halfIdx){
+  const s=scrambleState[itemIdx];
+  if(s.solved) return;
+  if(s.firstPick===null){
+    s.firstPick=halfIdx;
+    document.getElementById('khb-'+itemIdx+'-'+halfIdx).classList.add('k-picked');
+  } else if(s.firstPick===halfIdx){
+    s.firstPick=null;
+    document.getElementById('khb-'+itemIdx+'-'+halfIdx).classList.remove('k-picked');
+  } else {
+    const correct=(s.firstPick===0&&halfIdx===1);
+    if(correct){
+      s.solved=true;
+      document.getElementById('ksi-'+itemIdx).classList.add('k-solved');
+      [0,1].forEach(idx=>{const b=document.getElementById('khb-'+itemIdx+'-'+idx);b.classList.remove('k-picked');b.classList.add('k-correct');});
+      document.getElementById('ksl-'+itemIdx).style.display='block';
+      if(scrambleState.every(x=>x.solved)) document.getElementById('k-done-btn').disabled=false;
+    } else {
+      s.firstPick=null;
+      [0,1].forEach(idx=>{const b=document.getElementById('khb-'+itemIdx+'-'+idx);b.classList.remove('k-picked');b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);});
+    }
+  }
 }
 
 function kitchenReady(){
-  const correct=new Set(kitchenCorrectOrder);
-  const hasWrong=[...kitchenPicks].some(n=>!correct.has(n));
-  const hasMissing=kitchenPicks.size!==correct.size;
-  if(hasWrong||hasMissing){
-    document.querySelectorAll('.k-food-item').forEach(el=>{
-      if(kitchenPicks.has(el.dataset.name)&&!correct.has(el.dataset.name)) el.classList.add('k-wrong');
-    });
-    const btn=document.getElementById('k-done-btn');
-    btn.classList.add('shake'); setTimeout(()=>btn.classList.remove('shake'),400);
-    return;
-  }
   roomRef.update({phase:'kitchen_ready'});
   document.getElementById('k-done-btn').disabled=true;
 }
