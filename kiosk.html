@@ -157,6 +157,11 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
   <div id="setup-panel-counter" class="setup-panel" style="display:none">
     <div class="setup-label">房間號碼（讓內場輸入）</div>
     <div class="setup-code" id="room-code-display">----</div>
+    <div class="setup-label">年級單字</div>
+    <select id="grade-select" class="setup-select">
+      <option value="g4">四年級 G4 U3（漢堡、果汁...）</option>
+      <option value="g5">五年級 G5 U3（麵條、牛排...）</option>
+    </select>
     <div class="setup-label">輪數</div>
     <select id="rounds-select" class="setup-select">
       <option value="5">5 輪（快速體驗）</option>
@@ -280,7 +285,7 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
 // ── Menu ─────────────────────────────────────────────────
-const MENU=[
+const MENU_G4=[
   {name:'hamburger',emoji:'🍔',price:90},{name:'hot dog',emoji:'🌭',price:70},
   {name:'juice',emoji:'🧃',price:20},{name:'milk',emoji:'🥛',price:25},
   {name:'water',emoji:'💧',price:10},{name:'ice cream',emoji:'🍦',price:30},
@@ -289,7 +294,16 @@ const MENU=[
   {name:'tea',emoji:'🍵',price:15},{name:'milkshake',emoji:'🧋',price:50},
   {name:'chips',emoji:'🍟',price:40},{name:'hash brown',emoji:'🥞',price:35},
 ];
-const UNCOUNTABLE=['water','juice','milk','tea','chicken nuggets','chips'];
+const MENU_G5=[
+  {name:'bread',emoji:'🍞',price:20},{name:'chicken',emoji:'🍗',price:75},
+  {name:'salad',emoji:'🥗',price:35},{name:'soup',emoji:'🍲',price:30},
+  {name:'noodles',emoji:'🍜',price:45},{name:'cereal',emoji:'🥣',price:25},
+  {name:'dumplings',emoji:'🥟',price:50},{name:'fries',emoji:'🍟',price:40},
+  {name:'seafood',emoji:'🦞',price:120},{name:'spaghetti',emoji:'🍝',price:80},
+  {name:'steak',emoji:'🥩',price:150},{name:'sushi',emoji:'🍣',price:65},
+];
+let MENU=MENU_G4;
+const UNCOUNTABLE=['water','juice','milk','tea','chicken nuggets','chips','soup','noodles','cereal','seafood','spaghetti','fries','sushi','dumplings','bread','chicken'];
 function article(n){if(UNCOUNTABLE.includes(n.toLowerCase()))return'some';return/^[aeiou]/i.test(n)?'an':'a';}
 const CUSTOMERS=['🧑','👩','👨','🧒','👧','🧓','👴'];
 const PATIENCE_MAX=30, PATIENCE_WARN=15;
@@ -323,8 +337,10 @@ function selectRole(r){
 function counterCreate(){
   totalRounds=parseInt(document.getElementById('rounds-select').value);
   maxItems=parseInt(document.getElementById('difficulty-select').value);
+  const grade=document.getElementById('grade-select').value;
+  MENU=grade==='g5'?MENU_G5:MENU_G4;
   roomRef=db.ref('rooms/kiosk-'+roomCode);
-  roomRef.set({phase:'waiting',round:1,totalRounds,maxItems,score:0,order:null,orderPhrase:'',patienceStart:null,counterOnline:true,kitchenOnline:false,roundResults:{}});
+  roomRef.set({phase:'waiting',round:1,totalRounds,maxItems,grade,score:0,order:null,orderPhrase:'',patienceStart:null,counterOnline:true,kitchenOnline:false,roundResults:{}});
   roomRef.onDisconnect().remove();
   document.getElementById('counter-waiting').style.display='flex';
   // wait for kitchen
@@ -351,6 +367,7 @@ function kitchenJoin(){
     if(!snap.exists()){errEl.textContent='⚠️ 找不到此房間，請確認號碼';errEl.style.display='block';return;}
     const d=snap.val();
     totalRounds=d.totalRounds; maxItems=d.maxItems;
+    MENU=d.grade==='g5'?MENU_G5:MENU_G4;
     roomRef.update({kitchenOnline:true});
     roomRef.onDisconnect().update({kitchenOnline:false});
     document.getElementById('kitchen-waiting').style.display='flex';
