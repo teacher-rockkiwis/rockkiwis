@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Food and Friends</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+:root{--amber:#f39c12;--green:#27ae60;--red:#e74c3c;--bg:#1a252f;--card:#2c3e50;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+body{background:var(--bg);margin:0;min-height:100dvh;font-family:'Quicksand',sans-serif;color:white;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;}
+#back-btn{position:fixed;top:max(12px,env(safe-area-inset-top));left:12px;background:rgba(231,76,60,0.85);color:white;border:none;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;z-index:50000;box-shadow:0 3px 0 #c0392b;}
+
+/* ── Start ── */
+#start-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:20px;gap:18px;text-align:center;}
+.start-emoji{font-size:64px;}
+.start-title{font-size:44px;color:var(--amber);margin:0;font-weight:900;}
+.start-sub{font-size:17px;color:#bdc3c7;margin:0;font-weight:700;}
+.rule-box{background:var(--card);border-radius:20px;padding:22px;max-width:480px;width:100%;text-align:left;}
+.rule-title{font-size:15px;color:var(--amber);font-weight:900;letter-spacing:1px;margin-bottom:14px;}
+.rule-item{font-size:15px;font-weight:700;margin-bottom:14px;line-height:1.6;}
+.rule-ex{background:rgba(255,255,255,0.07);border-radius:10px;padding:9px 14px;font-size:14px;color:#ecf0f1;margin-top:5px;font-weight:700;}
+.rule-ex strong{color:var(--amber);}
+.start-btn{background:var(--amber);color:#2d3436;border:none;padding:14px 52px;font-size:22px;border-radius:50px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 6px 0 #d4ac0d;}
+.start-btn:active{transform:translateY(6px);box-shadow:none;}
+
+/* ── Game ── */
+#game-screen{display:none;flex-direction:column;width:100%;max-width:700px;padding:max(56px,calc(env(safe-area-inset-top)+52px)) 14px 24px;gap:14px;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;}
+.pill{background:rgba(255,255,255,0.1);border-radius:50px;padding:7px 18px;font-size:16px;font-weight:900;}
+.round-dots{display:flex;gap:5px;}
+.rdot{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);background:transparent;transition:.3s;}
+.rdot.active{background:var(--amber);border-color:var(--amber);}
+.rdot.ok{background:var(--green);border-color:var(--green);}
+.rdot.miss{background:var(--red);border-color:var(--red);}
+
+/* Food display */
+.food-display{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.food-card{background:var(--card);border-radius:18px;padding:14px 16px;text-align:center;min-width:88px;box-shadow:0 4px 14px rgba(0,0,0,0.3);}
+.food-card .fc-emoji{font-size:46px;display:block;margin-bottom:6px;}
+.food-card .fc-name{font-size:12px;font-weight:900;color:#bdc3c7;line-height:1.3;}
+
+/* Builder */
+.builder-area{background:rgba(255,255,255,0.05);border-radius:18px;padding:16px;}
+.area-label{font-size:11px;font-weight:900;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+.sentence-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:48px;}
+.fixed-word{font-size:21px;font-weight:900;color:#bdc3c7;}
+.placed-tile{padding:9px 15px;border-radius:10px;font-size:17px;font-weight:900;cursor:pointer;border:3px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:white;transition:.12s;font-family:'Quicksand';}
+.placed-tile:active{transform:scale(.92);}
+.placed-tile.pt-comma{background:rgba(243,156,18,0.2);border-color:var(--amber);color:var(--amber);}
+.placed-tile.pt-and{background:rgba(46,204,113,0.15);border-color:#2ecc71;color:#2ecc71;}
+.placed-tile.pt-ok{border-color:var(--green) !important;background:rgba(39,174,96,0.25) !important;cursor:default;}
+.placed-tile.pt-err{border-color:var(--red) !important;background:rgba(231,76,60,0.2) !important;}
+.ph-text{color:rgba(255,255,255,0.2);font-size:15px;font-weight:700;}
+.period{font-size:22px;font-weight:900;color:#bdc3c7;margin-top:8px;}
+
+/* Feedback */
+.feedback{border-radius:14px;padding:12px 18px;font-size:16px;font-weight:900;text-align:center;display:none;line-height:1.5;}
+.fb-ok{background:rgba(39,174,96,0.2);border:2px solid var(--green);color:#2ecc71;}
+.fb-err{background:rgba(231,76,60,0.15);border:2px solid var(--red);color:#e74c3c;}
+
+/* Tile bank */
+.tile-bank{background:rgba(255,255,255,0.04);border-radius:18px;padding:16px;}
+.bank-row{display:flex;flex-wrap:wrap;gap:10px;}
+.bank-tile{padding:10px 16px;border-radius:12px;font-size:17px;font-weight:900;cursor:pointer;border:3px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:white;transition:.12s;font-family:'Quicksand';}
+.bank-tile:active{transform:scale(.93);}
+.bank-tile.bt-comma{background:rgba(243,156,18,0.15);border-color:rgba(243,156,18,0.5);color:var(--amber);}
+.bank-tile.bt-and{background:rgba(46,204,113,0.12);border-color:rgba(46,204,113,0.4);color:#2ecc71;}
+.bank-tile.bt-used{opacity:.22;pointer-events:none;}
+
+/* Check button */
+.check-btn{background:var(--amber);color:#2d3436;border:none;padding:14px;border-radius:50px;font-size:20px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 5px 0 #d4ac0d;width:100%;}
+.check-btn:disabled{background:#636e72;box-shadow:none;cursor:default;}
+.check-btn:active:not(:disabled){transform:translateY(5px);box-shadow:none;}
+
+/* End */
+#end-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:20px;gap:20px;text-align:center;}
+.score-card{background:white;border-radius:24px;padding:22px 52px;}
+.big-score{font-size:70px;font-weight:900;color:var(--red);line-height:1;}
+.score-sub{font-size:17px;color:#636e72;font-weight:700;}
+.review-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.end-btn{border:none;padding:13px 40px;font-size:18px;border-radius:50px;font-weight:900;cursor:pointer;font-family:'Quicksand';}
+
+/* Animations */
+.bounce-in{animation:bounceIn .4s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes bounceIn{0%{transform:scale(0)}80%{transform:scale(1.08)}100%{transform:scale(1)}}
+.shake{animation:shake .35s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@media(max-width:480px){.start-title{font-size:34px;}.food-card .fc-emoji{font-size:36px;}.bank-tile{font-size:15px;padding:9px 13px;}}
+    </style>
+    <script src="common.js"></script>
+</head>
+<body>
+<audio id="sfx-ok" src="bgm/bingo.mp3"></audio>
+<audio id="sfx-ng" src="bgm/fail.mp3"></audio>
+<button id="back-btn" onclick="location.href='teacher.html'">🔙 回去</button>
+
+<!-- START -->
+<div id="start-screen">
+  <div class="start-emoji">🍔🥗🧃</div>
+  <h1 class="start-title">Food and Friends</h1>
+  <p class="start-sub">G4 Unit 3 ｜ 用 and 連接食物！</p>
+  <div class="rule-box">
+    <div class="rule-title">📖 今天的文法重點</div>
+    <div class="rule-item">
+      連接 <strong style="color:var(--amber)">2 樣食物</strong> → 直接用 <strong style="color:#2ecc71">and</strong>
+      <div class="rule-ex">🍔 🌭 → I like hamburger <strong>and</strong> hot dog.</div>
+    </div>
+    <div class="rule-item">
+      連接 <strong style="color:var(--amber)">3 樣食物</strong> → 用 <strong style="color:var(--amber)">,</strong> 再用 <strong style="color:var(--amber)">, and</strong>
+      <div class="rule-ex">🍔 🌭 🥤 → I like hamburger<strong>,</strong> hot dog<strong>, and</strong> Coke.</div>
+    </div>
+    <div style="font-size:13px;color:#7f8c8d;font-weight:700;margin-top:6px;">⚠️ 2 樣食物不需要逗號！</div>
+  </div>
+  <button class="start-btn" onclick="startGame()">開始練習 →</button>
+</div>
+
+<!-- GAME -->
+<div id="game-screen">
+  <div class="top-bar">
+    <div class="pill">🏆 <span id="score">0</span></div>
+    <div class="round-dots" id="round-dots"></div>
+    <div class="pill">第 <span id="rnum">1</span> / 10 題</div>
+  </div>
+
+  <div style="text-align:center;color:#bdc3c7;font-size:14px;font-weight:700;">排出正確的句子！把格子拖到正確位置</div>
+
+  <div class="food-display" id="food-display"></div>
+
+  <div class="builder-area">
+    <div class="area-label">✏️ 你的句子</div>
+    <div class="sentence-row" id="sentence-row">
+      <span class="fixed-word">I like</span>
+      <span class="ph-text" id="placeholder">← 點下方格子來組句</span>
+    </div>
+    <div class="period">.</div>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="tile-bank">
+    <div class="area-label">🎯 可用格子（點選加入）</div>
+    <div class="bank-row" id="bank-row"></div>
+  </div>
+
+  <button class="check-btn" id="check-btn" onclick="checkAnswer()" disabled>✅ 確認答案</button>
+</div>
+
+<!-- END -->
+<div id="end-screen">
+  <div style="font-size:60px">🎉</div>
+  <h1 style="color:var(--amber);font-size:38px;margin:0;font-weight:900;">練習完成！</h1>
+  <div class="score-card">
+    <div class="big-score" id="final-score">0</div>
+    <div class="score-sub">分（滿分 100）</div>
+  </div>
+  <div class="review-row" id="review-row"></div>
+  <button class="end-btn" onclick="location.reload()" style="background:var(--green);color:white;">再玩一次</button>
+  <button class="end-btn" onclick="location.href='teacher.html'" style="background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.3);">🔙 回老師頁面</button>
+</div>
+
+<script>
+const FOODS=[
+  {name:'hamburger',emoji:'🍔'},{name:'hot dog',emoji:'🌭'},
+  {name:'juice',emoji:'🧃'},{name:'milk',emoji:'🥛'},
+  {name:'water',emoji:'💧'},{name:'ice cream',emoji:'🍦'},
+  {name:'apple pie',emoji:'🥧'},{name:'chicken nuggets',emoji:'🍗'},
+  {name:'Coke',emoji:'🥤'},{name:'salad',emoji:'🥗'},
+  {name:'tea',emoji:'🍵'},{name:'milkshake',emoji:'🧋'},
+  {name:'chips',emoji:'🍟'},{name:'hash brown',emoji:'🥞'},
+];
+
+const TOTAL=10;
+let currentRound=0, score=0, roundResults=[];
+let rounds=[], placedTiles=[], allTiles=[], wrongAttempts=0;
+
+const sfxOk=document.getElementById('sfx-ok');
+const sfxNg=document.getElementById('sfx-ng');
+sfxOk.volume=0.5; sfxNg.volume=0.5;
+
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
+
+function generateRounds(){
+  const r=[], used=new Set();
+  function pick(n){
+    let items;
+    do { items=shuffle(FOODS).slice(0,n); }
+    while(used.has(items.map(f=>f.name).sort().join('|')));
+    used.add(items.map(f=>f.name).sort().join('|'));
+    return items;
+  }
+  for(let i=0;i<5;i++) r.push(pick(2)); // first 5: 2 items
+  for(let i=0;i<5;i++) r.push(pick(3)); // last 5:  3 items
+  return r;
+}
+
+// Correct answer as array of token values
+function correctAnswer(items){
+  if(items.length===2) return [items[0].name,'and',items[1].name];
+  return [items[0].name,',',items[1].name,',','and',items[2].name];
+}
+
+// Tiles given to student (shuffled; includes a distractor comma for 2-item rounds)
+function makeTiles(items){
+  const tiles=[];
+  items.forEach((f,i)=>tiles.push({id:'f'+i,value:f.name,type:'food'}));
+  tiles.push({id:'and',value:'and',type:'and'});
+  // For 2 items: give 1 comma (distractor). For 3 items: give 2 commas (both needed).
+  tiles.push({id:'c0',value:',',type:'comma'});
+  if(items.length===3) tiles.push({id:'c1',value:',',type:'comma'});
+  return shuffle(tiles);
+}
+
+function startGame(){
+  rounds=generateRounds();
+  document.getElementById('start-screen').style.display='none';
+  document.getElementById('game-screen').style.display='flex';
+  buildDots();
+  loadRound();
+}
+
+function buildDots(){
+  const el=document.getElementById('round-dots'); el.innerHTML='';
+  for(let i=0;i<TOTAL;i++){
+    const d=document.createElement('div'); d.className='rdot'; d.id='rdot-'+i; el.appendChild(d);
+  }
+}
+
+function loadRound(){
+  const items=rounds[currentRound];
+  placedTiles=[]; wrongAttempts=0;
+  allTiles=makeTiles(items);
+  document.getElementById('rnum').textContent=currentRound+1;
+  document.getElementById('score').textContent=score;
+  document.getElementById('rdot-'+currentRound).classList.add('active');
+
+  // Food cards
+  const fd=document.getElementById('food-display'); fd.innerHTML='';
+  items.forEach(f=>{
+    const div=document.createElement('div'); div.className='food-card bounce-in';
+    div.innerHTML=`<span class="fc-emoji">${f.emoji}</span><div class="fc-name">${f.name}</div>`;
+    fd.appendChild(div);
+  });
+
+  renderSentence();
+  renderBank();
+  hideFeedback();
+}
+
+function renderSentence(){
+  const row=document.getElementById('sentence-row');
+  // Remove any previously placed tile buttons (keep the fixed "I like" span)
+  row.querySelectorAll('.placed-tile').forEach(el=>el.remove());
+  const ph=document.getElementById('placeholder');
+  if(placedTiles.length===0){
+    ph.style.display='';
+  } else {
+    ph.style.display='none';
+    placedTiles.forEach((t,i)=>{
+      const btn=document.createElement('button');
+      btn.className='placed-tile'+(t.type==='comma'?' pt-comma':t.type==='and'?' pt-and':'');
+      btn.textContent=t.value;
+      btn.onclick=()=>{returnTile(i);};
+      row.appendChild(btn);
+    });
+  }
+  const needed=correctAnswer(rounds[currentRound]).length;
+  document.getElementById('check-btn').disabled=placedTiles.length<1;
+}
+
+function renderBank(){
+  const row=document.getElementById('bank-row'); row.innerHTML='';
+  allTiles.forEach(t=>{
+    const used=placedTiles.some(p=>p.id===t.id);
+    const btn=document.createElement('button');
+    btn.className='bank-tile'+(t.type==='comma'?' bt-comma':t.type==='and'?' bt-and':'')+(used?' bt-used':'');
+    btn.textContent=t.value;
+    btn.id='bt-'+t.id;
+    btn.onclick=()=>placeTile(t);
+    row.appendChild(btn);
+  });
+}
+
+function placeTile(tile){
+  if(placedTiles.some(p=>p.id===tile.id)) return;
+  placedTiles.push(tile);
+  renderSentence(); renderBank(); hideFeedback();
+}
+
+function returnTile(idx){
+  placedTiles.splice(idx,1);
+  renderSentence(); renderBank(); hideFeedback();
+}
+
+function checkAnswer(){
+  const items=rounds[currentRound];
+  const correct=correctAnswer(items);
+  const answer=placedTiles.map(t=>t.value);
+  const ok=answer.length===correct.length&&answer.every((v,i)=>v===correct[i]);
+
+  if(ok){
+    const pts=wrongAttempts===0?10:wrongAttempts===1?5:2;
+    score+=pts;
+    document.getElementById('score').textContent=score;
+    sfxOk.currentTime=0; sfxOk.play().catch(()=>{});
+    // Mark placed tiles green
+    document.querySelectorAll('.placed-tile').forEach(el=>el.classList.add('pt-ok'));
+    showFeedback(true, wrongAttempts===0?`🎉 完美答對！+${pts}`:`👍 答對了！+${pts}`);
+    setNextBtn();
+    markDot(currentRound,'ok');
+    roundResults.push('ok');
+  } else {
+    wrongAttempts++;
+    sfxNg.currentTime=0; sfxNg.play().catch(()=>{});
+    // Highlight wrong positions
+    const placedEls=document.querySelectorAll('.placed-tile');
+    placedEls.forEach((el,i)=>{
+      if(i>=correct.length||answer[i]!==correct[i]) el.classList.add('pt-err','shake');
+    });
+    setTimeout(()=>placedEls.forEach(el=>el.classList.remove('shake')),400);
+
+    if(wrongAttempts>=2){
+      const correctStr=correct.join(' ');
+      showFeedback(false,`答案是：I like ${correctStr}.`);
+      setNextBtn();
+      markDot(currentRound,'miss');
+      roundResults.push('miss');
+    } else {
+      const hint=items.length===2
+        ? '提示：2 樣食物不需要逗號！'
+        : '提示：3 樣食物需要兩個逗號，and 放最後！';
+      showFeedback(false,`❌ 再試一次！${hint}`);
+    }
+  }
+}
+
+function setNextBtn(){
+  const btn=document.getElementById('check-btn');
+  btn.textContent='下一題 →'; btn.disabled=false;
+  btn.onclick=nextRound;
+}
+
+function showFeedback(ok,msg){
+  const el=document.getElementById('feedback');
+  el.className='feedback '+(ok?'fb-ok':'fb-err');
+  el.textContent=msg; el.style.display='block';
+}
+function hideFeedback(){
+  const el=document.getElementById('feedback'); el.style.display='none';
+  const btn=document.getElementById('check-btn');
+  btn.textContent='✅ 確認答案'; btn.onclick=checkAnswer;
+}
+
+function markDot(i,state){
+  const d=document.getElementById('rdot-'+i);
+  d.classList.remove('active'); d.classList.add(state);
+}
+
+function nextRound(){
+  if(currentRound>=TOTAL-1){endGame();return;}
+  currentRound++;
+  hideFeedback();
+  loadRound();
+}
+
+function endGame(){
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('end-screen').style.display='flex';
+  document.getElementById('final-score').textContent=score;
+  document.getElementById('review-row').innerHTML=
+    roundResults.map(r=>`<span style="font-size:28px">${r==='ok'?'✅':'❌'}</span>`).join('');
+}
+</script>
+</body>
+</html>
