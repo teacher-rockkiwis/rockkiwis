@@ -262,6 +262,7 @@ let role='',roomCode='',roomRef=null,playerId='',playerRef=null;
 let totalRounds=10,timeLimit=12,currentRound=0;
 let currentQ=null,questionStartTime=0,myAnswer=-1,myName='';
 let timerInterval=null,gameListener=null;
+let currentQRound=-1,tCurrentRound=-1;
 const sfxOk=document.getElementById('sfx-ok');
 const sfxNg=document.getElementById('sfx-ng');
 sfxOk.volume=.5; sfxNg.volume=.5;
@@ -347,18 +348,21 @@ function listenTeacher(){
     if(!snap.exists())return;
     const d=snap.val();
     if(d.phase==='question'&&d.questionStart){
-      renderTQ(d);
-      startTimer(d.questionStart,d.timeLimit,'t');
+      if(d.round!==tCurrentRound){
+        tCurrentRound=d.round;
+        renderTQ(d);
+        startTimer(d.questionStart,d.timeLimit,'t');
+      }
+      if(d.players){
+        const tot=Object.keys(d.players).length;
+        const ans=Object.values(d.players).filter(p=>p.answer>=0).length;
+        document.getElementById('t-ans-count').textContent=ans;
+        document.getElementById('t-player-total').textContent=tot;
+        if(ans===tot&&tot>0) teacherReveal();
+      }
     }
     if(d.phase==='reveal') renderTReveal(d);
     if(d.phase==='final') showFinal(d);
-    if(d.phase==='question'&&d.players){
-      const tot=Object.keys(d.players).length;
-      const ans=Object.values(d.players).filter(p=>p.answer>=0).length;
-      document.getElementById('t-ans-count').textContent=ans;
-      document.getElementById('t-player-total').textContent=tot;
-      if(ans===tot&&tot>0) teacherReveal(); // auto-reveal when all answered
-    }
   });
 }
 
@@ -460,10 +464,13 @@ function listenStudent(){
       }
     }
     if(d.phase==='question'&&d.questionStart){
-      currentRound=d.round; currentQ=d.questions[d.round]; myAnswer=-1;
-      show('student-game');
-      renderSQ(d);
-      startTimer(d.questionStart,d.timeLimit,'s');
+      if(d.round!==currentQRound){ // only render when a new question arrives
+        currentQRound=d.round;
+        currentRound=d.round; currentQ=d.questions[d.round]; myAnswer=-1;
+        show('student-game');
+        renderSQ(d);
+        startTimer(d.questionStart,d.timeLimit,'s');
+      }
     }
     if(d.phase==='reveal') renderSReveal(d);
     if(d.phase==='final') showFinal(d);
@@ -500,6 +507,7 @@ function renderSReveal(d){
     b.classList.add(i===q.correct?'reveal-ok':'reveal-no');
   });
   const bar=document.getElementById('s-result');
+  if(bar.style.display==='block') return; // already shown, skip sound replay
   const me=d.players&&d.players[playerId];
   if(myAnswer<0){
     bar.className='result-bar tm'; bar.textContent='⏱️ 時間到！正確答案：'+q.choices[q.correct];
