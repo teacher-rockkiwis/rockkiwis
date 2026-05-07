@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Vocab Race ⚡</title>
+    <link rel="stylesheet" href="common.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    <style>
+:root{--red:#c0392b;--blue:#2980b9;--orange:#d35400;--green:#1e8449;--gold:#f1c40f;--purple:#8e44ad;--bg:#1a252f;--card:#2c3e50;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+body{background:var(--bg);margin:0;min-height:100dvh;font-family:'Quicksand',sans-serif;color:white;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;}
+#back-btn{position:fixed;top:max(12px,env(safe-area-inset-top));left:12px;background:rgba(231,76,60,.85);color:white;border:none;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;z-index:50000;box-shadow:0 3px 0 #922b21;}
+
+.screen{display:none;flex-direction:column;align-items:center;width:100%;min-height:100dvh;padding:max(60px,calc(env(safe-area-inset-top)+50px)) 14px 28px;gap:14px;}
+.screen.on{display:flex;}
+.big-title{font-size:44px;font-weight:900;color:var(--gold);margin:0;text-align:center;}
+.sub{font-size:15px;color:#bdc3c7;font-weight:700;text-align:center;margin:0;}
+.panel{background:var(--card);border-radius:20px;padding:20px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px;}
+.lbl{font-size:11px;font-weight:900;color:#bdc3c7;letter-spacing:1px;text-transform:uppercase;}
+.inp{width:100%;font-size:28px;padding:11px;border-radius:12px;border:3px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:white;text-align:center;font-family:'Quicksand';font-weight:900;letter-spacing:4px;}
+.inp::placeholder{color:rgba(255,255,255,.25);font-size:16px;letter-spacing:1px;}
+.inp-name{letter-spacing:0;font-size:22px;}
+select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:pointer;}
+.gold-btn{background:var(--gold);color:#2d3436;border:none;padding:14px;border-radius:50px;font-size:19px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 5px 0 #d4ac0d;width:100%;transition:.1s;}
+.gold-btn:active{transform:translateY(5px);box-shadow:none;}
+.gold-btn:disabled{background:#636e72;box-shadow:none;cursor:default;}
+.code-big{font-size:72px;font-weight:900;color:var(--gold);letter-spacing:10px;text-align:center;background:rgba(255,255,255,.05);border-radius:14px;padding:12px 20px;width:100%;max-width:380px;}
+.role-btn{padding:22px 28px;border:none;border-radius:20px;font-size:20px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 6px 0 rgba(0,0,0,.3);transition:.1s;width:160px;text-align:center;line-height:1.5;}
+.role-btn:active{transform:translateY(6px);box-shadow:none;}
+
+/* Timer */
+.timer-track{flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;}
+.timer-fill{height:100%;border-radius:6px;background:var(--gold);transition:width .1s linear,background-color .3s;}
+.timer-num{font-size:26px;font-weight:900;min-width:36px;text-align:right;}
+
+/* Teacher question */
+#teacher-game{max-width:900px;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;}
+.pill{background:rgba(255,255,255,.1);border-radius:50px;padding:7px 18px;font-size:16px;font-weight:900;white-space:nowrap;}
+.q-box{background:var(--card);border-radius:20px;padding:20px 26px;width:100%;text-align:center;}
+.q-label{font-size:12px;font-weight:900;color:#bdc3c7;letter-spacing:1px;margin-bottom:8px;}
+.q-text{font-size:34px;font-weight:900;line-height:1.3;}
+.choices-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;}
+.ch-btn{border:none;border-radius:16px;padding:18px 14px;font-size:19px;font-weight:900;cursor:pointer;font-family:'Quicksand';display:flex;align-items:center;gap:10px;color:white;min-height:72px;text-align:left;line-height:1.3;transition:.12s;}
+.ch-btn .ico{font-size:22px;flex-shrink:0;}
+.ch-btn.ca{background:#c0392b;box-shadow:0 5px 0 #922b21;}
+.ch-btn.cb{background:#2980b9;box-shadow:0 5px 0 #1a6390;}
+.ch-btn.cc{background:#d35400;box-shadow:0 5px 0 #a04000;}
+.ch-btn.cd{background:#1e8449;box-shadow:0 5px 0 #145a32;}
+.ch-btn.reveal-ok{box-shadow:0 0 0 5px white,0 0 24px rgba(255,255,255,.5) !important;transform:scale(1.03);}
+.ch-btn.reveal-no{opacity:.35;}
+.ch-btn:disabled{cursor:default;}
+
+/* Mini leaderboard */
+.mini-lb{background:rgba(255,255,255,.05);border-radius:14px;padding:12px 16px;width:100%;display:flex;flex-direction:column;gap:6px;}
+.lb-row{display:flex;align-items:center;gap:12px;padding:8px 12px;background:rgba(255,255,255,.06);border-radius:10px;}
+.lb-rank{font-size:20px;font-weight:900;min-width:34px;text-align:center;}
+.lb-name{flex:1;font-size:17px;font-weight:900;}
+.lb-score{font-size:18px;font-weight:900;color:var(--gold);}
+.r1{color:gold;} .r2{color:silver;} .r3{color:#cd7f32;}
+
+/* Player chips */
+.chip{background:rgba(255,255,255,.08);border-radius:10px;padding:8px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;}
+
+/* Student game */
+#student-game{max-width:480px;justify-content:flex-start;}
+.s-q{background:var(--card);border-radius:18px;padding:18px 16px;text-align:center;font-size:26px;font-weight:900;line-height:1.3;width:100%;}
+.s-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;}
+.s-ch{border:none;border-radius:16px;padding:16px 12px;font-size:17px;font-weight:900;cursor:pointer;font-family:'Quicksand';color:white;min-height:82px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;transition:.12s;}
+.s-ch.ca{background:#c0392b;} .s-ch.cb{background:#2980b9;}
+.s-ch.cc{background:#d35400;} .s-ch.cd{background:#1e8449;}
+.s-ch:active{transform:scale(.93);}
+.s-ch:disabled{cursor:default;}
+.s-ch.my-pick{box-shadow:0 0 0 4px white;}
+.s-ch.reveal-ok{box-shadow:0 0 0 4px white,0 0 16px rgba(255,255,255,.4);}
+.s-ch.reveal-no{opacity:.3;}
+.result-bar{border-radius:14px;padding:14px 18px;font-size:20px;font-weight:900;text-align:center;width:100%;display:none;}
+.result-bar.ok{background:rgba(39,174,96,.25);border:2px solid #27ae60;color:#2ecc71;}
+.result-bar.ng{background:rgba(231,76,60,.2);border:2px solid #e74c3c;color:#e74c3c;}
+.result-bar.tm{background:rgba(127,140,141,.2);border:2px solid #7f8c8d;color:#bdc3c7;}
+
+/* Final */
+#final-screen{max-width:480px;}
+
+/* Animations */
+.bounce-in{animation:bIn .4s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes bIn{0%{transform:scale(0)}80%{transform:scale(1.08)}100%{transform:scale(1)}}
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:480px){
+  .q-text{font-size:24px;} .ch-btn{font-size:16px;padding:14px 10px;min-height:62px;}
+  .s-q{font-size:21px;} .s-ch{font-size:15px;min-height:74px;}
+}
+    </style>
+    <script src="common.js"></script>
+</head>
+<body>
+<audio id="sfx-ok" src="bgm/bingo.mp3"></audio>
+<audio id="sfx-ng" src="bgm/fail.mp3"></audio>
+<button id="back-btn" onclick="location.href='teacher.html'">🔙 回去</button>
+
+<!-- ROLE SELECTION -->
+<div id="role-screen" class="screen on">
+  <div style="font-size:64px;margin-bottom:4px;">⚡</div>
+  <h1 class="big-title">Vocab Race</h1>
+  <p class="sub">國中二年級單字競速！</p>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+    <button class="role-btn" style="background:#16a085;color:white;" onclick="selectRole('teacher')">📺 老師<br><small style="font-size:13px;font-weight:700;">建立房間</small></button>
+    <button class="role-btn" style="background:var(--purple);color:white;" onclick="selectRole('student')">📱 學生<br><small style="font-size:13px;font-weight:700;">加入競賽</small></button>
+  </div>
+</div>
+
+<!-- TEACHER SETUP -->
+<div id="teacher-setup" class="screen">
+  <h1 class="big-title" style="font-size:34px;">📺 建立房間</h1>
+  <div class="panel">
+    <div>
+      <div class="lbl">房間號碼</div>
+      <div class="code-big" id="t-code" style="font-size:52px;letter-spacing:6px;padding:10px;">----</div>
+    </div>
+    <div>
+      <div class="lbl">出題數</div>
+      <select id="t-rounds" class="inp">
+        <option value="10">10 題</option>
+        <option value="15">15 題</option>
+        <option value="20">20 題</option>
+        <option value="37">全部 37 題</option>
+      </select>
+    </div>
+    <div>
+      <div class="lbl">每題秒數</div>
+      <select id="t-time" class="inp">
+        <option value="8">8 秒（快）</option>
+        <option value="12" selected>12 秒（標準）</option>
+        <option value="20">20 秒（慢）</option>
+      </select>
+    </div>
+    <button class="gold-btn" onclick="teacherCreate()">建立房間 →</button>
+  </div>
+</div>
+
+<!-- TEACHER LOBBY -->
+<div id="teacher-lobby" class="screen">
+  <h1 class="big-title" style="font-size:30px;">等待學生加入</h1>
+  <div class="code-big" id="t-lobby-code">----</div>
+  <p class="sub" id="t-player-count">已加入：0 人</p>
+  <div id="t-player-list" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:420px;max-height:260px;overflow-y:auto;"></div>
+  <div style="width:100%;max-width:420px;">
+    <button class="gold-btn" id="t-start-btn" onclick="teacherStart()" disabled>開始遊戲 ▶</button>
+  </div>
+</div>
+
+<!-- TEACHER GAME -->
+<div id="teacher-game" class="screen">
+  <div class="top-bar">
+    <div class="pill">第 <span id="t-round">1</span>/<span id="t-total">10</span> 題</div>
+    <div style="display:flex;align-items:center;gap:8px;flex:1;max-width:200px;">
+      <div class="timer-track"><div class="timer-fill" id="t-bar"></div></div>
+      <div class="timer-num" id="t-sec">12</div>
+    </div>
+    <div class="pill">✅ <span id="t-ans-count">0</span>/<span id="t-player-total">0</span></div>
+  </div>
+
+  <div class="q-box">
+    <div class="q-label" id="t-q-label">英文 → 中文</div>
+    <div class="q-text" id="t-q-text">…</div>
+  </div>
+
+  <div class="choices-grid" id="t-choices"></div>
+
+  <div style="width:100%;max-width:900px;display:flex;gap:10px;">
+    <button class="gold-btn" id="t-reveal-btn" onclick="teacherReveal()" style="display:none;">🔍 顯示答案</button>
+    <button class="gold-btn" id="t-next-btn" onclick="teacherNext()" style="display:none;background:#16a085;box-shadow:0 5px 0 #0e6655;">下一題 →</button>
+  </div>
+
+  <div id="t-mini-lb" class="mini-lb" style="display:none;max-width:900px;">
+    <div style="font-size:12px;font-weight:900;color:#bdc3c7;letter-spacing:1px;">🏆 即時排行</div>
+    <div id="t-lb-rows"></div>
+  </div>
+</div>
+
+<!-- STUDENT JOIN -->
+<div id="student-join" class="screen">
+  <div style="font-size:52px;">📱</div>
+  <h1 class="big-title" style="font-size:34px;">加入競賽</h1>
+  <div class="panel">
+    <div>
+      <div class="lbl">暱稱</div>
+      <input id="s-name" class="inp inp-name" placeholder="輸入你的名字" maxlength="10" type="text">
+    </div>
+    <div>
+      <div class="lbl">房間號碼</div>
+      <input id="s-code" class="inp" placeholder="1234" maxlength="4" type="text" inputmode="numeric" pattern="[0-9]*">
+    </div>
+    <button class="gold-btn" id="s-join-btn" style="background:var(--purple);box-shadow:0 5px 0 #6c3483;" onclick="studentJoin()">加入 →</button>
+    <div id="s-join-err" style="color:#e74c3c;font-weight:900;font-size:14px;display:none;text-align:center;"></div>
+  </div>
+</div>
+
+<!-- STUDENT WAITING -->
+<div id="student-wait" class="screen" style="justify-content:center;gap:16px;">
+  <div style="font-size:60px;"><span class="spin">⏳</span></div>
+  <h2 style="font-size:26px;color:var(--gold);margin:0;" id="s-wait-msg">等待老師開始...</h2>
+  <p class="sub" id="s-wait-name"></p>
+</div>
+
+<!-- STUDENT GAME -->
+<div id="student-game" class="screen">
+  <div class="top-bar">
+    <div class="pill">🏆 <span id="s-score">0</span></div>
+    <div style="display:flex;align-items:center;gap:6px;flex:1;max-width:140px;">
+      <div class="timer-track"><div class="timer-fill" id="s-bar"></div></div>
+      <div class="timer-num" style="font-size:20px;" id="s-sec">12</div>
+    </div>
+    <div class="pill">#<span id="s-rank">-</span></div>
+  </div>
+
+  <div class="s-q" id="s-q-text">…</div>
+  <div class="s-grid" id="s-choices"></div>
+  <div class="result-bar" id="s-result"></div>
+</div>
+
+<!-- FINAL -->
+<div id="final-screen" class="screen" style="gap:12px;">
+  <div style="font-size:56px;">🏆</div>
+  <h1 class="big-title">最終排名！</h1>
+  <div id="final-lb" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:480px;"></div>
+  <button onclick="location.reload()" style="background:var(--green);color:white;border:none;padding:13px 42px;font-size:18px;border-radius:50px;font-weight:900;cursor:pointer;font-family:'Quicksand';margin-top:8px;">再玩一次</button>
+  <button onclick="location.href='teacher.html'" style="background:rgba(255,255,255,.1);color:white;border:2px solid rgba(255,255,255,.3);padding:12px 36px;font-size:16px;border-radius:50px;font-weight:900;cursor:pointer;font-family:'Quicksand';">🔙 回老師頁面</button>
+</div>
+
+<script>
+// ── Firebase ──────────────────────────────────────────────
+const firebaseConfig={apiKey:"AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",authDomain:"rockgames-48853.firebaseapp.com",databaseURL:"https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"rockgames-48853",storageBucket:"rockgames-48853.firebasestorage.app",messagingSenderId:"313395129447",appId:"1:313395129447:web:618531167064c7afdd38c2"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+// ── Vocab ─────────────────────────────────────────────────
+const VOCAB=[
+  {en:'science',ch:'科學'},{en:'camp',ch:'營隊；露營'},{en:'visit',ch:'造訪；拜訪'},
+  {en:'art',ch:'藝術；美術'},{en:'museum',ch:'博物館'},{en:'ago',ch:'……之前'},
+  {en:'computer',ch:'電腦'},{en:'before',ch:'在⋯之前；以前'},{en:'yesterday',ch:'昨天'},
+  {en:'surf the Internet',ch:'上網'},{en:'minute',ch:'分鐘'},{en:'hour',ch:'小時'},
+  {en:'story',ch:'故事'},{en:'lazy',ch:'懶惰的'},{en:'even',ch:'甚至'},
+  {en:'should',ch:'應該'},{en:'wrong',ch:'錯誤的'},{en:'so',ch:'很；那麼'},
+  {en:'just',ch:'就；恰好；剛剛'},{en:'later',ch:'稍後'},{en:'save',ch:'拯救；省下；儲存'},
+  {en:'share',ch:'分享'},{en:'snack',ch:'點心'},{en:'climb',ch:'攀爬'},
+  {en:'kid',ch:'開玩笑；小孩'},{en:'explain',ch:'解釋'},{en:'leftovers',ch:'剩菜'},
+  {en:'hide-and-seek',ch:'捉迷藏'},{en:'wise',ch:'有智慧的'},{en:'hunt',ch:'打獵'},
+  {en:'learn',ch:'學習；得知'},{en:'in the end',ch:'最後'},{en:'the day before yesterday',ch:'前天'},
+  {en:'in fact',ch:'其實；事實上'},{en:'look up from...',ch:'從⋯中抬起頭來'},
+  {en:'No problem!',ch:'沒問題！'},{en:"with one's help",ch:'有了⋯的幫助'},
+];
+const ICONS=['▲','◆','●','■'];
+const CLS=['ca','cb','cc','cd'];
+
+// ── State ─────────────────────────────────────────────────
+let role='',roomCode='',roomRef=null,playerId='',playerRef=null;
+let totalRounds=10,timeLimit=12,currentRound=0;
+let currentQ=null,questionStartTime=0,myAnswer=-1,myName='';
+let timerInterval=null,gameListener=null;
+const sfxOk=document.getElementById('sfx-ok');
+const sfxNg=document.getElementById('sfx-ng');
+sfxOk.volume=.5; sfxNg.volume=.5;
+
+// ── Utils ─────────────────────────────────────────────────
+function shuffle(a){return [...a].sort(()=>Math.random()-.5);}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function getPid(){let id=sessionStorage.getItem('vrace_pid');if(!id){id='p'+Math.random().toString(36).slice(2,10);sessionStorage.setItem('vrace_pid',id);}return id;}
+
+// ── Question generation ────────────────────────────────────
+function genQuestions(n){
+  const idxs=shuffle([...Array(VOCAB.length).keys()]);
+  return Array.from({length:n},(_,i)=>{
+    const word=VOCAB[idxs[i%VOCAB.length]];
+    const type=Math.random()<.5?'en2ch':'ch2en';
+    const wrongs=shuffle(VOCAB.filter(v=>v!==word)).slice(0,3);
+    const cp=Math.floor(Math.random()*4);
+    const choices=[]; let wi=0;
+    for(let j=0;j<4;j++){
+      if(j===cp) choices.push(type==='en2ch'?word.ch:word.en);
+      else{choices.push(type==='en2ch'?wrongs[wi].ch:wrongs[wi].en);wi++;}
+    }
+    return {type,prompt:type==='en2ch'?word.en:word.ch,choices,correct:cp};
+  });
+}
+
+// ── Role ──────────────────────────────────────────────────
+function selectRole(r){
+  role=r;
+  if(r==='teacher'){
+    roomCode=String(Math.floor(1000+Math.random()*9000));
+    document.getElementById('t-code').textContent=roomCode;
+    show('teacher-setup');
+  } else {
+    playerId=getPid();
+    show('student-join');
+  }
+}
+
+// ── Teacher setup ─────────────────────────────────────────
+function teacherCreate(){
+  totalRounds=parseInt(document.getElementById('t-rounds').value);
+  timeLimit=parseInt(document.getElementById('t-time').value);
+  const questions=genQuestions(totalRounds);
+  roomRef=db.ref('rooms/vrace-'+roomCode);
+  roomRef.set({phase:'lobby',round:0,totalRounds,timeLimit,questions,players:{},teacherOnline:true});
+  roomRef.onDisconnect().remove();
+  document.getElementById('t-lobby-code').textContent=roomCode;
+  show('teacher-lobby');
+  roomRef.child('players').on('value',snap=>{
+    const ps=snap.val()||{};
+    const names=Object.values(ps);
+    document.getElementById('t-player-count').textContent='已加入：'+names.length+' 人';
+    const list=document.getElementById('t-player-list'); list.innerHTML='';
+    names.forEach(p=>{const d=document.createElement('div');d.className='chip';d.innerHTML='<span>🟢</span>'+p.name;list.appendChild(d);});
+    document.getElementById('t-start-btn').disabled=names.length===0;
+  });
+}
+
+// ── Teacher game ──────────────────────────────────────────
+function teacherStart(){
+  roomRef.child('players').off();
+  currentRound=0;
+  show('teacher-game');
+  listenTeacher();
+  teacherNextQuestion();
+}
+
+function teacherNextQuestion(){
+  roomRef.once('value',snap=>{
+    const d=snap.val();
+    currentQ=d.questions[currentRound];
+    totalRounds=d.totalRounds; timeLimit=d.timeLimit;
+    const updates={'phase':'question','round':currentRound,'questionStart':firebase.database.ServerValue.TIMESTAMP};
+    Object.keys(d.players||{}).forEach(pid=>{updates['players/'+pid+'/answer']=-1;updates['players/'+pid+'/scored']=0;});
+    roomRef.update(updates);
+  });
+}
+
+function listenTeacher(){
+  if(gameListener) roomRef.off('value',gameListener);
+  gameListener=roomRef.on('value',snap=>{
+    if(!snap.exists())return;
+    const d=snap.val();
+    if(d.phase==='question'&&d.questionStart){
+      renderTQ(d);
+      startTimer(d.questionStart,d.timeLimit,'t');
+    }
+    if(d.phase==='reveal') renderTReveal(d);
+    if(d.phase==='final') showFinal(d);
+    if(d.phase==='question'&&d.players){
+      const tot=Object.keys(d.players).length;
+      const ans=Object.values(d.players).filter(p=>p.answer>=0).length;
+      document.getElementById('t-ans-count').textContent=ans;
+      document.getElementById('t-player-total').textContent=tot;
+      if(ans===tot&&tot>0) teacherReveal(); // auto-reveal when all answered
+    }
+  });
+}
+
+function renderTQ(d){
+  const q=d.questions[d.round]; currentQ=q;
+  document.getElementById('t-round').textContent=d.round+1;
+  document.getElementById('t-total').textContent=d.totalRounds;
+  document.getElementById('t-player-total').textContent=Object.keys(d.players||{}).length;
+  document.getElementById('t-ans-count').textContent=0;
+  document.getElementById('t-q-label').textContent=q.type==='en2ch'?'英文 → 中文（選出正確中文）':'中文 → 英文（選出正確英文）';
+  document.getElementById('t-q-text').textContent=q.prompt;
+  const g=document.getElementById('t-choices'); g.innerHTML='';
+  q.choices.forEach((c,i)=>{
+    const b=document.createElement('button'); b.className='ch-btn '+CLS[i]; b.disabled=true;
+    b.innerHTML=`<span class="ico">${ICONS[i]}</span>${c}`; g.appendChild(b);
+  });
+  document.getElementById('t-reveal-btn').style.display='block';
+  document.getElementById('t-next-btn').style.display='none';
+  document.getElementById('t-mini-lb').style.display='none';
+}
+
+function renderTReveal(d){
+  clearTimer();
+  const q=d.questions[d.round];
+  document.querySelectorAll('#t-choices .ch-btn').forEach((b,i)=>{
+    b.classList.add(i===q.correct?'reveal-ok':'reveal-no');
+  });
+  document.getElementById('t-reveal-btn').style.display='none';
+  const nb=document.getElementById('t-next-btn');
+  nb.style.display='block';
+  nb.textContent=d.round>=d.totalRounds-1?'🏆 最終排名':'下一題 →';
+  // Mini leaderboard
+  if(d.players){
+    const sorted=Object.values(d.players).sort((a,b)=>b.score-a.score).slice(0,8);
+    const rows=document.getElementById('t-lb-rows'); rows.innerHTML='';
+    sorted.forEach((p,i)=>{
+      const div=document.createElement('div'); div.className='lb-row';
+      const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+      div.innerHTML=`<span class="lb-rank ${i<3?'r'+(i+1):''}">${m}</span><span class="lb-name">${p.name}</span><span class="lb-score">${p.score||0}</span>`;
+      rows.appendChild(div);
+    });
+    document.getElementById('t-mini-lb').style.display='flex';
+  }
+}
+
+function teacherReveal(){
+  clearTimer();
+  roomRef.update({phase:'reveal'});
+}
+
+function teacherNext(){
+  currentRound++;
+  roomRef.once('value',snap=>{
+    if(currentRound>=(snap.val().totalRounds)) roomRef.update({phase:'final'});
+    else teacherNextQuestion();
+  });
+}
+
+// ── Student join ───────────────────────────────────────────
+function studentJoin(){
+  const name=document.getElementById('s-name').value.trim();
+  const code=document.getElementById('s-code').value.replace(/\D/g,'').trim();
+  const err=document.getElementById('s-join-err');
+  if(!name){err.textContent='請輸入暱稱';err.style.display='block';return;}
+  if(code.length!==4){err.textContent='請輸入4位數房間號碼';err.style.display='block';return;}
+  err.style.display='none';
+  const btn=document.getElementById('s-join-btn');
+  btn.textContent='⏳ 連線中...'; btn.disabled=true;
+  myName=name; roomCode=code;
+  roomRef=db.ref('rooms/vrace-'+code);
+  roomRef.once('value',snap=>{
+    btn.textContent='加入 →'; btn.disabled=false;
+    if(!snap.exists()||snap.val().phase!=='lobby'){
+      err.textContent='⚠️ 找不到房間或遊戲已開始'; err.style.display='block'; return;
+    }
+    playerRef=roomRef.child('players/'+playerId);
+    playerRef.set({name,score:0,answer:-1,scored:0});
+    playerRef.onDisconnect().remove();
+    document.getElementById('s-wait-name').textContent='👋 '+name+'，等待老師開始！';
+    show('student-wait');
+    listenStudent();
+  },e=>{
+    btn.textContent='加入 →'; btn.disabled=false;
+    err.textContent='⚠️ 連線失敗：'+e.message; err.style.display='block';
+  });
+}
+
+// ── Student game ───────────────────────────────────────────
+function listenStudent(){
+  roomRef.on('value',snap=>{
+    if(!snap.exists())return;
+    const d=snap.val();
+    const me=d.players&&d.players[playerId];
+    if(me){
+      document.getElementById('s-score').textContent=me.score||0;
+      if(d.players){
+        const rank=Object.values(d.players).sort((a,b)=>b.score-a.score).findIndex(p=>p.name===myName)+1;
+        document.getElementById('s-rank').textContent=rank||'-';
+      }
+    }
+    if(d.phase==='question'&&d.questionStart){
+      currentRound=d.round; currentQ=d.questions[d.round]; myAnswer=-1;
+      show('student-game');
+      renderSQ(d);
+      startTimer(d.questionStart,d.timeLimit,'s');
+    }
+    if(d.phase==='reveal') renderSReveal(d);
+    if(d.phase==='final') showFinal(d);
+  });
+}
+
+function renderSQ(d){
+  const q=d.questions[d.round];
+  document.getElementById('s-q-text').textContent=q.prompt;
+  document.getElementById('s-result').style.display='none';
+  const g=document.getElementById('s-choices'); g.innerHTML='';
+  q.choices.forEach((c,i)=>{
+    const b=document.createElement('button'); b.className='s-ch '+CLS[i];
+    b.textContent=c; b.onclick=()=>submitAnswer(i); g.appendChild(b);
+  });
+}
+
+function submitAnswer(idx){
+  if(myAnswer>=0) return;
+  myAnswer=idx;
+  const elapsed=(Date.now()-questionStartTime)/1000;
+  const remaining=Math.max(0,timeLimit-elapsed);
+  const ok=idx===currentQ.correct;
+  const pts=ok?Math.max(100,Math.round(1000*remaining/timeLimit)):0;
+  document.querySelectorAll('.s-ch').forEach((b,i)=>{if(i===idx)b.classList.add('my-pick');b.disabled=true;});
+  playerRef.update({answer:idx,scored:pts,score:firebase.database.ServerValue.increment(pts)});
+}
+
+function renderSReveal(d){
+  clearTimer();
+  const q=d.questions[d.round];
+  document.querySelectorAll('.s-ch').forEach((b,i)=>{
+    b.disabled=true;
+    b.classList.add(i===q.correct?'reveal-ok':'reveal-no');
+  });
+  const bar=document.getElementById('s-result');
+  const me=d.players&&d.players[playerId];
+  if(myAnswer<0){
+    bar.className='result-bar tm'; bar.textContent='⏱️ 時間到！正確答案：'+q.choices[q.correct];
+  } else if(myAnswer===q.correct){
+    const pts=me&&me.scored?me.scored:0;
+    bar.className='result-bar ok'; bar.textContent='🎉 答對！+'+pts+' 分';
+    sfxOk.currentTime=0; sfxOk.play().catch(()=>{});
+  } else {
+    bar.className='result-bar ng'; bar.textContent='❌ 答錯！正確：'+q.choices[q.correct];
+    sfxNg.currentTime=0; sfxNg.play().catch(()=>{});
+  }
+  bar.style.display='block';
+}
+
+// ── Timer ─────────────────────────────────────────────────
+function startTimer(startTs,limit,who){
+  questionStartTime=startTs;
+  clearTimer();
+  timerInterval=setInterval(()=>{
+    const rem=Math.max(0,limit-(Date.now()-startTs)/1000);
+    const pct=rem/limit*100;
+    const col=rem>limit*.5?'#f1c40f':rem>limit*.25?'#e67e22':'#e74c3c';
+    const bar=document.getElementById(who+'-bar');
+    const num=document.getElementById(who+'-sec');
+    if(bar){bar.style.width=pct+'%';bar.style.backgroundColor=col;}
+    if(num)num.textContent=Math.ceil(rem);
+    if(rem<=0){clearTimer();if(who==='t')teacherReveal();}
+  },100);
+}
+function clearTimer(){clearInterval(timerInterval);timerInterval=null;}
+
+// ── Final ─────────────────────────────────────────────────
+function showFinal(d){
+  clearTimer();
+  show('final-screen');
+  if(!d.players)return;
+  const sorted=Object.values(d.players).sort((a,b)=>b.score-a.score);
+  const lb=document.getElementById('final-lb'); lb.innerHTML='';
+  sorted.forEach((p,i)=>{
+    const div=document.createElement('div'); div.className='lb-row bounce-in';
+    const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':'  #'+(i+1);
+    div.innerHTML=`<span class="lb-rank ${i<3?'r'+(i+1):''}">${m}</span><span class="lb-name">${p.name}</span><span class="lb-score">${p.score||0} pts</span>`;
+    lb.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
