@@ -1,0 +1,22 @@
+[
+  { "word": "white", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "wheel", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "whale", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "what", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "when", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "where", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "why", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "who", "target": "wh", "distractors": ["ph", "f", "v", "h"] },
+  { "word": "which", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "whistle", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "whisper", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "wheat", "target": "wh", "distractors": ["ph", "f", "v", "w"] },
+  { "word": "photo", "target": "ph", "distractors": ["wh", "f", "v", "p"] },
+  { "word": "phone", "target": "ph", "distractors": ["wh", "f", "v", "p"] },
+  { "word": "dolphin", "target": "ph", "distractors": ["wh", "f", "v", "p"] },
+  { "word": "elephant", "target": "ph", "distractors": ["wh", "f", "v", "p"] },
+  { "word": "alphabet", "target": "ph", "distractors": ["wh", "f", "v", "p"] },
+  { "word": "graph", "target": "ph", "distractors": ["wh", "f", "v", "p"] },
+  { "word": "trophy", "target": "ph", "distractors": ["wh", "f", "v", "p"] },
+  { "word": "phantom", "target": "ph", "distractors": ["wh", "f", "v", "p"] }
+]
