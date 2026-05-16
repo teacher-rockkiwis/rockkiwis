@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Phonics: ch / sh</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+:root{--bg:#1a2535;--card:#2c3e50;--gold:#f1c40f;--teal:#16a085;--purple:#8e44ad;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+body{background:var(--bg);margin:0;min-height:100dvh;font-family:'Quicksand',sans-serif;color:white;display:flex;flex-direction:column;align-items:center;padding-bottom:30px;}
+#back-btn{position:fixed;top:max(12px,env(safe-area-inset-top));left:12px;background:rgba(231,76,60,.85);color:white;border:none;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;z-index:50000;}
+.screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:480px;padding:max(60px,calc(env(safe-area-inset-top)+50px)) 16px 20px;gap:14px;}
+.screen.on{display:flex;}
+.big-title{font-size:40px;font-weight:900;color:var(--gold);text-align:center;margin:0;}
+.sub{font-size:15px;color:#bdc3c7;font-weight:700;text-align:center;margin:0;}
+/* Start examples */
+.ex-row{display:flex;gap:12px;width:100%;}
+.ex-card{flex:1;border-radius:16px;padding:14px 10px;text-align:center;}
+.ex-card.ch-card{background:rgba(22,160,133,.2);border:2px solid var(--teal);}
+.ex-card.sh-card{background:rgba(142,68,173,.2);border:2px solid var(--purple);}
+.ex-sound{font-size:36px;font-weight:900;margin-bottom:6px;}
+.ex-words{font-size:13px;color:#bdc3c7;font-weight:700;line-height:1.8;}
+.start-btn{background:var(--gold);color:#2d3436;border:none;padding:14px 46px;font-size:20px;font-weight:900;border-radius:50px;cursor:pointer;font-family:'Quicksand';box-shadow:0 5px 0 #d4ac0d;}
+.start-btn:active{transform:translateY(5px);box-shadow:none;}
+/* Game */
+.top-row{display:flex;justify-content:space-between;align-items:center;width:100%;}
+.pill{background:rgba(255,255,255,.1);border-radius:50px;padding:6px 16px;font-size:15px;font-weight:900;}
+.timer-track{flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden;margin:0 10px;}
+.timer-bar{height:100%;background:var(--gold);border-radius:5px;width:100%;}
+.word-card{background:var(--card);border-radius:20px;padding:24px 20px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:160px;justify-content:center;}
+.word-emoji{font-size:58px;line-height:1;}
+.word-text{font-size:38px;font-weight:900;letter-spacing:2px;line-height:1.2;}
+.word-text .hi-ch{color:#2ecc71;text-shadow:0 0 12px rgba(46,204,113,.6);}
+.word-text .hi-sh{color:#9b59b6;text-shadow:0 0 12px rgba(155,89,182,.6);}
+.word-note{font-size:16px;color:#bdc3c7;font-weight:700;}
+.sort-btns{display:flex;gap:16px;width:100%;}
+.sort-btn{flex:1;border:none;border-radius:18px;padding:20px 10px;font-size:28px;font-weight:900;cursor:pointer;font-family:'Quicksand';color:white;min-height:80px;display:flex;align-items:center;justify-content:center;transition:.1s;box-shadow:0 6px 0 rgba(0,0,0,.3);}
+.sort-btn:active:not(:disabled){transform:translateY(6px);box-shadow:none;}
+.sort-btn:disabled{cursor:default;}
+#ch-btn{background:var(--teal);box-shadow:0 6px 0 #0e6655;}
+#sh-btn{background:var(--purple);box-shadow:0 6px 0 #6c3483;}
+.sort-btn.btn-correct{box-shadow:0 0 0 4px white,0 0 20px rgba(255,255,255,.4)!important;}
+.sort-btn.btn-wrong{opacity:.4;}
+.result-msg{border-radius:14px;padding:12px 16px;font-size:18px;font-weight:900;text-align:center;width:100%;display:none;}
+.result-msg.correct{background:rgba(39,174,96,.25);border:2px solid #27ae60;color:#2ecc71;}
+.result-msg.wrong{background:rgba(231,76,60,.2);border:2px solid #e74c3c;color:#e74c3c;}
+.result-msg.timeout{background:rgba(127,140,141,.2);border:2px solid #7f8c8d;color:#bdc3c7;}
+/* Final */
+.final-circle{width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.05);border:4px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.final-num{font-size:50px;font-weight:900;color:var(--gold);line-height:1;}
+.final-sub{font-size:15px;color:#bdc3c7;font-weight:700;}
+.final-msg{font-size:24px;font-weight:900;text-align:center;}
+.restart-btn{background:var(--gold);color:#2d3436;border:none;padding:13px 36px;font-size:18px;font-weight:900;border-radius:50px;cursor:pointer;font-family:'Quicksand';}
+.back2-btn{background:rgba(255,255,255,.1);color:white;border:2px solid rgba(255,255,255,.3);padding:12px 30px;font-size:16px;border-radius:50px;font-weight:900;cursor:pointer;font-family:'Quicksand';}
+@media(max-width:400px){.word-text{font-size:30px;}.sort-btn{font-size:24px;min-height:70px;}}
+    </style>
+</head>
+<body>
+<button id="back-btn" onclick="location.href='teacher.html'">🔙 回去</button>
+
+<!-- START -->
+<div id="start-screen" class="screen on">
+  <div style="font-size:60px;">🔤</div>
+  <h1 class="big-title">ch vs sh</h1>
+  <p class="sub">G5 Unit 3 發音練習 · 32 題 · 聽音辨字</p>
+  <div class="ex-row">
+    <div class="ex-card ch-card">
+      <div class="ex-sound" style="color:#2ecc71;">ch</div>
+      <div class="ex-words">🍗 ch-icken<br>⛪ ch-urch<br>🍱 lun-ch</div>
+    </div>
+    <div class="ex-card sh-card">
+      <div class="ex-sound" style="color:#9b59b6;">sh</div>
+      <div class="ex-words">🏪 sh-op<br>📏 sh-ort<br>🐟 fi-sh</div>
+    </div>
+  </div>
+  <p class="sub" style="font-size:13px;">每題 4 秒 · 聽到單字後選 ch 或 sh</p>
+  <button class="start-btn" onclick="startGame()">開始練習 ▶</button>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div class="top-row">
+    <div class="pill">🏆 <span id="score-disp">0</span></div>
+    <div class="timer-track"><div class="timer-bar" id="timer-bar"></div></div>
+    <div class="pill"><span id="word-num">1</span>/32</div>
+  </div>
+  <div class="word-card">
+    <div class="word-emoji" id="word-emoji">🍗</div>
+    <div class="word-text" id="word-text">chicken</div>
+    <div class="word-note" id="word-note">雞肉</div>
+  </div>
+  <div class="sort-btns">
+    <button class="sort-btn" id="ch-btn" onclick="pick('ch')">ch</button>
+    <button class="sort-btn" id="sh-btn" onclick="pick('sh')">sh</button>
+  </div>
+  <div class="result-msg" id="result-msg"></div>
+</div>
+
+<!-- FINAL -->
+<div id="final-screen" class="screen">
+  <div style="font-size:52px;">🎉</div>
+  <h1 class="big-title">練習完成！</h1>
+  <div class="final-circle">
+    <div class="final-num" id="final-num">0</div>
+    <div class="final-sub">/ 32 題</div>
+  </div>
+  <div class="final-msg" id="final-msg"></div>
+  <button class="restart-btn" onclick="startGame()">再來一次 🔄</button>
+  <button class="back2-btn" onclick="location.href='teacher.html'">🔙 回老師頁面</button>
+</div>
+
+<script>
+const WORDS=[
+  // ch
+  {w:'chicken',sound:'ch',emoji:'🍗',note:'雞肉'},
+  {w:'church',sound:'ch',emoji:'⛪',note:'教堂'},
+  {w:'lunch',sound:'ch',emoji:'🍱',note:'午餐'},
+  {w:'chair',sound:'ch',emoji:'🪑',note:'椅子'},
+  {w:'cheese',sound:'ch',emoji:'🧀',note:'起司'},
+  {w:'cherry',sound:'ch',emoji:'🍒',note:'櫻桃'},
+  {w:'child',sound:'ch',emoji:'👧',note:'小孩'},
+  {w:'chin',sound:'ch',emoji:'😊',note:'下巴'},
+  {w:'chips',sound:'ch',emoji:'🍟',note:'洋芋片'},
+  {w:'teach',sound:'ch',emoji:'📚',note:'教導'},
+  {w:'peach',sound:'ch',emoji:'🍑',note:'桃子'},
+  {w:'much',sound:'ch',emoji:'💯',note:'很多'},
+  {w:'bench',sound:'ch',emoji:'🏫',note:'長椅'},
+  {w:'match',sound:'ch',emoji:'🎯',note:'比賽'},
+  {w:'rich',sound:'ch',emoji:'💰',note:'富有的'},
+  {w:'chest',sound:'ch',emoji:'📦',note:'胸；箱子'},
+  // sh
+  {w:'shop',sound:'sh',emoji:'🏪',note:'商店'},
+  {w:'short',sound:'sh',emoji:'📏',note:'短的'},
+  {w:'fish',sound:'sh',emoji:'🐟',note:'魚'},
+  {w:'ship',sound:'sh',emoji:'🚢',note:'船'},
+  {w:'shoe',sound:'sh',emoji:'👟',note:'鞋子'},
+  {w:'shell',sound:'sh',emoji:'🐚',note:'貝殼'},
+  {w:'shirt',sound:'sh',emoji:'👕',note:'上衣'},
+  {w:'sheep',sound:'sh',emoji:'🐑',note:'羊'},
+  {w:'share',sound:'sh',emoji:'🤝',note:'分享'},
+  {w:'dish',sound:'sh',emoji:'🍽️',note:'盤子'},
+  {w:'wish',sound:'sh',emoji:'⭐',note:'願望'},
+  {w:'wash',sound:'sh',emoji:'🧼',note:'洗'},
+  {w:'brush',sound:'sh',emoji:'🪥',note:'刷子'},
+  {w:'fresh',sound:'sh',emoji:'🌿',note:'新鮮的'},
+  {w:'flash',sound:'sh',emoji:'⚡',note:'閃光'},
+  {w:'shadow',sound:'sh',emoji:'🌑',note:'影子'},
+];
+
+const TIMER_MS=4000;
+let queue=[],idx=0,score=0,answered=false,timerHandle=null;
+function shuffle(a){return [...a].sort(()=>Math.random()-.5);}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function speak(t){if(!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.85;speechSynthesis.cancel();speechSynthesis.speak(u);}
+
+function startGame(){
+  queue=shuffle(WORDS);idx=0;score=0;
+  document.getElementById('score-disp').textContent=0;
+  show('game-screen');nextWord();
+}
+
+function nextWord(){
+  if(idx>=queue.length){showFinal();return;}
+  answered=false;
+  const w=queue[idx];
+  document.getElementById('word-num').textContent=(idx+1)+'/'+queue.length;
+  document.getElementById('word-emoji').textContent=w.emoji;
+  document.getElementById('word-text').textContent=w.w;
+  document.getElementById('word-note').textContent=w.note;
+  document.getElementById('result-msg').style.display='none';
+  const chBtn=document.getElementById('ch-btn');
+  const shBtn=document.getElementById('sh-btn');
+  chBtn.disabled=false;shBtn.disabled=false;
+  chBtn.className='sort-btn';chBtn.id='ch-btn';
+  shBtn.className='sort-btn';shBtn.id='sh-btn';
+  // Re-apply IDs after className reset
+  chBtn.style.background='var(--teal)';chBtn.style.boxShadow='0 6px 0 #0e6655';chBtn.style.opacity='1';
+  shBtn.style.background='var(--purple)';shBtn.style.boxShadow='0 6px 0 #6c3483';shBtn.style.opacity='1';
+
+  speak(w.w);
+  startTimer();
+}
+
+function startTimer(){
+  clearTimeout(timerHandle);
+  const bar=document.getElementById('timer-bar');
+  bar.style.transition='none';bar.style.width='100%';
+  bar.offsetWidth; // force reflow
+  bar.style.transition='width '+TIMER_MS+'ms linear';
+  bar.style.width='0%';
+  timerHandle=setTimeout(()=>{if(!answered)pick(null);},TIMER_MS);
+}
+
+function pick(chosen){
+  if(answered)return;answered=true;
+  clearTimeout(timerHandle);
+  const w=queue[idx];
+  const correct=w.sound;
+  const isRight=chosen===correct;
+
+  document.getElementById('ch-btn').disabled=true;
+  document.getElementById('sh-btn').disabled=true;
+
+  // Highlight digraph in word display
+  const wordEl=document.getElementById('word-text');
+  const cls='hi-'+correct; // hi-ch or hi-sh
+  const highlighted=w.w.replace(new RegExp(correct,'g'),`<span class="${cls}">${correct}</span>`);
+  wordEl.innerHTML=highlighted;
+
+  // Visual feedback on buttons
+  const chBtn=document.getElementById('ch-btn');
+  const shBtn=document.getElementById('sh-btn');
+  if(correct==='ch'){
+    chBtn.style.boxShadow='0 0 0 4px white, 0 0 20px rgba(255,255,255,.4)';
+    if(chosen==='sh') shBtn.style.opacity='.35';
+  } else {
+    shBtn.style.boxShadow='0 0 0 4px white, 0 0 20px rgba(255,255,255,.4)';
+    if(chosen==='ch') chBtn.style.opacity='.35';
+  }
+
+  const msg=document.getElementById('result-msg');
+  if(chosen===null){
+    msg.className='result-msg timeout';msg.textContent='⏱️ 時間到！是 '+correct.toUpperCase()+'';
+  } else if(isRight){
+    score++;document.getElementById('score-disp').textContent=score;
+    msg.className='result-msg correct';msg.textContent='✅ 正確！'+correct.toUpperCase()+' sound';
+  } else {
+    msg.className='result-msg wrong';msg.textContent='❌ 是 '+correct.toUpperCase()+' sound！';
+  }
+  msg.style.display='block';
+  speak(w.w);
+
+  idx++;
+  setTimeout(nextWord,1600);
+}
+
+function showFinal(){
+  document.getElementById('final-num').textContent=score;
+  const pct=score/queue.length;
+  document.getElementById('final-msg').textContent=pct>=.9?'🌟 發音高手！':pct>=.7?'👍 做得不錯！':pct>=.5?'💪 繼續練習！':'📚 多聽多練！';
+  show('final-screen');
+}
+</script>
+</body>
+</html>

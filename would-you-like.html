@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Would You Like? 句型練習</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+:root{--bg:#1a2535;--card:#2c3e50;--gold:#f1c40f;--teal:#16a085;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+body{background:var(--bg);margin:0;min-height:100dvh;font-family:'Quicksand',sans-serif;color:white;display:flex;flex-direction:column;align-items:center;padding-bottom:30px;}
+#back-btn{position:fixed;top:max(12px,env(safe-area-inset-top));left:12px;background:rgba(231,76,60,.85);color:white;border:none;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;z-index:50000;}
+.screen{display:none;flex-direction:column;align-items:center;width:100%;max-width:520px;padding:max(60px,calc(env(safe-area-inset-top)+50px)) 16px 20px;gap:12px;}
+.screen.on{display:flex;}
+.big-title{font-size:38px;font-weight:900;color:var(--gold);text-align:center;margin:0;}
+.sub{font-size:15px;color:#bdc3c7;font-weight:700;text-align:center;margin:0;}
+.pattern-card{background:var(--card);border-radius:14px;padding:14px 18px;width:100%;font-size:14px;color:#bdc3c7;font-weight:700;line-height:2.2;}
+.start-btn{background:var(--gold);color:#2d3436;border:none;padding:14px 46px;font-size:20px;font-weight:900;border-radius:50px;cursor:pointer;font-family:'Quicksand';box-shadow:0 5px 0 #d4ac0d;}
+.start-btn:active{transform:translateY(5px);box-shadow:none;}
+.score-row{display:flex;justify-content:space-between;width:100%;}
+.pill{background:rgba(255,255,255,.1);border-radius:50px;padding:6px 16px;font-size:15px;font-weight:900;}
+.prog-track{width:100%;height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--gold);border-radius:4px;transition:width .4s;}
+.q-label{font-size:11px;font-weight:900;color:#bdc3c7;letter-spacing:2px;text-transform:uppercase;text-align:center;}
+.sentence-box{background:var(--card);border-radius:18px;padding:22px 20px;width:100%;text-align:center;font-size:23px;font-weight:900;line-height:1.7;min-height:90px;display:flex;align-items:center;justify-content:center;}
+.blank{background:rgba(241,196,15,.15);border:2px solid var(--gold);border-radius:8px;padding:2px 14px;color:var(--gold);display:inline-block;min-width:70px;}
+.note{font-size:14px;color:#bdc3c7;font-weight:700;text-align:center;min-height:20px;}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;}
+.ch{background:var(--card);border:3px solid rgba(255,255,255,.15);border-radius:16px;padding:16px 10px;font-size:17px;font-weight:900;cursor:pointer;font-family:'Quicksand';color:white;min-height:66px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;transition:.1s;}
+.ch:active:not(:disabled){transform:scale(.95);}
+.ch.correct{background:rgba(39,174,96,.3);border-color:#27ae60;color:#2ecc71;}
+.ch.wrong{background:rgba(231,76,60,.25);border-color:#e74c3c;color:#e74c3c;animation:shake .3s;}
+.ch.reveal{background:rgba(39,174,96,.15);border-color:rgba(39,174,96,.5);color:#2ecc71;}
+.ch:disabled{cursor:default;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.final-circle{width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.05);border:4px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;}
+.final-num{font-size:50px;font-weight:900;color:var(--gold);line-height:1;}
+.final-denom{font-size:16px;color:#bdc3c7;font-weight:700;}
+.final-msg{font-size:24px;font-weight:900;text-align:center;}
+.restart-btn{background:var(--gold);color:#2d3436;border:none;padding:13px 36px;font-size:18px;font-weight:900;border-radius:50px;cursor:pointer;font-family:'Quicksand';}
+.back2-btn{background:rgba(255,255,255,.1);color:white;border:2px solid rgba(255,255,255,.3);padding:12px 30px;font-size:16px;border-radius:50px;font-weight:900;cursor:pointer;font-family:'Quicksand';}
+@media(max-width:400px){.sentence-box{font-size:19px;}.ch{font-size:15px;min-height:58px;}}
+    </style>
+</head>
+<body>
+<button id="back-btn" onclick="location.href='teacher.html'">🔙 回去</button>
+
+<!-- START -->
+<div id="start-screen" class="screen on">
+  <div style="font-size:60px;margin-bottom:4px;">🍽️</div>
+  <h1 class="big-title">Would You Like?</h1>
+  <p class="sub">G5 Unit 3 句型填空練習 · 32 題</p>
+  <div class="pattern-card">
+    <div>🔵 <span style="color:white;">What <b>would</b> you like for [meal]?</span></div>
+    <div>🔵 <span style="color:white;">I'<b>d</b> like <b>some</b> [food].</span></div>
+    <div>🟢 <span style="color:white;"><b>Would</b> you like <b>some</b> [food] for [meal]?</span></div>
+    <div>🟢 <span style="color:white;">Yes, please. / No, thank you.</span></div>
+  </div>
+  <button class="start-btn" onclick="startGame()">開始練習 ▶</button>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div class="score-row">
+    <div class="pill">✅ <span id="ok-count">0</span> 答對</div>
+    <div class="pill">📝 <span id="q-num">1</span>/32</div>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="q-label" id="q-label">Pattern A</div>
+  <div class="sentence-box" id="sentence-box"></div>
+  <div class="note" id="note"></div>
+  <div class="choices" id="choices"></div>
+</div>
+
+<!-- FINAL -->
+<div id="final-screen" class="screen">
+  <div style="font-size:52px;">🎉</div>
+  <h1 class="big-title">練習完成！</h1>
+  <div class="final-circle">
+    <div class="final-num" id="final-num">0</div>
+    <div class="final-denom">/ 32 題</div>
+  </div>
+  <div class="final-msg" id="final-msg"></div>
+  <button class="restart-btn" onclick="startGame()">再來一次 🔄</button>
+  <button class="back2-btn" onclick="location.href='teacher.html'">🔙 回老師頁面</button>
+</div>
+
+<script>
+const Q=[
+  // Pattern A ─ What would you like for...?
+  {s:'What _____ you like for lunch?',correct:'would',d:['do','are','should'],label:'Pattern A'},
+  {s:'What would you _____ for dinner?',correct:'like',d:['want','eat','have'],label:'Pattern A'},
+  {s:'What would you like _____ breakfast?',correct:'for',d:['at','in','on'],label:'Pattern A'},
+  {s:'What _____ she like for lunch?',correct:'would',d:['does','is','can'],label:'Pattern A'},
+  {s:'What would _____ like for dinner?',correct:'he',d:['his','him','himself'],label:'Pattern A'},
+  {s:'What would they _____ for breakfast?',correct:'like',d:['likes','liked','liking'],label:'Pattern A'},
+  {s:'What would _____ like for lunch?',correct:'we',d:['us','our','ours'],label:'Pattern A'},
+  // I'd like some...
+  {s:"I'd like _____ salad.",correct:'some',d:['a','the','any'],label:'Pattern A'},
+  {s:"I'd _____ some soup.",correct:'like',d:['want','need','eat'],label:'Pattern A'},
+  {s:"_____ like some chicken.",correct:"I'd",d:["I'm","I've","I'll"],label:'Pattern A'},
+  {s:"I'd like some _____ for lunch.",correct:'noodles',d:['bread','cereal','steak'],note:'（麵條）',label:'Pattern A'},
+  {s:"She'd like some _____ for breakfast.",correct:'cereal',d:['noodles','steak','sushi'],note:'（麥片）',label:'Pattern A'},
+  {s:"He'd like some _____ for dinner.",correct:'chicken',d:['salad','bread','cereal'],note:'（雞肉）',label:'Pattern A'},
+  {s:"I'd like some _____ for dinner.",correct:'soup',d:['bread','cereal','steak'],note:'（湯）',label:'Pattern A'},
+  {s:"They'd like some _____ for lunch.",correct:'salad',d:['cereal','steak','sushi'],note:'（沙拉）',label:'Pattern A'},
+  // I'd = I would
+  {s:"I'd = I _____",correct:'would',d:['will','could','should'],label:'文法'},
+  {s:"She'd = She _____",correct:'would',d:['will','could','should'],label:'文法'},
+  {s:"We'd = We _____",correct:'would',d:['will','could','should'],label:'文法'},
+  // Pattern B ─ Would you like some...?
+  {s:'_____ you like some salad for lunch?',correct:'Would',d:['Do','Are','Should'],label:'Pattern B'},
+  {s:'Would you _____ some chicken for dinner?',correct:'like',d:['want','eat','have'],label:'Pattern B'},
+  {s:'Would you like _____ bread for breakfast?',correct:'some',d:['a','the','any'],label:'Pattern B'},
+  {s:'Would you like some noodles _____ lunch?',correct:'for',d:['at','in','on'],label:'Pattern B'},
+  {s:'Would _____ like some soup for dinner?',correct:'she',d:['her','hers','herself'],label:'Pattern B'},
+  {s:'Would _____ like some cereal for breakfast?',correct:'they',d:['their','them','theirs'],label:'Pattern B'},
+  {s:'Would you like some _____ for lunch?',correct:'salad',d:['cereal','bread','steak'],note:'（沙拉）',label:'Pattern B'},
+  {s:'Would you like some _____ for breakfast?',correct:'cereal',d:['noodles','steak','sushi'],note:'（麥片）',label:'Pattern B'},
+  // Responses
+  {s:'"Would you like some chicken?" → agree:',correct:'Yes, please.',d:['No, thank you.','I like chicken.','Yes, I do.'],label:'回應'},
+  {s:'"Would you like some bread?" → decline:',correct:'No, thank you.',d:['Yes, please.','No, I do.','Not at all.'],label:'回應'},
+  {s:'"Would you like some salad?" → "_____, I\'d like some soup."',correct:'No, thank you.',d:['Yes, please.','OK','Sure'],label:'回應'},
+  // Choose correct sentence
+  {s:'正確句子是哪一個？',correct:"I'd like some soup.",d:["I'd like soup some.","I like soup would.","Would I like some soup?"],label:'整句'},
+  {s:'正確問句是哪一個？',correct:'What would you like for lunch?',d:['What would you like lunch for?','What for lunch would you like?','What would lunch you like for?'],label:'整句'},
+  {s:'What would you like for _____? (早餐)',correct:'breakfast',d:['lunch','dinner','snack'],label:'單字'},
+];
+
+let queue=[],qIdx=0,okCount=0,answered=false;
+function shuffle(a){return [...a].sort(()=>Math.random()-.5);}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function speak(t){if(!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.85;speechSynthesis.cancel();speechSynthesis.speak(u);}
+
+function startGame(){
+  queue=shuffle(Q);qIdx=0;okCount=0;
+  document.getElementById('ok-count').textContent=0;
+  show('game-screen');renderQ();
+}
+
+function renderQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  const q=queue[qIdx];
+  document.getElementById('q-num').textContent=qIdx+1;
+  document.getElementById('q-label').textContent=q.label||'';
+  document.getElementById('prog-fill').style.width=(qIdx/queue.length*100)+'%';
+  document.getElementById('note').textContent=q.note||'';
+
+  // Build sentence display
+  const box=document.getElementById('sentence-box');
+  box.innerHTML='';
+  const parts=q.s.split('_____');
+  if(parts.length===2){
+    box.appendChild(document.createTextNode(parts[0]));
+    const sp=document.createElement('span');sp.className='blank';sp.textContent='_____';
+    box.appendChild(sp);
+    box.appendChild(document.createTextNode(parts[1]));
+  } else {
+    box.textContent=q.s;
+  }
+
+  // Choices
+  const choices=shuffle([q.correct,...q.d]);
+  const g=document.getElementById('choices');g.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');b.className='ch';b.textContent=c;
+    b.onclick=()=>pick(b,c,q.correct,choices,q);g.appendChild(b);
+  });
+
+  // Speak the sentence (replace blank with "blank")
+  speak(q.s.replace('_____','blank'));
+}
+
+function pick(btn,chosen,correct,choices,q){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.ch').forEach(b=>b.disabled=true);
+
+  const box=document.getElementById('sentence-box');
+  const parts=q.s.split('_____');
+  const fillSpan=box.querySelector('.blank');
+
+  if(chosen===correct){
+    btn.classList.add('correct');
+    okCount++;document.getElementById('ok-count').textContent=okCount;
+    if(fillSpan){fillSpan.textContent=correct;fillSpan.style.color='#2ecc71';fillSpan.style.borderColor='#27ae60';fillSpan.style.background='rgba(39,174,96,.2)';}
+    speak(q.s.replace('_____',correct));
+    setTimeout(()=>{qIdx++;renderQ();},1300);
+  } else {
+    btn.classList.add('wrong');
+    if(fillSpan){fillSpan.textContent=correct;fillSpan.style.color='#e74c3c';fillSpan.style.borderColor='#e74c3c';fillSpan.style.background='rgba(231,76,60,.15)';}
+    document.querySelectorAll('.ch').forEach(b=>{if(b.textContent===correct)b.classList.add('reveal');});
+    speak(q.s.replace('_____',correct));
+    setTimeout(()=>{qIdx++;renderQ();},1800);
+  }
+}
+
+function showFinal(){
+  document.getElementById('final-num').textContent=okCount;
+  const pct=okCount/queue.length;
+  document.getElementById('final-msg').textContent=pct>=.9?'🌟 太厲害了！':pct>=.7?'👍 做得很好！':pct>=.5?'💪 繼續加油！':'📚 再多練習！';
+  show('final-screen');
+}
+</script>
+</body>
+</html>
