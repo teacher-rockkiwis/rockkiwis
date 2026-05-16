@@ -1,0 +1,22 @@
+[
+  { "word": "shirt", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "fish", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "wash", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "ship", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "shoe", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "shell", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "dish", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "wish", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "brush", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "shop", "target": "sh", "distractors": ["ch", "h", "s", "c"] },
+  { "word": "chips", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "cheese", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "lunch", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "chair", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "chicken", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "peach", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "bench", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "much", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "cherry", "target": "ch", "distractors": ["sh", "h", "k", "c"] },
+  { "word": "sheep", "target": "sh", "distractors": ["ch", "h", "s", "c"] }
+]
