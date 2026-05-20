@@ -617,8 +617,15 @@
             document.getElementById('btn-' + themeId).classList.add('selected');
             
             currentTheme = themeId;
-            let themeName = document.getElementById('btn-' + themeId).innerText.split(':')[0].replace('🏆 ', '').replace('▶', '').trim();
-            if(themeId.includes('mid')) themeName = document.getElementById('btn-' + themeId).innerText.replace('🏆 ', '');
+            const themeNames = {
+                'g4u1': 'G4 L1',
+                'g4u2': 'G4 L2',
+                'g5u1': 'G5 L1',
+                'g5u2': 'G5 L2',
+                'g4mid': '四年級 期中考總複習',
+                'g5mid': '五年級 期中考總複習'
+            };
+            let themeName = themeNames[themeId] || themeId;
             
             document.getElementById('front-board-title').innerText = `🏆 ${themeName} 前十名`;
             const listDiv = document.getElementById('front-leaderboard-list');

@@ -325,42 +325,58 @@
             });
         }
 
+        function loadQuestions(cb) {
+            if (questionBanks[currentTheme]) {
+                questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
+                cb();
+            } else {
+                fetch(`data/survival-${currentTheme}.json`)
+                    .then(r => r.json())
+                    .then(data => {
+                        questionBanks[currentTheme] = data;
+                        questions = [...data].sort(() => Math.random() - 0.5);
+                        cb();
+                    })
+                    .catch(() => { alert('題庫載入失敗！請選擇其他關卡。'); location.reload(); });
+            }
+        }
+
         function createRankedMatch() {
             isHost = true;
             roomId = 'match_' + Math.random().toString(36).substr(2, 9);
             roomRef = db.ref('ranked_matches/' + roomId);
             
-            questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
-
-            let initialData = {
-                status: 'recruiting',
-                theme_status: `${currentTheme}_recruiting`,
-                startTime: firebase.database.ServerValue.TIMESTAMP,
-                hostUid: myUid,
-                round: 0,
-                players: {}
-            };
-            
-            initialData.players[myUid] = {
-                name: myName, platform: -1, isAlive: true, isReal: true, accuracy: 1.0
-            };
-
-            roomRef.set(initialData);
-            roomRef.onDisconnect().remove(); // 主機斷線就銷毀房間
-            
-            listenToMatch();
-            
-            // 主機負責 15 秒倒數，然後塞入機器人開局
-            let countdown = 15;
-            matchInterval = setInterval(() => {
-                countdown--;
-                document.getElementById('wait-timer').innerText = countdown;
+            loadQuestions(() => {
+                let initialData = {
+                    status: 'recruiting',
+                    theme_status: `${currentTheme}_recruiting`,
+                    startTime: firebase.database.ServerValue.TIMESTAMP,
+                    hostUid: myUid,
+                    round: 0,
+                    players: {}
+                };
                 
-                if (countdown <= 0) {
-                    clearInterval(matchInterval);
-                    fillBotsAndStart();
-                }
-            }, 1000);
+                initialData.players[myUid] = {
+                    name: myName, platform: -1, isAlive: true, isReal: true, accuracy: 1.0
+                };
+
+                roomRef.set(initialData);
+                roomRef.onDisconnect().remove(); // 主機斷線就銷毀房間
+                
+                listenToMatch();
+                
+                // 主機負責 15 秒倒數，然後塞入機器人開局
+                let countdown = 15;
+                matchInterval = setInterval(() => {
+                    countdown--;
+                    document.getElementById('wait-timer').innerText = countdown;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(matchInterval);
+                        fillBotsAndStart();
+                    }
+                }, 1000);
+            });
         }
 
         function listenToMatch() {
@@ -445,43 +461,49 @@
         }
 
         function startHostRound() {
-            if (questions.length === 0) questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
-            
-            let q = questions.pop();
-            let currentOptions = [...q.opts].sort(() => Math.random() - 0.5);
-            let ansIdx = currentOptions.indexOf(q.ans);
-            currentRound++;
-            
-            // 將所有存活者移回出發區
-            roomRef.once('value').then(snap => {
-                let players = snap.val().players;
-                let updates = {};
-                for (let uid in players) {
-                    if (players[uid].isAlive) updates[`players/${uid}/platform`] = -1;
-                }
-                updates['question'] = { text: q.q, opts: currentOptions };
-                updates['ansIdx'] = ansIdx;
-                updates['round'] = currentRound;
-                updates['status'] = 'playing';
+            const proceed = () => {
+                let q = questions.pop();
+                let currentOptions = [...q.opts].sort(() => Math.random() - 0.5);
+                let ansIdx = currentOptions.indexOf(q.ans);
+                currentRound++;
                 
-                roomRef.update(updates).then(() => {
-                    scheduleBotMovements(players, ansIdx);
+                // 將所有存活者移回出發區
+                roomRef.once('value').then(snap => {
+                    let players = snap.val().players;
+                    let updates = {};
+                    for (let uid in players) {
+                        if (players[uid].isAlive) updates[`players/${uid}/platform`] = -1;
+                    }
+                    updates['question'] = { text: q.q, opts: currentOptions };
+                    updates['ansIdx'] = ansIdx;
+                    updates['round'] = currentRound;
+                    updates['status'] = 'playing';
                     
-                    // 10秒倒數
-                    let time = 10;
-                    roomRef.update({ timer: time });
-                    
-                    roundInterval = setInterval(() => {
-                        time--;
+                    roomRef.update(updates).then(() => {
+                        scheduleBotMovements(players, ansIdx);
+                        
+                        // 10秒倒數
+                        let time = 10;
                         roomRef.update({ timer: time });
                         
-                        if (time <= 0) {
-                            clearInterval(roundInterval);
-                            evaluateHostRound(ansIdx);
-                        }
-                    }, 1000);
+                        roundInterval = setInterval(() => {
+                            time--;
+                            roomRef.update({ timer: time });
+                            
+                            if (time <= 0) {
+                                clearInterval(roundInterval);
+                                evaluateHostRound(ansIdx);
+                            }
+                        }, 1000);
+                    });
                 });
-            });
+            };
+
+            if (questions.length === 0) {
+                loadQuestions(proceed);
+            } else {
+                proceed();
+            }
         }
 
         function scheduleBotMovements(players, ansIdx) {
