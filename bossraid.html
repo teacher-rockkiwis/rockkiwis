@@ -92,137 +92,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 題庫 (與拔河戰相同)
-        const questionBanks = {
-            "g4-l1": [
-                { q: "Where ____ you?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Where ____ he?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "Where ____ she?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "Where ____ they?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Where ____ I?", opts: ["am", "is", "are", "does"], ans: "am" },
-                { q: "Where ____ Tom?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "Where ____ the dog?", opts: ["is", "are", "am", "do"], ans: "is" },
-                { q: "Where ____ the cats?", opts: ["are", "is", "am", "does"], ans: "are" },
-                { q: "Where ____ we?", opts: ["are", "is", "am", "does"], ans: "are" },
-                { q: "Where ____ Mom and Dad?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "I ____ in the bedroom.", opts: ["am", "is", "are", "be"], ans: "am" },
-                { q: "You ____ in the kitchen.", opts: ["are", "is", "am", "be"], ans: "are" },
-                { q: "He ____ in the yard.", opts: ["is", "are", "am", "be"], ans: "is" },
-                { q: "She ____ in the dining room.", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "It ____ in the living room.", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "We ____ in the bathroom.", opts: ["are", "is", "am", "be"], ans: "are" },
-                { q: "They ____ in the kitchen.", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "The dog ____ in the house.", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "The birds ____ in the tree.", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "My mom ____ in the bedroom.", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "My parents ____ in the yard.", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Tom ____ in the living room.", opts: ["is", "are", "am", "be"], ans: "is" },
-                { q: "Mary and Tom ____ in the kitchen.", opts: ["are", "is", "am", "does"], ans: "are" },
-                { q: "The cat ____ on the sofa.", opts: ["is", "are", "am", "do"], ans: "is" },
-                { q: "____ you in the yard?", opts: ["Are", "Is", "Am", "Do"], ans: "Are" },
-                { q: "____ he in the bedroom?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
-                { q: "____ she in the dining room?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
-                { q: "____ they in the kitchen?", opts: ["Are", "Is", "Am", "Do"], ans: "Are" },
-                { q: "____ the dog in the house?", opts: ["Is", "Are", "Am", "Does"], ans: "Is" },
-                { q: "Yes, I ____.", opts: ["am", "is", "are", "do"], ans: "am" }
-            ],
-            "g4-l2": [
-                { q: "What ____ you doing?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "What ____ he doing?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "What ____ she doing?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "What ____ they doing?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "What ____ the dog doing?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "What is he ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
-                { q: "What are you ____?", opts: ["doing", "do", "does", "did"], ans: "doing" },
-                { q: "I am ____.", opts: ["running", "run", "runs", "ran"], ans: "running" },
-                { q: "You are ____.", opts: ["reading", "read", "reads", "reader"], ans: "reading" },
-                { q: "He is ____ a book.", opts: ["reading", "read", "reads", "reader"], ans: "reading" },
-                { q: "She is ____ TV.", opts: ["watching", "watch", "watches", "watched"], ans: "watching" },
-                { q: "It is ____.", opts: ["sleeping", "sleep", "sleeps", "slept"], ans: "sleeping" },
-                { q: "We are ____.", opts: ["cooking", "cook", "cooks", "cooked"], ans: "cooking" },
-                { q: "They are ____.", opts: ["eating", "eat", "eats", "ate"], ans: "eating" },
-                { q: "The dog is ____.", opts: ["jumping", "jump", "jumps", "jumped"], ans: "jumping" },
-                { q: "The cats are ____.", opts: ["playing", "play", "plays", "played"], ans: "playing" },
-                { q: "Tom is ____.", opts: ["writing", "write", "writes", "wrote"], ans: "writing" },
-                { q: "Mary is ____.", opts: ["painting", "paint", "paints", "painted"], ans: "painting" },
-                { q: "My mom is ____.", opts: ["cooking", "cook", "cooks", "cooked"], ans: "cooking" },
-                { q: "I am ____ to music.", opts: ["listening", "listen", "listens", "listened"], ans: "listening" },
-                { q: "He is ____ math.", opts: ["studying", "study", "studies", "studied"], ans: "studying" },
-                { q: "Where ____ you going?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Where ____ he going?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "Where ____ she going?", opts: ["is", "are", "am", "does"], ans: "is" },
-                { q: "Where ____ they going?", opts: ["are", "is", "am", "do"], ans: "are" },
-                { q: "Where is she ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
-                { q: "Where are they ____?", opts: ["going", "go", "goes", "went"], ans: "going" },
-                { q: "I am going ____ the park.", opts: ["to", "in", "on", "at"], ans: "to" },
-                { q: "He is going ____ school.", opts: ["to", "in", "on", "at"], ans: "to" },
-                { q: "She is going ____ the shop.", opts: ["to", "in", "on", "at"], ans: "to" }
-            ],
-            "g5-l1": [
-                { q: "What's ____?", opts: ["wrong", "matter", "bad", "problem"], ans: "wrong" },
-                { q: "My head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My nose ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My mouth ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My neck ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My back ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "His shoulder ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "Her arm ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "His hand ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "Her leg ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "His foot ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My tooth ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "Your right eye ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "His left ear ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "Her stomach ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "My ears ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "Your shoulders ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "His arms ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "Her hands ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "My fingers ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "His legs ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "Her knees ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "My feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "Your toes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "His teeth ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "Tom's eyes ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" },
-                { q: "Mary's head ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My brother's foot ____.", opts: ["hurts", "hurt", "hurting", "hunted"], ans: "hurts" },
-                { q: "My sister's feet ____.", opts: ["hurt", "hurts", "hurting", "hunted"], ans: "hurt" }
-            ],
-            "g5-l2": [
-                { q: "____ you have a fever?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
-                { q: "____ I have a cold?", opts: ["Do", "Does", "Am", "Is"], ans: "Do" },
-                { q: "____ we have a headache?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
-                { q: "____ they have a toothache?", opts: ["Do", "Does", "Are", "Is"], ans: "Do" },
-                { q: "____ he have a stomachache?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
-                { q: "____ she have a sore throat?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
-                { q: "____ it have a runny nose?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
-                { q: "____ Tom have a cough?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
-                { q: "____ Mary have diarrhea?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
-                { q: "____ your brother have a cold?", opts: ["Does", "Do", "Is", "Are"], ans: "Does" },
-                { q: "Yes, I ____.", opts: ["do", "does", "am", "are"], ans: "do" },
-                { q: "Yes, you ____.", opts: ["do", "does", "are", "is"], ans: "do" },
-                { q: "Yes, we ____.", opts: ["do", "does", "are", "is"], ans: "do" },
-                { q: "Yes, they ____.", opts: ["do", "does", "are", "is"], ans: "do" },
-                { q: "Yes, he ____.", opts: ["does", "do", "is", "has"], ans: "does" },
-                { q: "Yes, she ____.", opts: ["does", "do", "is", "has"], ans: "does" },
-                { q: "Yes, it ____.", opts: ["does", "do", "is", "has"], ans: "does" },
-                { q: "No, I ____.", opts: ["don't", "doesn't", "not", "no"], ans: "don't" },
-                { q: "No, they ____.", opts: ["don't", "doesn't", "aren't", "no"], ans: "don't" },
-                { q: "No, he ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
-                { q: "No, she ____.", opts: ["doesn't", "don't", "isn't", "hasn't"], ans: "doesn't" },
-                { q: "I ____ a runny nose.", opts: ["have", "has", "having", "had"], ans: "have" },
-                { q: "You ____ a cold.", opts: ["have", "has", "having", "had"], ans: "have" },
-                { q: "We ____ a fever.", opts: ["have", "has", "having", "had"], ans: "have" },
-                { q: "They ____ a headache.", opts: ["have", "has", "having", "had"], ans: "have" },
-                { q: "He ____ a sore throat.", opts: ["has", "have", "having", "had"], ans: "has" },
-                { q: "She ____ a stomachache.", opts: ["has", "have", "having", "had"], ans: "has" },
-                { q: "It ____ a runny nose.", opts: ["has", "have", "having", "had"], ans: "has" },
-                { q: "Tom ____ a toothache.", opts: ["has", "have", "having", "had"], ans: "has" },
-                { q: "Mary ____ a backache.", opts: ["has", "have", "having", "had"], ans: "has" }
-            ]
-        };
+        // 題庫 (動態從 data/ 讀取)
+        let questionBanks = {};
     </script>
 
     <!-- 主選單 -->
@@ -240,8 +111,12 @@
         <select id="host-theme" class="theme-select">
             <option value="g4-l1">📍 四年級 L1: Where are you?</option>
             <option value="g4-l2">🏃‍♂️ 四年級 L2: What are you doing?</option>
+            <option value="g4-l3">🍔 四年級 L3: What do you want for lunch?</option>
+            <option value="g4-l4">🍎 四年級 L4: Do you like apples?</option>
             <option value="g5-l1">🤕 五年級 L1: hurt vs hurts</option>
             <option value="g5-l2">🤒 五年級 L2: have vs has</option>
+            <option value="g5-l3">🍝 五年級 L3: What did you have for lunch?</option>
+            <option value="g5-l4">🏖️ 五年級 L4: Where were you yesterday?</option>
         </select>
         <select id="host-hp" class="theme-select">
             <option value="10000">🟢 幼龍 (血量: 10,000 / 適合小班級)</option>
@@ -346,30 +221,48 @@
             currentDragonHp = maxDragonHp;
             
             roomId = Math.floor(1000 + Math.random() * 9000).toString();
-            questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
 
-            roomRef = db.ref('raid_rooms/' + roomId);
-            roomRef.set({
-                status: 'lobby',
-                dragonMaxHp: maxDragonHp,
-                dragonHp: currentDragonHp,
-                question: null,
-                timestamp: Date.now()
-            });
+            const proceedWithRoom = () => {
+                questions = [...questionBanks[currentTheme]].sort(() => Math.random() - 0.5);
 
-            roomRef.onDisconnect().remove();
+                roomRef = db.ref('raid_rooms/' + roomId);
+                roomRef.set({
+                    status: 'lobby',
+                    dragonMaxHp: maxDragonHp,
+                    dragonHp: currentDragonHp,
+                    question: null,
+                    timestamp: Date.now()
+                });
 
-            switchScreen('host-game');
-            document.getElementById('display-room-code').innerText = roomId;
-            updateHostHpBar();
-            
-            bgm.volume = 0.4; bgm.play().catch(e=>{});
+                roomRef.onDisconnect().remove();
 
-            // 監聽玩家加入
-            db.ref('raid_rooms/' + roomId + '/players').on('value', snap => {
-                let count = snapshotToArray(snap).length;
-                document.getElementById('player-count').innerText = count;
-            });
+                switchScreen('host-game');
+                document.getElementById('display-room-code').innerText = roomId;
+                updateHostHpBar();
+                
+                bgm.volume = 0.4; bgm.play().catch(e=>{});
+
+                // 監聽玩家加入
+                db.ref('raid_rooms/' + roomId + '/players').on('value', snap => {
+                    let count = snapshotToArray(snap).length;
+                    document.getElementById('player-count').innerText = count;
+                });
+            };
+
+            if (questionBanks[currentTheme]) {
+                proceedWithRoom();
+            } else {
+                fetch(`data/survival-${currentTheme}.json`)
+                    .then(r => r.json())
+                    .then(data => {
+                        questionBanks[currentTheme] = data;
+                        proceedWithRoom();
+                    })
+                    .catch(err => {
+                        alert('題庫載入失敗！');
+                        location.reload();
+                    });
+            }
         }
 
         function startRound() {
