@@ -8,11 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <style>
-:root{--teal:#16a085;--orange:#d35400;--gold:#f39c12;--success:#27ae60;--error:#e74c3c;--bg:#1a252f;}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;outline:none;}
-body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksand',sans-serif;background:var(--bg);display:flex;flex-direction:column;user-select:none;overflow-x:hidden;}
 #back-btn{position:fixed;top:max(12px,env(safe-area-inset-top));left:12px;background:rgba(231,76,60,0.85);color:white;border:none;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;z-index:50000;box-shadow:0 3px 0 #c0392b;}
-
 /* Setup */
 #setup-screen{position:fixed;inset:0;z-index:9000;background:rgba(26,37,47,0.98);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:30px 20px;}
 .setup-h1{font-size:42px;color:var(--gold);margin:0;text-align:center;}
@@ -33,7 +29,6 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .setup-waiting{color:#bdc3c7;font-size:16px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;}
 .spin{display:inline-block;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
 /* Shared top bar */
 .top-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;flex-shrink:0;}
 .bar-pill{background:rgba(255,255,255,0.1);border-radius:50px;padding:7px 18px;font-size:17px;font-weight:900;color:white;}
@@ -42,14 +37,12 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .round-dot.active{background:var(--gold);border-color:var(--gold);}
 .round-dot.done{background:var(--success);border-color:var(--success);}
 .round-dot.miss{background:var(--error);border-color:var(--error);}
-
 /* Patience bar */
 .patience-wrap{display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0;}
 .patience-label{font-size:13px;font-weight:900;color:#bdc3c7;white-space:nowrap;min-width:70px;}
 .patience-track{flex:1;height:14px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;}
 .patience-fill{height:100%;width:100%;border-radius:10px;background:var(--success);transition:width .9s linear,background-color .4s;}
 .patience-num{font-size:18px;font-weight:900;color:white;min-width:40px;text-align:right;}
-
 /* Counter screen */
 #counter-screen{display:none;flex-direction:column;width:100%;max-width:1100px;margin:0 auto;padding:0 0 16px 0;gap:10px;flex-grow:1;}
 .customer-area{display:flex;align-items:flex-start;gap:12px;padding:0 14px;}
@@ -59,7 +52,6 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .replay-btn{background:var(--gold);border:none;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 .bubble-hint{color:#bdc3c7;font-size:12px;font-weight:700;margin-top:5px;padding-left:4px;}
 .game-row{display:flex;gap:14px;padding:0 14px;flex-wrap:wrap;}
-
 /* Kiosk machine */
 .kiosk-machine{flex:1;min-width:260px;background:#2c3e50;border-radius:20px;padding:14px;box-shadow:0 16px 40px rgba(0,0,0,0.5);border:4px solid #34495e;position:relative;}
 .kiosk-header{background:var(--error);border-radius:10px 10px 0 0;padding:9px;text-align:center;font-size:18px;font-weight:900;color:white;margin-bottom:9px;}
@@ -83,14 +75,12 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .serve-btn{background:var(--success);color:white;border:none;border-radius:50px;padding:15px 40px;font-size:22px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 6px 0 #1e8449;animation:pulse .8s infinite alternate;}
 @keyframes pulse{from{transform:scale(1);}to{transform:scale(1.05);}}
 .serve-btn:active{transform:scale(.97);animation:none;}
-
 /* Order panel */
 .order-panel{width:220px;flex-shrink:0;background:rgba(255,255,255,0.05);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px;}
 .order-panel h3{margin:0;color:white;font-size:16px;text-align:center;border-bottom:2px dashed rgba(255,255,255,0.15);padding-bottom:9px;}
 .order-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:white;font-size:14px;font-weight:700;}
 .order-total{color:var(--gold);font-size:18px;font-weight:900;text-align:right;border-top:2px solid rgba(255,165,0,0.3);padding-top:9px;display:none;}
 .order-empty{color:rgba(255,255,255,0.3);font-size:13px;text-align:center;padding:18px 0;}
-
 /* Kitchen screen */
 #kitchen-screen{display:none;flex-direction:column;width:100%;max-width:800px;margin:0 auto;padding:0 14px 20px;gap:14px;flex-grow:1;}
 .kitchen-header{text-align:center;padding:14px;background:var(--orange);color:white;font-size:22px;font-weight:900;}
@@ -110,7 +100,6 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .kitchen-done-btn{background:var(--success);color:white;border:none;border-radius:50px;padding:16px;font-size:22px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 6px 0 #1e8449;width:100%;max-width:400px;align-self:center;}
 .kitchen-done-btn:disabled{background:#636e72;box-shadow:none;cursor:default;}
 .kitchen-done-btn:active:not(:disabled){transform:translateY(6px);box-shadow:none;}
-
 /* Result overlay */
 #result-overlay{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.78);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;}
 .result-card{background:white;border-radius:28px;padding:28px 36px;text-align:center;max-width:340px;width:100%;box-shadow:0 18px 50px rgba(0,0,0,0.4);}
@@ -119,7 +108,6 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .result-detail{font-size:15px;color:#636e72;font-weight:700;line-height:1.6;}
 .next-btn{background:var(--gold);color:#2d3436;border:none;padding:13px 46px;font-size:20px;border-radius:50px;font-family:'Quicksand';font-weight:900;cursor:pointer;box-shadow:0 5px 0 #d4ac0d;}
 .next-btn:active{transform:translateY(5px);box-shadow:none;}
-
 /* End overlay */
 #end-overlay{position:fixed;inset:0;z-index:8000;background:rgba(26,37,47,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;}
 #end-overlay h1{font-size:40px;color:var(--gold);margin:0;text-align:center;}
@@ -128,7 +116,6 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 .score-sub{font-size:18px;color:#636e72;font-weight:700;}
 .review-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
 .review-dot{font-size:28px;}
-
 /* Animations */
 .bounce-in{animation:bounceIn .4s cubic-bezier(.175,.885,.32,1.275);}
 @keyframes bounceIn{0%{transform:scale(0)}80%{transform:scale(1.08)}100%{transform:scale(1)}}
@@ -139,6 +126,7 @@ body,html{margin:0;padding:0;min-height:100dvh;width:100vw;font-family:'Quicksan
 @keyframes impatient{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 .impatient{animation:impatient .4s infinite;}
 @media(max-width:640px){.kiosk-screen{grid-template-columns:repeat(3,1fr);}.game-row{flex-direction:column;}.order-panel{width:100%;}.food-emoji{font-size:28px;}.k-scramble-emoji{font-size:34px;}.k-half-btn{font-size:16px;padding:8px 12px;}}
+    
     </style>
     <script src="common.js"></script>
 </head>

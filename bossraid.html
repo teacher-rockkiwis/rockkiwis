@@ -10,64 +10,45 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --bg: #1e272e; --primary: #c0392b; --secondary: #f39c12; --success: #27ae60; --text: #ecf0f1; --dark: #2c3e50; }
-        * { box-sizing: border-box; touch-action: manipulation; outline: none; }
-        body { background-color: var(--bg); margin: 0; font-family: 'Quicksand', sans-serif; color: var(--text); display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
-        
         .screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; width: 100%; }
         .active-screen { display: flex !important; }
-
         h1 { font-size: 45px; color: var(--secondary); text-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 10px; text-align: center; }
         .subtitle { font-size: 18px; color: #bdc3c7; margin-bottom: 25px; text-align: center; }
-        
         .btn { padding: 15px 30px; font-size: 24px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand'; width: 100%; max-width: 350px;}
         .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
         .btn-host { background: var(--primary); box-shadow: 0 6px 0 #922b21; }
         .btn-player { background: #2980b9; box-shadow: 0 6px 0 #1f618d; }
-        
         .input-box { font-size: 20px; padding: 15px; border-radius: 15px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 350px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
-        select.theme-select { font-size: 18px; padding: 12px; border-radius: 15px; border: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; max-width: 350px; margin-bottom: 15px; color: #2c3e50; }
-
         /* 👑 老師端大螢幕 (Host) 樣式 */
         #host-game { justify-content: flex-start; padding-top: 40px; position: relative;}
         .room-code-box { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; border: 2px dashed var(--secondary); }
         .player-count-box { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; color: #3498db; }
-        
         .dragon-area { display: flex; flex-direction: column; align-items: center; margin-top: 20px; position: relative; }
         .dragon-emoji { font-size: 150px; filter: drop-shadow(0 20px 20px rgba(0,0,0,0.8)); transition: 0.2s; }
-        
         .hp-bar-container { width: 600px; max-width: 90%; height: 40px; background: #2c3e50; border-radius: 20px; border: 4px solid #7f8c8d; overflow: hidden; margin-top: 20px; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .hp-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.5s ease-out; }
         .hp-text { position: absolute; width: 100%; text-align: center; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 900; color: white; text-shadow: 2px 2px 0 black; }
-        
         .host-question-box { background: white; color: var(--dark); padding: 30px; border-radius: 25px; font-size: 45px; font-weight: 900; width: 90%; max-width: 900px; text-align: center; margin-top: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); border: 6px solid var(--secondary); }
         .host-timer { font-size: 60px; font-weight: 900; color: var(--secondary); margin-top: 20px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.5); font-variant-numeric: tabular-nums; }
-        
         .host-result-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .host-result-title { font-size: 60px; font-weight: 900; margin-bottom: 20px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .host-result-dmg { font-size: 100px; color: var(--primary); font-weight: 900; text-shadow: 0 0 30px var(--primary); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        
         /* 📱 學生端手機 (Player) 樣式 */
         .player-hud { display: flex; justify-content: space-between; width: 100%; max-width: 400px; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 20px; margin-bottom: 20px; }
         .player-hp { font-size: 24px; letter-spacing: 3px; }
         .player-status { font-size: 20px; font-weight: 900; color: var(--secondary); }
-        
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; }
         .opt-btn { height: 120px; color: white; border: none; font-size: 32px; font-weight: 900; border-radius: 20px; cursor: pointer; box-shadow: 0 8px 0 rgba(0,0,0,0.3); transition: 0.1s; display: flex; justify-content: center; align-items: center; }
         .opt-btn:active { transform: translateY(8px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
         .opt-btn:disabled { filter: grayscale(0.8); opacity: 0.6; cursor: not-allowed; transform: translateY(8px); box-shadow: none; }
-        
         .color-A { background: #e74c3c; } .color-B { background: #3498db; } .color-C { background: #f1c40f; color: var(--dark); } .color-D { background: #2ecc71; }
-
         .wait-msg { font-size: 24px; font-weight: 900; color: #bdc3c7; text-align: center; margin-top: 50px; }
-
         /* 動畫 */
         .shake { animation: shake 0.4s; }
         .hit-anim { animation: hitFlash 0.3s; }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
         @keyframes hitFlash { 0% { filter: brightness(1) drop-shadow(0 20px 20px rgba(0,0,0,0.8)); } 50% { filter: brightness(3) drop-shadow(0 0 50px red); transform: scale(0.9); } 100% { filter: brightness(1) drop-shadow(0 20px 20px rgba(0,0,0,0.8)); } }
         @keyframes popIn { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
-
         @media (max-width: 768px) {
             h1 { font-size: 35px; }
             .dragon-emoji { font-size: 100px; }
@@ -78,6 +59,7 @@
             .host-result-title { font-size: 40px; }
             .host-result-dmg { font-size: 60px; }
         }
+    
     </style>
 </head>
 <body>

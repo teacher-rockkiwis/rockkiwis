@@ -8,11 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <style>
-:root{--red:#c0392b;--blue:#2980b9;--orange:#d35400;--green:#1e8449;--gold:#f1c40f;--purple:#8e44ad;--bg:#1a252f;--card:#2c3e50;}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-body{background:var(--bg);margin:0;min-height:100dvh;font-family:'Quicksand',sans-serif;color:white;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;}
 #back-btn{position:fixed;top:max(12px,env(safe-area-inset-top));left:12px;background:rgba(231,76,60,.85);color:white;border:none;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;z-index:50000;box-shadow:0 3px 0 #922b21;}
-
 .screen{display:none;flex-direction:column;align-items:center;width:100%;min-height:100dvh;padding:max(60px,calc(env(safe-area-inset-top)+50px)) 14px 28px;gap:14px;}
 .screen.on{display:flex;}
 .big-title{font-size:44px;font-weight:900;color:var(--gold);margin:0;text-align:center;}
@@ -29,12 +25,10 @@ select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:point
 .code-big{font-size:72px;font-weight:900;color:var(--gold);letter-spacing:10px;text-align:center;background:rgba(255,255,255,.05);border-radius:14px;padding:12px 20px;width:100%;max-width:380px;}
 .role-btn{padding:22px 28px;border:none;border-radius:20px;font-size:20px;font-weight:900;cursor:pointer;font-family:'Quicksand';box-shadow:0 6px 0 rgba(0,0,0,.3);transition:.1s;width:160px;text-align:center;line-height:1.5;}
 .role-btn:active{transform:translateY(6px);box-shadow:none;}
-
 /* Timer */
 .timer-track{flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;}
 .timer-fill{height:100%;border-radius:6px;background:var(--gold);transition:width .1s linear,background-color .3s;}
 .timer-num{font-size:26px;font-weight:900;min-width:36px;text-align:right;}
-
 /* Teacher question */
 #teacher-game{max-width:900px;}
 .top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;}
@@ -52,7 +46,6 @@ select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:point
 .ch-btn.reveal-ok{box-shadow:0 0 0 5px white,0 0 24px rgba(255,255,255,.5) !important;transform:scale(1.03);}
 .ch-btn.reveal-no{opacity:.35;}
 .ch-btn:disabled{cursor:default;}
-
 /* Mini leaderboard */
 .mini-lb{background:rgba(255,255,255,.05);border-radius:14px;padding:12px 16px;width:100%;display:flex;flex-direction:column;gap:6px;}
 .lb-row{display:flex;align-items:center;gap:12px;padding:8px 12px;background:rgba(255,255,255,.06);border-radius:10px;}
@@ -60,10 +53,8 @@ select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:point
 .lb-name{flex:1;font-size:17px;font-weight:900;}
 .lb-score{font-size:18px;font-weight:900;color:var(--gold);}
 .r1{color:gold;} .r2{color:silver;} .r3{color:#cd7f32;}
-
 /* Player chips */
 .chip{background:rgba(255,255,255,.08);border-radius:10px;padding:8px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;}
-
 /* Student game */
 #student-game{max-width:480px;justify-content:flex-start;}
 .s-q{background:var(--card);border-radius:18px;padding:18px 16px;text-align:center;font-size:26px;font-weight:900;line-height:1.3;width:100%;}
@@ -80,20 +71,18 @@ select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:point
 .result-bar.ok{background:rgba(39,174,96,.25);border:2px solid #27ae60;color:#2ecc71;}
 .result-bar.ng{background:rgba(231,76,60,.2);border:2px solid #e74c3c;color:#e74c3c;}
 .result-bar.tm{background:rgba(127,140,141,.2);border:2px solid #7f8c8d;color:#bdc3c7;}
-
 /* Final */
 #final-screen{max-width:480px;}
-
 /* Animations */
 .bounce-in{animation:bIn .4s cubic-bezier(.175,.885,.32,1.275);}
 @keyframes bIn{0%{transform:scale(0)}80%{transform:scale(1.08)}100%{transform:scale(1)}}
 .spin{display:inline-block;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 @media(max-width:480px){
   .q-text{font-size:24px;} .ch-btn{font-size:16px;padding:14px 10px;min-height:62px;}
   .s-q{font-size:21px;} .s-ch{font-size:15px;min-height:74px;}
 }
+    
     </style>
     <script src="common.js"></script>
 </head>

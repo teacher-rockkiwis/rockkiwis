@@ -10,24 +10,15 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #e67e22; --secondary: #d35400; --success: #27ae60; --error: #c0392b; --text: #ecf0f1; --dark: #2c3e50; }
-        * { box-sizing: border-box; touch-action: manipulation; outline: none; }
-        body { background-color: #1e272e; margin: 0; font-family: 'Quicksand', sans-serif; color: var(--text); display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
-        
         .screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; width: 100%; }
         .active-screen { display: flex !important; }
-
         h1 { font-size: 45px; color: #f1c40f; text-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 10px; text-align: center; }
         .subtitle { font-size: 18px; color: #bdc3c7; margin-bottom: 25px; text-align: center; }
-        
         .btn { padding: 15px 30px; font-size: 24px; font-weight: 900; border-radius: 50px; border: none; cursor: pointer; color: white; margin: 10px; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; font-family: 'Quicksand'; width: 100%; max-width: 350px;}
         .btn:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.3); }
         .btn-host { background: var(--primary); box-shadow: 0 6px 0 var(--secondary); }
         .btn-player { background: #3498db; box-shadow: 0 6px 0 #2980b9; }
-        
         .input-box { font-size: 20px; padding: 15px; border-radius: 15px; border: none; text-align: center; margin-bottom: 15px; width: 100%; max-width: 350px; font-family: 'Quicksand'; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
-        select.theme-select { font-size: 18px; padding: 12px; border-radius: 15px; border: none; font-family: 'Quicksand'; font-weight: 700; width: 100%; max-width: 350px; margin-bottom: 15px; color: #2c3e50; }
-
         /* 👑 老師端大螢幕 (Host) 樣式 - 岩漿特效 */
         #host-game {
             justify-content: flex-start; padding-top: 20px; position: relative;
@@ -35,14 +26,11 @@
             background-size: 400% 400%; animation: lavaPulse 6s ease infinite;
         }
         @keyframes lavaPulse { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        
         .room-code-box { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; border: 2px dashed #f1c40f; z-index: 100; }
         .player-count-box { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 15px; font-size: 24px; font-weight: 900; color: #3498db; z-index: 100; }
-        
         .host-question-box { background: white; color: var(--dark); padding: 20px 30px; border-radius: 20px; font-size: 40px; font-weight: 900; width: 90%; max-width: 900px; text-align: center; margin-top: 60px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); border: 6px solid #f1c40f; z-index: 10; }
         .host-timer { font-size: 70px; font-weight: 900; color: white; margin-top: 10px; text-shadow: 0 0 20px #f1c40f, 0 0 40px #e74c3c; font-variant-numeric: tabular-nums; z-index: 10; transition: transform 0.2s;}
         .timer-warning { color: #e74c3c !important; transform: scale(1.2); animation: shake 0.3s infinite; }
-
         /* 石板區域 */
         .platforms-container { display: flex; justify-content: center; gap: 20px; width: 95%; max-width: 1000px; margin-top: 20px; z-index: 10; flex-wrap: wrap;}
         .platform {
@@ -54,43 +42,32 @@
         }
         .platform-title { font-size: 28px; font-weight: 900; color: white; text-shadow: 0 2px 4px black; margin-bottom: 10px; text-align: center; width: 100%; border-bottom: 2px dashed rgba(255,255,255,0.3); padding-bottom: 5px;}
         .platform-avatars { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 5px; width: 100%; height: 100%; overflow: hidden; }
-        
         .platform.falling { transform: translateY(100vh) rotate(25deg) scale(0.5); opacity: 0; pointer-events: none; }
         .platform.safe { border-color: #2ecc71; box-shadow: inset 0 0 30px rgba(46, 211, 113, 0.5), 0 20px 30px rgba(0,0,0,0.8); }
-
         .start-zone { width: 40%; height: 120px; background: #34495e; border-color: #2c3e50; margin-top: 20px; }
         .start-zone .platform-title { font-size: 20px; color: #f1c40f; }
-
         .avatar { background: #3498db; color: white; padding: 4px 8px; border-radius: 8px; font-weight: 900; font-size: 14px; box-shadow: 0 3px 0 #2980b9; transition: all 0.3s ease; animation: popIn 0.3s; white-space: nowrap; }
         .avatar.dead { background: #7f8c8d; box-shadow: 0 3px 0 #34495e; opacity: 0.5; text-decoration: line-through; }
-
         /* 📱 學生端手機 (Player) 樣式 */
         .player-status-hud { font-size: 24px; font-weight: 900; background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 20px; margin-bottom: 20px; border: 2px solid var(--primary); text-align: center;}
-        
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; }
         .opt-btn { height: 100px; color: white; border: none; font-size: 28px; font-weight: 900; border-radius: 20px; cursor: pointer; box-shadow: 0 8px 0 rgba(0,0,0,0.3); transition: 0.1s; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;}
         .opt-btn:active { transform: translateY(8px); box-shadow: 0 0 0 rgba(0,0,0,0.3); filter: brightness(1.2);}
         .opt-btn:disabled { filter: grayscale(0.8); opacity: 0.5; cursor: not-allowed; transform: translateY(8px); box-shadow: none; }
         .opt-btn.selected { border: 4px solid white; box-shadow: 0 0 20px white, 0 8px 0 rgba(0,0,0,0.3); transform: scale(1.05); z-index: 10;}
         .opt-btn.selected:active { transform: scale(1.05) translateY(8px); box-shadow: 0 0 20px white; }
-
         .opt-label { font-size: 16px; opacity: 0.8; margin-bottom: -5px; }
-
         .color-0 { background: #e74c3c; box-shadow: 0 8px 0 #c0392b;} 
         .color-1 { background: #3498db; box-shadow: 0 8px 0 #2980b9;} 
         .color-2 { background: #f1c40f; color: var(--dark); box-shadow: 0 8px 0 #f39c12;} 
         .color-3 { background: #2ecc71; box-shadow: 0 8px 0 #27ae60;}
-
         .wait-msg { font-size: 24px; font-weight: 900; color: #bdc3c7; text-align: center; margin-top: 50px; }
-
         /* 結算特效 */
         .host-result-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .host-result-title { font-size: 70px; font-weight: 900; margin-bottom: 20px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); color: #f1c40f; text-align: center;}
-        
         .shake { animation: shake 0.4s; }
         @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-15px);} 75%{transform:translateX(15px);} }
         @keyframes popIn { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
-
         @media (max-width: 768px) {
             .host-question-box { font-size: 28px; padding: 15px; border-width: 4px; margin-top: 80px;}
             .host-timer { font-size: 50px; }
@@ -100,6 +77,7 @@
             .platform-title { font-size: 18px; }
             .opt-btn { height: 80px; font-size: 20px; }
         }
+    
     </style>
 </head>
 <body>
