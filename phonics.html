@@ -9,11 +9,12 @@
         body.fever-mode { animation: feverBg 1s infinite alternate; }
         @keyframes feverBg { 0% { box-shadow: inset 0 0 50px rgba(253, 203, 110, 0.2); } 100% { box-shadow: inset 0 0 100px rgba(225, 112, 85, 0.4); } }
         .exit-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #b33939; }
-        #hud { position: absolute; top: max(60px, env(safe-area-inset-top) + 50px); left: 50%; transform: translateX(-50%); width: 95%; max-width: 600px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; pointer-events: none; }
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; height: 100dvh; }
+        #hud { position: absolute; top: max(60px, env(safe-area-inset-top) + 50px); left: 50%; transform: translateX(-50%); width: 95%; max-width: 600px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 100; pointer-events: none; visibility: hidden; }
         #timer { font-size: 36px; font-weight: 900; color: var(--fever-glow); font-variant-numeric: tabular-nums; background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 15px; border: 2px solid var(--primary); text-shadow: 0 0 10px var(--fever-glow); }
         #score { font-size: 24px; font-weight: 900; color: var(--success); margin-bottom: 5px; }
         #combo-display { font-size: 18px; font-weight: 900; color: #dfe6e9; transition: 0.2s; }
-        #mission-board { position: absolute; top: max(140px, env(safe-area-inset-top) + 130px); left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); color: #2d3436; padding: 12px 25px; border-radius: 50px; font-size: 22px; font-weight: 900; z-index: 90; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 4px solid var(--primary); white-space: nowrap; transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 10px; pointer-events: auto; }
+        #mission-board { position: absolute; top: max(140px, env(safe-area-inset-top) + 130px); left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); color: #2d3436; padding: 12px 25px; border-radius: 50px; font-size: 22px; font-weight: 900; z-index: 90; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 4px solid var(--primary); white-space: nowrap; transition: 0.2s; cursor: pointer; display: none; align-items: center; gap: 10px; pointer-events: auto; }
         #mission-board:active { transform: translateX(-50%) scale(0.95); }
         .replay-btn { background: #f1c40f; color: #2d3436; font-size: 16px; padding: 4px 12px; border-radius: 20px; box-shadow: 0 3px 0 #d4ac0d; }
         #game-container { flex-grow: 1; position: relative; width: 100%; max-width: 600px; margin: 0 auto; overflow: hidden; border-left: 2px solid rgba(255,255,255,0.1); border-right: 2px solid rgba(255,255,255,0.1); }
@@ -89,7 +90,7 @@
 
         <div class="front-leaderboard">
             <h3 id="front-board-title">🏆 極速英雄榜</h3>
-            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:#636e72;">請先選擇上方關卡，以查看英雄榜！</div></div>
+            <div id="front-leaderboard-list"><div style="text-align:center; font-size:14px; color:var(--text-secondary);">請先選擇上方關卡，以查看英雄榜！</div></div>
         </div>
     </div>
 
@@ -145,7 +146,8 @@
         let currentWordBank = [];
 
         let score = 0, combo = 0, multiplier = 1, timeLeft = 60;
-        let isPlaying = false, isMuted = false, isFever = false;
+        let isPlaying = false, isFever = false;
+        window.isMuted = false;
         let playerName = "Player", currentTheme = "";
         let mainTimer, animationId, lastTime = 0;
         
@@ -182,11 +184,11 @@
             const themeSelect = document.getElementById('theme-select');
             
             if (themeSelect.value === "") {
-                listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px; color:#636e72;'>請先選擇上方關卡，以查看英雄榜！</div>";
+                listDiv.innerHTML = "<div style='text-align:center; padding:10px; font-size:14px; color:var(--text-secondary);'>請先選擇上方關卡，以查看英雄榜！</div>";
                 return;
             }
 
-            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:#636e72;'>📡 讀取中...</div>";
+            listDiv.innerHTML = "<div style='text-align:center; font-size:14px; color:var(--text-secondary);'>📡 讀取中...</div>";
             fetch(`${GOOGLE_API_URL}?action=get&theme=${themeSelect.value}`).then(response => response.json()).then(board => {
                 listDiv.innerHTML = ""; if (!board || board.length === 0) { listDiv.innerHTML = "<div style='padding:5px; font-size:14px;'>目前無紀錄，搶下首殺！</div>"; return; }
                 board.slice(0, 5).forEach((p, i) => { let rankStr = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`; listDiv.innerHTML += `<div class='front-board-row'><span>${rankStr} ${p.name}</span><span style="color:var(--primary);">${p.score} pts</span></div>`; });
@@ -195,6 +197,7 @@
 
         // ✨ 語音引擎 ✨
         function speakWord(text) {
+            if (window.isMuted) return;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 let u = new SpeechSynthesisUtterance(text);
@@ -256,6 +259,7 @@
             
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('hud').style.visibility = 'visible';
+            document.getElementById('mission-board').style.display = 'flex';
             
             score = 0; combo = 0; multiplier = 1; timeLeft = 60;
             playerLane = 1; updateTrainPosition();
@@ -366,12 +370,12 @@
             if (isCorrect) {
                 score += 10 * multiplier;
                 combo++;
-                if (!isMuted) { sfxSuccess.currentTime = 0; sfxSuccess.play().catch(e=>{}); }
+                if (!window.isMuted) { sfxSuccess.currentTime = 0; sfxSuccess.play().catch(e=>{}); }
                 showFloatText("+"+(10*multiplier), "#2ecc71");
             } else {
                 score = Math.max(0, score - 5);
                 combo = 0;
-                if (!isMuted) { sfxError.currentTime = 0; sfxError.play().catch(e=>{}); }
+                if (!window.isMuted) { sfxError.currentTime = 0; sfxError.play().catch(e=>{}); }
                 showFloatText("WRONG", "#e74c3c");
                 flashScreen();
             }
@@ -430,7 +434,7 @@
             bgm.pause();
             document.body.classList.remove('fever-mode');
             
-            document.getElementById('hud').style.visibility = 'none';
+            document.getElementById('hud').style.visibility = 'hidden';
             document.getElementById('mission-board').style.display = 'none';
             document.getElementById('final-total-display').textContent = score; 
             document.getElementById('end-msg').style.display = "flex";
