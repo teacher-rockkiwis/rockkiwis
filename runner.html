@@ -122,7 +122,7 @@
         let playerLane = 1; // 0: Left, 1: Center, 2: Right
         let playerX = 0; 
         let playerY = 0;
-        let baseSpeed = 5;
+        let baseSpeed = 3;
         let currentSpeed = baseSpeed;
         
         let gates = [];
@@ -130,7 +130,7 @@
         let floatTexts = [];
         
         let distanceTravelled = 0;
-        let gateSpawnDistance = 300;
+        let gateSpawnDistance = 810;
 
         const bgm = document.getElementById('bgm');
         const sfxSmash = document.getElementById('sfx-smash');
@@ -357,6 +357,7 @@
                 if(isPlaying && !isMuted) bgm.play().catch(e=>{});
             }
             currentSpeed = baseSpeed; // reset speed
+            gateSpawnDistance = currentSpeed * 270; // Reset spacing to match base speed
             updateHUD();
         }
 
@@ -390,9 +391,10 @@
             document.getElementById('question-board').style.display = 'block';
             
             score = 0; lives = 3; combo = 0; multiplier = 1; isFever = false; 
-            baseSpeed = 5 + (window.innerHeight < 700 ? -1 : 0); // adjust for small screens
+            baseSpeed = 3 + (window.innerHeight < 700 ? -0.5 : 0); // adjust for small screens
             currentSpeed = baseSpeed;
-            playerLane = 1; distanceTravelled = 0; gateSpawnDistance = 300;
+            playerLane = 1; distanceTravelled = 0;
+            gateSpawnDistance = currentSpeed * 270; // 4.5 seconds of reaction time
             gates = []; particles = []; floatTexts = [];
             
             isPlaying = true;
@@ -473,9 +475,9 @@
                         score += pts;
                         floatTexts.push(new FloatText(cx, cy, `+${pts}`, "#2ecc71"));
                         
-                        // Speed up slightly
-                        currentSpeed = Math.min(15, currentSpeed + 0.2);
-                        gateSpawnDistance = Math.max(200, 300 - (currentSpeed * 5));
+                        // Speed up gently, max speed capped at 6 for fair playability
+                        currentSpeed = Math.min(6, currentSpeed + 0.1);
+                        gateSpawnDistance = currentSpeed * 270; // Maintain constant 4.5s reaction time
                         
                         updateHUD();
                         
