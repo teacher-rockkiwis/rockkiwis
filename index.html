@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ROCK 老師的英文遊戲廳</title>
-    <link rel="stylesheet" href="common.css?v=3.0">
+    <link rel="stylesheet" href="common.css?v=3.1">
     <style>
         /* ═══════════════════════════════════════════
            Design Tokens
@@ -35,6 +35,9 @@
             overflow-y: auto !important;
             height: auto !important;
             overscroll-behavior: auto !important;
+            touch-action: auto !important;
+            user-select: auto !important;
+            -webkit-user-select: auto !important;
         }
         body {
             background: var(--bg-primary);
@@ -186,25 +189,74 @@
         }
 
         /* ═══════════════════════════════════════════
-           Game Container & Card Base
+           Category Header & Grid Layout
            ═══════════════════════════════════════════ */
-        .game-container {
-            display: flex; gap: 24px; flex-wrap: wrap;
-            justify-content: center;
-            width: 100%; max-width: 1200px;
+        .featured-section {
+            width: 100%;
+            max-width: 1200px;
             padding: 0 20px;
             z-index: 10;
-            margin-bottom: 40px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
             position: relative;
         }
 
+        .category-header {
+            width: 100%;
+            max-width: 1200px;
+            margin: 40px auto 20px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 10;
+            position: relative;
+            animation: cardSlideIn 0.6s ease backwards;
+        }
+        
+        .category-title {
+            font-size: 22px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--cat-color, #fbbf24) 0%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        
+        .category-line {
+            flex-grow: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 24px;
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 20px;
+            z-index: 10;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        /* ═══════════════════════════════════════════
+           Card Base
+           ═══════════════════════════════════════════ */
         .game-card {
             background: var(--glass-bg);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-card);
             padding: 28px;
-            width: 320px;
+            width: 100%; /* Autofit columns */
             text-align: center;
             text-decoration: none;
             color: inherit;
@@ -213,7 +265,7 @@
             position: relative;
             transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             animation: cardSlideIn 0.5s ease backwards;
-            animation-delay: calc(var(--i, 0) * 0.06s);
+            animation-delay: calc(var(--i, 0) * 0.04s);
             overflow: hidden;
         }
 
@@ -241,8 +293,32 @@
         .game-card:active { transform: translateY(-2px) scale(1.0); }
 
         @keyframes cardSlideIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            from { opacity: 0; transform: translateY(24px) scale(0.97); }
             to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Card Badge Style */
+        .card-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            transition: all 0.3s;
+            z-index: 2;
+        }
+        .game-card:hover .card-badge {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+            background: rgba(255, 255, 255, 0.12);
         }
 
         /* ═══════════════════════════════════════════
@@ -270,7 +346,7 @@
         .card-featured {
             --accent: #fbbf24;
             --accent-glow: rgba(251, 191, 36, 0.2);
-            width: 100%; max-width: 800px;
+            width: 100%; max-width: 900px;
             flex-direction: row;
             text-align: left;
             padding: 24px;
@@ -460,14 +536,22 @@
             .control-btn { font-size: 11px; padding: 6px 10px; border-radius: 10px; }
 
             .header-title { margin-top: 60px; margin-bottom: 32px; }
-            .header-title h1 { font-size: 34px; }
-            .header-title p { font-size: 15px; }
+            .header-title h1 { font-size: 32px; }
+            .header-title p { font-size: 14px; }
 
-            .game-container { flex-direction: column; align-items: center; gap: 16px; margin-bottom: 24px; }
-            .game-card { width: 100%; max-width: 360px; padding: 22px; }
+            .category-header { margin: 25px auto 12px; }
+            .category-title { font-size: 18px; }
+
+            .game-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                gap: 16px;
+                padding: 0 16px; 
+            }
+            .game-card { padding: 20px; }
             .game-icon { font-size: 38px; width: 72px; height: 72px; border-radius: 18px; }
-            .game-title { font-size: 20px; }
+            .game-title { font-size: 19px; }
 
+            .featured-section { padding: 0 16px; }
             .card-featured { padding: 18px; }
             .card-featured .game-icon { width: 80px; height: 80px; font-size: 42px; }
             .card-featured .game-title { font-size: 22px; }
@@ -480,7 +564,7 @@
         }
 
         @media (max-width: 480px) {
-            .header-title h1 { font-size: 28px; }
+            .header-title h1 { font-size: 26px; }
             .card-featured { flex-direction: column; text-align: center; }
             .featured-inner { flex-direction: column; text-align: center; }
             .featured-content { min-width: unset; }
@@ -510,10 +594,11 @@
     </header>
 
     <div class="game-container">
-
+        <div class="featured-section">
         <!-- ⭐ 段考總複習特訓（置頂焦點卡） -->
         <a href="exam_review.html" class="game-card card-featured" style="--i:0">
             <div class="featured-inner">
+                <span class="card-badge" style="background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.4); color: #fbbf24; text-shadow: 0 0 8px rgba(251,191,36,0.6);">🏆 必考特訓</span>
                 <div class="game-icon">💯</div>
                 <div class="featured-content">
                     <h2 class="game-title">📝 段考總複習特訓網</h2>
@@ -525,9 +610,16 @@
                 </div>
             </div>
         </a>
+    </div>
 
+    <div class="category-header" style="--cat-color: #ec4899;">
+        <div class="category-title">⚔️ 雙人對決與連線生存</div>
+        <div class="category-line"></div>
+    </div>
+    <div class="game-grid">
         <!-- ⚔️ Tug-of-War -->
         <a href="javascript:void(0)" onclick="checkTugAccess(event)" class="game-card card-tug" style="--i:1">
+            <span class="card-badge" style="background: rgba(236,72,153,0.15); border-color: rgba(236,72,153,0.4); color: #ec4899;">⚔️ 1v1 連線</span>
             <div class="game-icon">⚔️</div>
             <h2 class="game-title">Tug-of-War</h2>
             <p class="game-desc" id="tug-card-desc">
@@ -540,6 +632,7 @@
 
         <!-- 🌋 Grammar Survival -->
         <a href="javascript:void(0)" onclick="checkSurvivalAccess(event)" class="game-card card-survival" style="--i:2">
+            <span class="card-badge" style="background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.4); color: #f97316;">🌋 生存戰</span>
             <div class="game-icon">🌋</div>
             <h2 class="game-title">Grammar Survival</h2>
             <p class="game-desc" id="survival-card-desc">
@@ -549,21 +642,16 @@
             </p>
             <div class="play-btn">PLAY NOW</div>
         </a>
+    </div>
 
-        <!-- 🥷 Phonics Ninja -->
-        <a href="javascript:void(0)" onclick="checkNinjaAccess(event)" class="game-card card-ninja" style="--i:3">
-            <div class="game-icon">🥷</div>
-            <h2 class="game-title">Phonics Ninja</h2>
-            <p class="game-desc" id="ninja-card-desc">
-                發音忍者！聽單字，切開正確發音！連擊滿10次進入狂熱模式！<br>
-                <span class="new-update-text">🆙 已更新至 G4 &amp; G5 Unit 4！</span>
-                <span style="color:#e74c3c;">計算上線時間中...</span>
-            </p>
-            <div class="play-btn">PLAY NOW</div>
-        </a>
-
+    <div class="category-header" style="--cat-color: #3b82f6;">
+        <div class="category-title">📚 核心文法與句型 Mastery</div>
+        <div class="category-line"></div>
+    </div>
+    <div class="game-grid">
         <!-- 🏃 Grammar Runner -->
-        <a href="runner.html" class="game-card card-runner" style="--i:4">
+        <a href="runner.html" class="game-card card-runner" style="--i:3">
+            <span class="card-badge" style="background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #3b82f6;">🏃 跑酷</span>
             <div class="game-icon">🏃‍♂️</div>
             <h2 class="game-title">Grammar Runner</h2>
             <p class="game-desc">
@@ -574,7 +662,8 @@
         </a>
 
         <!-- 🏰 Grammar Defender -->
-        <a href="defender.html" class="game-card card-defender" style="--i:5">
+        <a href="defender.html" class="game-card card-defender" style="--i:4">
+            <span class="card-badge" style="background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.4); color: #6366f1;">🏰 塔防</span>
             <div class="game-icon">🏰</div>
             <h2 class="game-title">Grammar Defender</h2>
             <p class="game-desc">
@@ -584,8 +673,58 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
+        <!-- 🏥 Dr. ROCK's ER -->
+        <a href="er.html" class="game-card card-er" style="--i:5">
+            <span class="card-badge" style="background: rgba(20,184,166,0.15); border-color: rgba(20,184,166,0.4); color: #14b8a6;">🏥 急診室</span>
+            <div class="game-icon">🏥</div>
+            <h2 class="game-title">Dr. ROCK's ER</h2>
+            <p class="game-desc">怪醫黑傑克急診室！<br>My foot hurts? 瞬間判斷單複數動詞，拯救病患！</p>
+            <div class="play-btn">PLAY NOW</div>
+        </a>
+
+        <!-- 👻 Ghostbusters -->
+        <a href="ghost.html" class="game-card card-ghost" style="--i:6">
+            <span class="card-badge" style="background: rgba(192,132,252,0.15); border-color: rgba(192,132,252,0.4); color: #c084fc;">👻 抓鬼</span>
+            <div class="game-icon">👻</div>
+            <h2 class="game-title">Ghostbusters</h2>
+            <p class="game-desc">抓鬼特攻隊！<br>Where is Mom? 結合雷達指示與房間，抓出搗蛋的幽靈！</p>
+            <div class="play-btn">PLAY NOW</div>
+        </a>
+    </div>
+
+    <div class="category-header" style="--cat-color: #10b981;">
+        <div class="category-title">🔤 發音、聽力與單字挑戰</div>
+        <div class="category-line"></div>
+    </div>
+    <div class="game-grid">
+        <!-- 🥷 Phonics Ninja -->
+        <a href="javascript:void(0)" onclick="checkNinjaAccess(event)" class="game-card card-ninja" style="--i:7">
+            <span class="card-badge" style="background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #ef4444;">🥷 忍者</span>
+            <div class="game-icon">🥷</div>
+            <h2 class="game-title">Phonics Ninja</h2>
+            <p class="game-desc" id="ninja-card-desc">
+                發音忍者！聽單字，切開正確發音！連擊滿10次進入狂熱模式！<br>
+                <span class="new-update-text">🆙 已更新至 G4 &amp; G5 Unit 4！</span>
+                <span style="color:#e74c3c;">計算上線時間中...</span>
+            </p>
+            <div class="play-btn">PLAY NOW</div>
+        </a>
+
+        <!-- 🚀 Phonics Hyperdrive -->
+        <a href="phonics.html" class="game-card card-phonics" style="--i:8">
+            <span class="card-badge" style="background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #10b981;">🚀 聽力</span>
+            <div class="game-icon">🚀</div>
+            <h2 class="game-title">Phonics Hyperdrive</h2>
+            <p class="game-desc">
+                發音極速特快車！聽音辨字極速挑戰！注意聽系統唸出的單字，找出正確軌道狂飆！<br>
+                <span class="new-update-text">🆙 已更新至 G4 &amp; G5 Unit 4！</span>
+            </p>
+            <div class="play-btn">PLAY NOW</div>
+        </a>
+
         <!-- 🔢 Code Breaker -->
-        <a href="decoder.html" class="game-card card-decoder" style="--i:6">
+        <a href="decoder.html" class="game-card card-decoder" style="--i:9">
+            <span class="card-badge" style="background: rgba(120,113,108,0.15); border-color: rgba(120,113,108,0.4); color: #78716c;">🔢 解碼</span>
             <div class="game-icon">🔢</div>
             <h2 class="game-title">Code Breaker</h2>
             <p class="game-desc">
@@ -596,7 +735,8 @@
         </a>
 
         <!-- 🃏 Memory Match -->
-        <a href="memory.html" class="game-card card-memory" style="--i:7">
+        <a href="memory.html" class="game-card card-memory" style="--i:10">
+            <span class="card-badge" style="background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.4); color: #8b5cf6;">🃏 記憶</span>
             <div class="game-icon">🃏</div>
             <h2 class="game-title">Memory Match</h2>
             <p class="game-desc">
@@ -607,7 +747,8 @@
         </a>
 
         <!-- 🔀 Word Scramble -->
-        <a href="scramble.html" class="game-card card-scramble" style="--i:8">
+        <a href="scramble.html" class="game-card card-scramble" style="--i:11">
+            <span class="card-badge" style="background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.4); color: #a855f7;">🔀 重組</span>
             <div class="game-icon">🔀</div>
             <h2 class="game-title">Word Scramble</h2>
             <p class="game-desc">
@@ -618,7 +759,8 @@
         </a>
 
         <!-- ⚡ Word Hunt -->
-        <a href="wordhunt.html" class="game-card card-wordhunt" style="--i:9">
+        <a href="wordhunt.html" class="game-card card-wordhunt" style="--i:12">
+            <span class="card-badge" style="background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.4); color: #6366f1;">⚡ 尋寶</span>
             <div class="game-icon">⚡</div>
             <h2 class="game-title">Word Hunt</h2>
             <p class="game-desc">
@@ -629,7 +771,8 @@
         </a>
 
         <!-- 🔤 Spelling Hero -->
-        <a href="spelling.html" class="game-card card-spelling" style="--i:10">
+        <a href="spelling.html" class="game-card card-spelling" style="--i:13">
+            <span class="card-badge" style="background: rgba(236,72,153,0.15); border-color: rgba(236,72,153,0.4); color: #ec4899;">🔤 拼字</span>
             <div class="game-icon">🔤</div>
             <h2 class="game-title">Spelling Hero</h2>
             <p class="game-desc">
@@ -639,24 +782,9 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
-        <!-- 🏥 Dr. ROCK's ER -->
-        <a href="er.html" class="game-card card-er" style="--i:11">
-            <div class="game-icon">🏥</div>
-            <h2 class="game-title">Dr. ROCK's ER</h2>
-            <p class="game-desc">怪醫黑傑克急診室！<br>My foot hurts? 瞬間判斷單複數動詞，拯救病患！</p>
-            <div class="play-btn">PLAY NOW</div>
-        </a>
-
-        <!-- 👻 Ghostbusters -->
-        <a href="ghost.html" class="game-card card-ghost" style="--i:12">
-            <div class="game-icon">👻</div>
-            <h2 class="game-title">Ghostbusters</h2>
-            <p class="game-desc">抓鬼特攻隊！<br>Where is Mom? 結合雷達指示與房間，抓出搗蛋的幽靈！</p>
-            <div class="play-btn">PLAY NOW</div>
-        </a>
-
         <!-- 🔮 Word Predictor -->
-        <a href="predict.html" class="game-card card-predict" style="--i:13">
+        <a href="predict.html" class="game-card card-predict" style="--i:14">
+            <span class="card-badge" style="background: rgba(217,70,239,0.15); border-color: rgba(217,70,239,0.4); color: #d946ef;">🔮 預言</span>
             <div class="game-icon">🔮</div>
             <h2 class="game-title">Word Predictor</h2>
             <p class="game-desc">
@@ -666,19 +794,9 @@
             <div class="play-btn">PLAY NOW</div>
         </a>
 
-        <!-- 🚀 Phonics Hyperdrive -->
-        <a href="phonics.html" class="game-card card-phonics" style="--i:14">
-            <div class="game-icon">🚀</div>
-            <h2 class="game-title">Phonics Hyperdrive</h2>
-            <p class="game-desc">
-                發音極速特快車！聽音辨字極速挑戰！注意聽系統唸出的單字，找出正確軌道狂飆！<br>
-                <span class="new-update-text">🆙 已更新至 G4 &amp; G5 Unit 4！</span>
-            </p>
-            <div class="play-btn">PLAY NOW</div>
-        </a>
-
         <!-- 🐶 WTDD? (週末限定) -->
         <a href="javascript:void(0)" onclick="checkWeekendAccess(event)" class="game-card card-wtdd" style="--i:15">
+            <span class="card-badge" style="background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.4); color: #f97316;">🐶 週末限定</span>
             <div class="game-icon icon-img">
                 <img src="wtdd.png" alt="WTDD" onerror="this.style.display='none'">
             </div>
