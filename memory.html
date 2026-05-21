@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="common.css?v=3.0">
     <script src="common.js"></script>
     <style>
+        body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
         .exit-btn:active { transform: translateY(4px); box-shadow: none; }
         /* Header */
         #header { height: 55px; background: rgba(255,255,255,0.08); border-bottom: 2px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; padding: 0 130px 0 10px; flex-shrink: 0; visibility: hidden; }
@@ -238,10 +239,12 @@
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
             // Card height based on grid
+            // Use window inner height minus header (55px) and padding as reliable fallback
+            // when game-area is still hidden (clientHeight = 0)
             const gameArea = document.getElementById('game-area');
-            const availH = gameArea.clientHeight - 20;
+            const availH = (gameArea.clientHeight > 0 ? gameArea.clientHeight : window.innerHeight - 55) - 20;
             const rows = Math.ceil(cards.length / cols);
-            const cardH = Math.min(100, Math.floor((availH - (rows - 1) * 8) / rows));
+            const cardH = Math.max(60, Math.min(120, Math.floor((availH - (rows - 1) * 8) / rows)));
             const fontSize = Math.max(10, Math.min(16, cardH * 0.22));
 
             cards.forEach(item => {
