@@ -264,3 +264,25 @@ select.theme-select option, select.theme-select optgroup { color: #2c3e50; backg
 /* Common Screen Utility (Used in Exam, Survival, etc) */
 .screen { display: none; width: 100%; height: 100%; }
 .active-screen { display: flex; flex-direction: column; }
+
+/* ═══════════════════════════════════════════
+   Global Front Leaderboard Override (Dark Mode)
+   ═══════════════════════════════════════════ */
+.front-leaderboard { 
+    background: rgba(255, 255, 255, 0.05) !important; 
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important; 
+    backdrop-filter: blur(10px) !important; 
+    -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3) !important;
+}
+.front-leaderboard h3 {
+    color: var(--gold) !important;
+}
+.front-board-row {
+    color: var(--text-primary) !important;
+    border-bottom: 1px dashed rgba(255,255,255,0.2) !important;
+}
+.front-board-row span:last-child {
+    color: var(--gold) !important;
+}
