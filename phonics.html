@@ -370,7 +370,6 @@
             if (isCorrect) {
                 score += 10 * multiplier;
                 combo++;
-                if (!window.isMuted) { sfxSuccess.currentTime = 0; sfxSuccess.play().catch(e=>{}); }
                 showFloatText("+"+(10*multiplier), "#2ecc71");
             } else {
                 score = Math.max(0, score - 5);
