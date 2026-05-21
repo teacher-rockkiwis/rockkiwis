@@ -145,7 +145,7 @@
         let projectiles = [];
         let particles = [];
         let floatTexts = [];
-        let playerObj = { x: 50, y: 0 }; 
+        let playerObj = { x: 60, y: 0 }; 
         let castleX = 120; 
 
         const bgm = document.getElementById('bgm');
@@ -391,8 +391,7 @@
                     let dy = clickY - m.y;
                     if (Math.sqrt(dx*dx + dy*dy) < m.radius + 40) { 
                         safePlayAudio(sfxShoot);
-                        let startY = rockModeTimer > 0 ? playerObj.y - 80 : playerObj.y;
-                        projectiles.push(new Projectile(playerObj.x, startY, m));
+                        projectiles.push(new Projectile(playerObj.x, playerObj.y, m));
                         break; 
                     }
                 }
@@ -439,7 +438,7 @@
                 monsters.push(new Monster(x, y, opt.text, opt.isCorrect));
             });
 
-            if (Math.random() < 0.10) {
+            if (rockModeTimer <= 0 && Math.random() < 0.10) {
                 let rockY = startY + (Math.random() * availableHeight);
                 let rockX = width + 150 + (Math.random() * 100);
                 monsters.push(new Monster(rockX, rockY, "ROCK", true, true));
@@ -563,7 +562,7 @@
                     let target = monsters.find(m => m.isCorrect && !m.markedForDeath && !m.isRock);
                     if (target) {
                         safePlayAudio(sfxShoot);
-                        projectiles.push(new Projectile(playerObj.x, playerObj.y - 80, target));
+                        projectiles.push(new Projectile(playerObj.x, playerObj.y, target));
                     }
                 }
 
@@ -626,20 +625,20 @@
             
             if (rockModeTimer > 0) {
                 ctx.font = "80px Arial";
-                ctx.fillText("👨‍🏫", playerObj.x, playerObj.y - 80);
+                ctx.fillText("👨‍🏫", playerObj.x, playerObj.y);
                 
                 ctx.font = "60px Arial";
-                ctx.fillText("💪", playerObj.x - 45, playerObj.y - 70);
+                ctx.fillText("💪", playerObj.x - 45, playerObj.y + 10);
                 
                 ctx.save();
-                ctx.translate(playerObj.x + 45, playerObj.y - 70);
+                ctx.translate(playerObj.x + 45, playerObj.y + 10);
                 ctx.scale(-1, 1);
                 ctx.fillText("💪", 0, 0); 
                 ctx.restore();
 
                 ctx.font = "bold 24px Quicksand";
                 ctx.fillStyle = "#f1c40f";
-                ctx.fillText((rockModeTimer / 1000).toFixed(1) + "s", playerObj.x, playerObj.y - 20);
+                ctx.fillText((rockModeTimer / 1000).toFixed(1) + "s", playerObj.x, playerObj.y - 60);
                 
             } else {
                 ctx.font = "60px Arial";
