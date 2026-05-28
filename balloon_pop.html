@@ -985,6 +985,7 @@
             }
 
             // Hide config, show arena and HUD
+            document.getElementById('start-screen').classList.remove('active-screen');
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-arena').style.display = 'block';
             document.getElementById('question-board').style.display = 'flex';
@@ -1435,6 +1436,7 @@
         function backToMenu() {
             document.getElementById('end-screen').classList.remove('active-screen');
             document.getElementById('end-msg').style.display = 'none';
+            document.getElementById('start-screen').classList.add('active-screen');
             document.getElementById('start-screen').style.display = 'flex';
         }
     </script>
