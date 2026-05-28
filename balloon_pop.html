@@ -491,6 +491,7 @@
             pointer-events: none;
             z-index: 10000;
             opacity: 0;
+            display: none;
             transition: opacity 0.15s ease-out;
         }
 
@@ -776,7 +777,7 @@
     </div>
 
     <!-- Confetti & Particles Canvas -->
-    <canvas id="particle-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 10000;"></canvas>
+    <canvas id="particle-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 40;"></canvas>
 
     <!-- ═══════════════════════════════════════════
          Game JavaScript Logic
@@ -850,8 +851,13 @@
         // Toggle Game Mode from UI
         function setGameMode(mode) {
             gameMode = mode;
-            document.getElementById('btn-mode-solo').classList.toggle('active', mode === 'solo');
-            document.getElementById('btn-mode-team').classList.toggle('active', mode === 'team');
+            if (mode === 'solo') {
+                document.getElementById('btn-mode-solo').classList.add('active');
+                document.getElementById('btn-mode-team').classList.remove('active');
+            } else {
+                document.getElementById('btn-mode-solo').classList.remove('active');
+                document.getElementById('btn-mode-team').classList.add('active');
+            }
         }
 
         // Speech engine for phonics
@@ -1205,8 +1211,13 @@
         // Screen flash indicator
         function flashRedScreen() {
             const flash = document.getElementById('error-flash');
+            flash.style.display = 'block';
+            void flash.offsetWidth; // force reflow
             flash.style.opacity = '1';
-            setTimeout(() => flash.style.opacity = '0', 180);
+            setTimeout(() => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.style.display = 'none', 150);
+            }, 180);
         }
 
         // Announce visual float text for combos
