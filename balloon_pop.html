@@ -1021,9 +1021,9 @@
             let options = [];
 
             if (isGrammarMode) {
-                // targetObj is: { "q": "Where ____ you?", "a": "are", "w": ["is", "am"] }
-                currentTargetWord = targetObj.a; // The correct option
-                options = [targetObj.a, ...targetObj.w].sort(() => Math.random() - 0.5);
+                // targetObj is: { "q": "Where ____ you?", "opts": ["are", "is", "am", "do"], "ans": "are" }
+                currentTargetWord = targetObj.ans; // The correct option
+                options = [...targetObj.opts].sort(() => Math.random() - 0.5);
             } else {
                 currentTargetWord = targetObj.en;
 
