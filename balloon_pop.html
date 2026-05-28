@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dr. ROCK - Balloon Pop 氣球爆爆樂</title>
+    <link rel="stylesheet" href="common.css?v=3.1">
+    <style>
+        /* ═══════════════════════════════════════════
+           Design Tokens & Custom Style
+           ═══════════════════════════════════════════ */
+        :root {
+            --neon-pink: #ec4899;
+            --neon-blue: #3b82f6;
+            --neon-green: #10b981;
+            --neon-orange: #f97316;
+            --neon-purple: #8b5cf6;
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --fever-glow: #fbbf24;
+        }
+
+        body {
+            background: #0a0e1a;
+            margin: 0; padding: 0;
+            height: 100vh; height: 100dvh;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-family: 'Quicksand', 'Outfit', sans-serif;
+            color: #f1f5f9;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            position: relative;
+        }
+
+        /* Ambient background glow */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 500px 500px at 10% 20%, rgba(99, 102, 241, 0.12), transparent),
+                radial-gradient(ellipse 500px 500px at 90% 80%, rgba(236, 72, 153, 0.10), transparent),
+                radial-gradient(ellipse 400px 400px at 50% 50%, rgba(16, 185, 129, 0.06), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .active-screen {
+            display: flex !important;
+        }
+
+        /* ═══════════════════════════════════════════
+           Intro / Start Screen Styling
+           ═══════════════════════════════════════════ */
+        #start-overlay {
+            background: rgba(10, 14, 26, 0.9);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            width: 90%;
+            max-width: 650px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.02);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        h1.game-title-main {
+            font-size: 44px;
+            font-weight: 900;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #ec4899 0%, #3b82f6 50%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 4px 10px rgba(99, 102, 241, 0.3));
+        }
+
+        .intro-desc {
+            font-size: 15px;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .config-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .config-row {
+            margin-bottom: 16px;
+        }
+        .config-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .config-label {
+            font-size: 14px;
+            font-weight: 800;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .config-select, .config-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            outline: none;
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+
+        .config-select:focus, .config-input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Toggle Buttons for game modes */
+        .mode-toggle-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .mode-toggle-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 900;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .mode-toggle-btn.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: var(--neon-blue);
+            color: white;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 40px;
+            font-size: 20px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+            transition: all 0.25s;
+            width: 100%;
+            letter-spacing: 2px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .start-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Controls top right */
+        .controls-row {
+            position: absolute;
+            top: 20px; right: 20px;
+            display: flex; gap: 10px;
+            z-index: 500;
+        }
+
+        .exit-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 13px;
+            transition: all 0.25s;
+        }
+        .exit-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        /* ═══════════════════════════════════════════
+           HUD (Heads-Up Display) Styling
+           ═══════════════════════════════════════════ */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        .hud-card {
+            background: rgba(10, 14, 26, 0.8);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 20px;
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .hud-label {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .hud-value {
+            font-size: 24px;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #solo-score { color: var(--neon-green); }
+        #solo-timer { color: var(--fever-glow); }
+        #team-round { color: #f1f5f9; }
+
+        /* Team Battle HUD */
+        .team-hud-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+        .hud-red { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
+        .hud-red .hud-value { color: #ef4444; }
+        .hud-blue { border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.05); }
+        .hud-blue .hud-value { color: #3b82f6; }
+
+        /* ═══════════════════════════════════════════
+           Question Display Board (Banner)
+           ═══════════════════════════════════════════ */
+        #question-board {
+            position: absolute;
+            top: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 750px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 4px solid var(--neon-blue);
+            border-radius: 24px;
+            padding: 16px 30px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            z-index: 90;
+            color: #0f172a;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .question-hint {
+            font-size: 14px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .question-text {
+            font-size: 32px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 1px;
+        }
+
+        .replay-audio-icon {
+            font-size: 26px;
+            color: var(--neon-blue);
+            animation: speakerWave 1.5s infinite alternate;
+        }
+
+        @keyframes speakerWave {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        /* ═══════════════════════════════════════════
+           Active Throw Shield & Cooldown Banner
+           ═══════════════════════════════════════════ */
+        #throw-shield {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            pointer-events: auto; /* Catch all whiteboard events! */
+        }
+
+        .shield-banner {
+            background: rgba(10, 14, 26, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            padding: 24px 60px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .shield-red { border-color: rgba(239, 68, 68, 0.5); box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
+        .shield-blue { border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 30px rgba(59, 130, 246, 0.3); }
+        .shield-countdown {
+            font-size: 56px;
+            color: var(--fever-glow);
+            margin-top: 10px;
+        }
+
+        /* ═══════════════════════════════════════════
+           Game Playing Arena (Balloon Playground)
+           ═══════════════════════════════════════════ */
+        #game-arena {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            overflow: hidden;
+            display: none;
+        }
+
+        /* 🎈 Glassmorphic Neon Balloons 🎈 */
+        .balloon {
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 26px;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 
+                inset 0 10px 20px rgba(255, 255, 255, 0.2),
+                inset 0 -10px 20px rgba(0, 0, 0, 0.4);
+            border: 4px solid var(--balloon-color, var(--neon-blue));
+            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 15px var(--balloon-glow, rgba(59, 130, 246, 0.3)));
+        }
+
+        /* Floating Animation standard */
+        @keyframes floatAnim0 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(15px, -20px) scale(0.98); }
+            50% { transform: translate(-10px, -40px) scale(1.02); }
+            75% { transform: translate(-20px, -15px) scale(0.99); }
+        }
+        @keyframes floatAnim1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-20px, -15px) scale(1.01); }
+            50% { transform: translate(15px, -35px) scale(0.97); }
+            75% { transform: translate(10px, -10px) scale(1.02); }
+        }
+        @keyframes floatAnim2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(10px, -30px) scale(0.99); }
+            50% { transform: translate(-20px, -15px) scale(1.03); }
+            75% { transform: translate(-5px, -40px) scale(0.98); }
+        }
+        @keyframes floatAnim3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-15px, -25px) scale(1.02); }
+            50% { transform: translate(20px, -10px) scale(0.98); }
+            75% { transform: translate(-10px, -35px) scale(1.01); }
+        }
+
+        /* Balloon tail (string decoration) */
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 18px;
+            background: inherit;
+            border-bottom-left-radius: 50%;
+            border-top-left-radius: 40%;
+            border-bottom-right-radius: 50%;
+            border: 4px solid var(--balloon-color);
+            border-top: none;
+            box-sizing: border-box;
+            z-index: 40;
+        }
+
+        /* Jiggly CSS shake on incorrect hit */
+        .jiggly {
+            animation: jiggly 0.5s ease-in-out !important;
+        }
+        @keyframes jiggly {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            15% { transform: translate(-15px, 0) scale(1.05); }
+            30% { transform: translate(12px, 0) scale(0.95); }
+            45% { transform: translate(-9px, 0) scale(1.02); }
+            60% { transform: translate(6px, 0) scale(0.98); }
+            75% { transform: translate(-3px, 0) scale(1.01); }
+        }
+
+        /* Cold down or popped state */
+        .hit-cooldown {
+            opacity: 0 !important;
+            transform: scale(1.5) !important;
+            pointer-events: none !important;
+        }
+
+        /* ═══════════════════════════════════════════
+           Flashes & Canvas overlays
+           ═══════════════════════════════════════════ */
+        #error-flash {
+            position: fixed;
+            inset: 0;
+            background: rgba(239, 68, 68, 0.25);
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        }
+
+        /* ═══════════════════════════════════════════
+           End Result Overlay Styling
+           ═══════════════════════════════════════════ */
+        #end-msg {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            width: 90%;
+            max-width: 550px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .result-title {
+            font-size: 40px;
+            font-weight: 900;
+            color: var(--fever-glow);
+            margin: 0 0 10px 0;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .result-panel {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            margin-bottom: 25px;
+            box-sizing: border-box;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #94a3b8;
+            font-weight: 700;
+        }
+
+        .result-val {
+            color: white;
+            font-weight: 900;
+        }
+
+        .end-btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .btn-end {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 900;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-end-primary {
+            background: var(--neon-blue);
+            color: white;
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-end-primary:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn-end-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-end-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        /* ═══════════════════════════════════════════
+           Animations
+           ═══════════════════════════════════════════ */
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes scaleIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Screen Shake */
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translate3d(0, 0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate3d(-10px, 0, 0); }
+            20%, 40%, 60%, 80% { transform: translate3d(10px, 0, 0); }
+        }
+
+        /* Combo multiplier animation effects */
+        .combo-text-effect {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--fever-glow);
+            text-shadow: 0 0 15px var(--fever-glow);
+            animation: comboPop 0.8s ease-out forwards;
+            position: fixed;
+            z-index: 99999;
+            pointer-events: none;
+        }
+        @keyframes comboPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            30% { transform: scale(1.5) translateY(-30px); opacity: 1; }
+            100% { transform: scale(1.1) translateY(-80px); opacity: 0; }
+        }
+    </style>
+    <script src="common.js"></script>
+</head>
+<body>
+
+    <!-- ✨ Audio elements ✨ -->
+    <audio id="sfx-hit" src="bgm/shoot.mp3" preload="auto"></audio>
+    <audio id="sfx-wrong" src="bgm/wrong.mp3" preload="auto"></audio>
+    <audio id="sfx-combo" src="bgm/buff.mp3" preload="auto"></audio>
+    <audio id="sfx-victory" src="bgm/victory.mp3" preload="auto"></audio>
+    <audio id="bgm" src="bgm/arcade.mp3" loop preload="auto"></audio>
+
+    <!-- ✨ Controls Top Right ✨ -->
+    <div class="controls-row">
+        <button id="sound-btn" class="exit-btn" style="border-color: var(--neon-green);" onclick="toggleSound(event)">🔊 音效：開</button>
+        <button class="exit-btn" onclick="exitGame()">🚪 離開</button>
+    </div>
+
+    <!-- ✨ 1. Intro Screen ✨ -->
+    <div id="start-screen" class="screen active-screen">
+        <div id="start-overlay">
+            <h1 class="game-title-main">🎈 氣球爆爆樂</h1>
+            <p class="intro-desc">
+                專為<strong>電子白板與吸盤黏黏球（Sticky Ball）</strong>設計的趣味教學遊戲！<br>
+                聽音或看題目投擲，砸破正確答案的漂浮氣球。
+                支援個人挑戰 Combo 與刺激的班級分組對決！
+            </p>
+
+            <div class="config-card">
+                <div class="config-row">
+                    <div class="config-label">📖 選擇挑戰關卡：</div>
+                    <select id="theme-select" class="config-select">
+                        <optgroup label="單字拼字與中文 (Spelling)">
+                            <option value="spell-g4-unit1" selected>📍 G4 U1: bedroom, kitchen, balcony...</option>
+                            <option value="spell-g4-unit2">📍 G4 U2: breakfast, lunch, dinner...</option>
+                            <option value="spell-g4-unit3">📍 G4 U3: hamburger, juice, Apple pie...</option>
+                            <option value="spell-g4-unit4">📍 G4 U4: short, tall, thin, fat...</option>
+                            <option value="spell-g5-unit1">📍 G5 U1: leg, foot, shoulder, hurt...</option>
+                            <option value="spell-g5-unit2">📍 G5 U2: cold, fever, headache, have...</option>
+                            <option value="spell-g5-unit3">📍 G5 U3: spaghetti, pizza, salad, had...</option>
+                            <option value="spell-g5-unit4">📍 G5 U4: beach, zoo, park, were...</option>
+                        </optgroup>
+                        <optgroup label="自然發音與聽力 (Phonics)">
+                            <option value="phonics-g4-th">👅 G4 L1: 有聲與無聲 [th]</option>
+                            <option value="phonics-g4-ng-nk">🎵 G4 L2: [ng] 與 [nk] 尾音</option>
+                            <option value="phonics-g4-wh-ph">🐳 G4 L3: [wh] 與 [ph] 發音挑戰</option>
+                            <option value="phonics-g4-ch-sh">🐯 G4 L4: [ch] 與 [sh] 發音特訓</option>
+                            <option value="phonics-g5-wh-ph">🐳 G5 L1: [wh] 與 [ph] 發音挑戰</option>
+                            <option value="phonics-g5-th-review">👅 G5 L2: 有聲無聲 [th] 總複習</option>
+                            <option value="phonics-g5-ch-sh">🍗 G5 L3: [ch] 與 [sh] 發音特訓</option>
+                            <option value="phonics-g5-hbrothers">🔤 G5 L4: H Brothers 綜合複習</option>
+                        </optgroup>
+                        <optgroup label="核心文法與句型 (Grammar)">
+                            <option value="survival-g4-l1">📝 G4 L1: Where are you? (am / is / are)</option>
+                            <option value="survival-g4-l2">📝 G4 L2: What are you doing? (continuous)</option>
+                            <option value="survival-g4-l3">📝 G4 L3: What do you want? (do / does)</option>
+                            <option value="survival-g4-l4">📝 G4 L4: Do you like apples? (like / likes)</option>
+                            <option value="survival-g5-l1">📝 G5 L1: hurt vs hurts (hurt / hurts)</option>
+                            <option value="survival-g5-l2">📝 G5 L2: have vs has (have / has)</option>
+                            <option value="survival-g5-l3">📝 G5 L3: What did you have? (did / had)</option>
+                            <option value="survival-g5-l4">📝 G5 L4: Where were you yesterday? (was / were)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="config-row">
+                    <div class="config-label">⚔️ 選擇遊戲模式：</div>
+                    <div class="mode-toggle-group">
+                        <button type="button" id="btn-mode-solo" class="mode-toggle-btn active" onclick="setGameMode('solo')">⏱️ 個人極速賽</button>
+                        <button type="button" id="btn-mode-team" class="mode-toggle-btn" onclick="setGameMode('team')">⚔️ 班級分組賽</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="start-btn" onclick="startGame()">🚀 啟動遊戲！</button>
+        </div>
+    </div>
+
+    <!-- ✨ 2. HUD Section (Visible during play) ✨ -->
+    <div id="hud">
+        <!-- Solo Mode HUD -->
+        <div id="hud-solo-left" class="hud-card">
+            <span class="hud-label">SCORE</span>
+            <span id="solo-score" class="hud-value">0</span>
+        </div>
+        <div id="hud-solo-right" class="hud-card">
+            <span class="hud-label">TIME LEFT</span>
+            <span id="solo-timer" class="hud-value">60</span>
+        </div>
+
+        <!-- Team Mode HUD -->
+        <div id="hud-team-left" class="team-hud-wrapper" style="display: none;">
+            <div class="hud-card hud-red">
+                <span class="hud-label">🔴 RED TEAM</span>
+                <span id="team-red-score" class="hud-value">0</span>
+            </div>
+            <div class="hud-card hud-blue">
+                <span class="hud-label">🔵 BLUE TEAM</span>
+                <span id="team-blue-score" class="hud-value">0</span>
+            </div>
+        </div>
+        <div id="hud-team-right" class="hud-card" style="display: none;">
+            <span class="hud-label">ROUND</span>
+            <span id="team-round" class="hud-value">1 / 10</span>
+        </div>
+    </div>
+
+    <!-- ✨ 3. Question Display Board ✨ -->
+    <div id="question-board" onclick="triggerAudioReplay()">
+        <span class="question-hint" id="q-hint">聽音找單字 (點擊重播)</span>
+        <span class="question-text" id="q-text">cat <span class="replay-audio-icon">🔊</span></span>
+    </div>
+
+    <!-- ✨ 4. Game Arena ✨ -->
+    <div id="game-arena">
+        <!-- Floating Balloons will be spawned here dynamically via JavaScript -->
+    </div>
+
+    <!-- ✨ 5. Whiteboard Cooldown Shield & Team Announcer ✨ -->
+    <div id="throw-shield">
+        <div class="shield-banner" id="shield-banner-content">
+            <div id="shield-title">準備投擲！</div>
+            <div class="shield-countdown" id="shield-timer-count">3</div>
+        </div>
+    </div>
+
+    <!-- Screen Flash Overlay -->
+    <div id="error-flash"></div>
+
+    <!-- ✨ 6. Game End Overlay ✨ -->
+    <div id="end-screen" class="screen">
+        <div id="end-msg">
+            <h1 class="result-title" id="end-title">⏱️ 挑戰結束！</h1>
+            
+            <div class="result-panel" id="result-details">
+                <!-- Will be dynamically filled by JS -->
+            </div>
+
+            <div class="end-btn-group" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <button class="btn-end btn-end-primary" style="padding: 12px 10px; font-size: 15px;" onclick="restartGame()">🔄 再對決</button>
+                <button class="btn-end btn-end-secondary" style="background: rgba(139, 92, 246, 0.2); color: white; border: 1px solid var(--neon-purple); padding: 12px 10px; font-size: 15px;" onclick="backToMenu()">⚙️ 換關卡</button>
+                <button class="btn-end btn-end-secondary" style="padding: 12px 10px; font-size: 15px;" onclick="exitGame()">🚪 離開</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti & Particles Canvas -->
+    <canvas id="particle-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 10000;"></canvas>
+
+    <!-- ═══════════════════════════════════════════
+         Game JavaScript Logic
+         ═══════════════════════════════════════════ */
+    <script>
+        // Web Speech synthesis lock state
+        window.isMuted = false;
+
+        // Core Game Constants
+        let gameMode = 'solo'; // 'solo' or 'team'
+        let currentTheme = '';
+        let wordBank = []; // Processed vocabulary data
+        let isPhonicsMode = false; // Is this a sound-synthesizing list?
+        let isGrammarMode = false; // Is this a grammar sentence list?
+
+        // Active State variables
+        let isPlaying = false;
+        let score = 0;
+        let combo = 0;
+        let multiplier = 1;
+        let timeLeft = 60;
+        let mainTimerInterval = null;
+
+        // Team Mode State
+        let teamRedScore = 0;
+        let teamBlueScore = 0;
+        let teamRound = 1;
+        let totalTeamRounds = 10;
+        let currentTurn = 'red'; // 'red' or 'blue'
+
+        // Current Question State
+        let currentTargetWord = ''; // English target
+        let currentPrompt = ''; // English spoken word or Chinese translation
+        let questionActive = false;
+
+        // Canvas Particle Configuration
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        // Audio Assets
+        const sfxHit = document.getElementById('sfx-hit');
+        const sfxWrong = document.getElementById('sfx-wrong');
+        const sfxCombo = document.getElementById('sfx-combo');
+        const sfxVictory = document.getElementById('sfx-victory');
+        const bgm = document.getElementById('bgm');
+
+        // Balloon Positioning Bounds
+        let arenaWidth = window.innerWidth;
+        let arenaHeight = window.innerHeight;
+
+        // On window load and resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            arenaWidth = window.innerWidth;
+            arenaHeight = window.innerHeight;
+        });
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Setup sound settings from existing common.js or standalone
+        function initSound() {
+            bgm.volume = 0.4;
+            sfxHit.volume = 0.8;
+            sfxWrong.volume = 0.8;
+            sfxCombo.volume = 0.7;
+            sfxVictory.volume = 0.8;
+        }
+
+        // Toggle Game Mode from UI
+        function setGameMode(mode) {
+            gameMode = mode;
+            document.getElementById('btn-mode-solo').classList.toggle('active', mode === 'solo');
+            document.getElementById('btn-mode-team').classList.toggle('active', mode === 'team');
+        }
+
+        // Speech engine for phonics
+        function speakWord(text) {
+            if (window.isMuted) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let u = new SpeechSynthesisUtterance(text);
+                u.lang = 'en-US';
+                u.rate = 0.75; // Slower rate so students can clearly catch it
+                window.speechSynthesis.speak(u);
+            }
+        }
+
+        function triggerAudioReplay() {
+            if (isPhonicsMode && isPlaying && currentTargetWord) {
+                speakWord(currentTargetWord);
+                const qBoard = document.getElementById('question-board');
+                qBoard.style.transform = "translateX(-50%) scale(0.96)";
+                setTimeout(() => qBoard.style.transform = "translateX(-50%) scale(1)", 150);
+            }
+        }
+
+        // Exit Game
+        function exitGame() {
+            bgm.pause();
+            location.href = 'teacher.html';
+        }
+
+        // Initialize and Start Game
+        async function startGame() {
+            const themeSelect = document.getElementById('theme-select');
+            currentTheme = themeSelect.value;
+
+            // Determine game list type
+            isPhonicsMode = currentTheme.startsWith('phonics-');
+            isGrammarMode = currentTheme.startsWith('survival-');
+
+            // Load data
+            try {
+                const response = await fetch(`data/${currentTheme}.json`);
+                const data = await response.json();
+                
+                if (isPhonicsMode) {
+                    // Phonics is a simple array of strings: ["cat", "dog", ...]
+                    wordBank = data.map(word => ({ en: word, ch: '' }));
+                } else if (isGrammarMode) {
+                    // Grammar is an array of objects: [{"q": "...", "a": "...", "w": [...]}]
+                    wordBank = data;
+                } else {
+                    // Spelling is an array of objects: [{"en": "...", "ch": "..."}]
+                    wordBank = data;
+                }
+            } catch (error) {
+                alert('題庫資料載入失敗，請檢查網路或檔案目錄！');
+                return;
+            }
+
+            if (wordBank.length < 3) {
+                alert('該單字庫題數太少，無法進行氣球爆爆樂遊戲！');
+                return;
+            }
+
+            // Hide config, show arena and HUD
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-arena').style.display = 'block';
+            document.getElementById('question-board').style.display = 'flex';
+            
+            const hud = document.getElementById('hud');
+            hud.style.visibility = 'visible';
+
+            // Reset scores & parameters
+            isPlaying = true;
+            score = 0;
+            combo = 0;
+            multiplier = 1;
+            timeLeft = 60;
+            teamRedScore = 0;
+            teamBlueScore = 0;
+            teamRound = 1;
+            currentTurn = 'red';
+
+            initSound();
+            bgm.play().catch(() => {});
+
+            if (gameMode === 'solo') {
+                // Solo Mode UI setup
+                document.getElementById('hud-solo-left').style.display = 'flex';
+                document.getElementById('hud-solo-right').style.display = 'flex';
+                document.getElementById('hud-team-left').style.display = 'none';
+                document.getElementById('hud-team-right').style.display = 'none';
+                
+                document.getElementById('solo-score').innerText = '0';
+                document.getElementById('solo-timer').innerText = '60';
+
+                // Start Timer
+                mainTimerInterval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('solo-timer').innerText = timeLeft;
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }, 1000);
+
+                // Spawn first question immediately
+                nextQuestion();
+            } else {
+                // Team Mode UI setup
+                document.getElementById('hud-solo-left').style.display = 'none';
+                document.getElementById('hud-solo-right').style.display = 'none';
+                document.getElementById('hud-team-left').style.display = 'flex';
+                document.getElementById('hud-team-right').style.display = 'flex';
+
+                document.getElementById('team-red-score').innerText = '0';
+                document.getElementById('team-blue-score').innerText = '0';
+                document.getElementById('team-round').innerText = `1 / ${totalTeamRounds}`;
+
+                // Present team start sequence
+                announceTeamTurn();
+            }
+
+            // Start particle animator loop
+            animateParticles();
+        }
+
+        // Announce Team Turn with full screen countdown
+        function announceTeamTurn() {
+            if (!isPlaying) return;
+
+            questionActive = false;
+            clearBalloons();
+
+            const shield = document.getElementById('throw-shield');
+            const content = document.getElementById('shield-banner-content');
+            const title = document.getElementById('shield-title');
+            const timerCount = document.getElementById('shield-timer-count');
+
+            shield.style.display = 'flex';
+            content.className = 'shield-banner ' + (currentTurn === 'red' ? 'shield-red' : 'shield-blue');
+            title.innerHTML = currentTurn === 'red' 
+                ? '🔴 <strong>紅隊投擲時間！</strong><br><span style="font-size: 20px; color:#cbd5e1;">請紅隊選手就位！</span>' 
+                : '🔵 <strong>藍隊投擲時間！</strong><br><span style="font-size: 20px; color:#cbd5e1;">請藍隊選手就位！</span>';
+
+            let count = 3;
+            timerCount.innerText = count;
+
+            const countInterval = setInterval(() => {
+                count--;
+                timerCount.innerText = count;
+                if (count <= 0) {
+                    clearInterval(countInterval);
+                    shield.style.display = 'none';
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        // Populate next question and balloons
+        function nextQuestion() {
+            if (!isPlaying) return;
+
+            clearBalloons();
+
+            // Pick a random target
+            const targetObj = wordBank[Math.floor(Math.random() * wordBank.length)];
+            
+            let options = [];
+
+            if (isGrammarMode) {
+                // targetObj is: { "q": "Where ____ you?", "a": "are", "w": ["is", "am"] }
+                currentTargetWord = targetObj.a; // The correct option
+                options = [targetObj.a, ...targetObj.w].sort(() => Math.random() - 0.5);
+            } else {
+                currentTargetWord = targetObj.en;
+
+                // Generate wrong distractors
+                let distractors = wordBank.filter(item => item.en !== currentTargetWord)
+                                          .sort(() => Math.random() - 0.5)
+                                          .slice(0, 2); // Get 2 wrong options
+
+                options = [targetObj.en, distractors[0].en, distractors[1].en].sort(() => Math.random() - 0.5);
+            }
+
+            // Configure Prompt
+            const qHint = document.getElementById('q-hint');
+            const qText = document.getElementById('q-text');
+
+            if (isPhonicsMode) {
+                qHint.innerText = '🔊 聽音辨字 (點擊白板重新播放)';
+                qText.innerHTML = `${currentTargetWord} <span class="replay-audio-icon">🔊</span>`;
+                // Speak word
+                speakWord(currentTargetWord);
+            } else if (isGrammarMode) {
+                qHint.innerText = '請投擲正確文法單字填空：';
+                qText.innerHTML = `📝 ${targetObj.q} 📝`;
+            } else {
+                qHint.innerText = '請投擲正確單字氣球：';
+                qText.innerHTML = `🌟 ${targetObj.ch} 🌟`;
+            }
+
+            // Spawn balloons in game arena
+            // We split the screen width dynamically to prevent overlapping balloons
+            const zoneWidth = arenaWidth / options.length;
+            const colors = ['var(--neon-pink)', 'var(--neon-blue)', 'var(--neon-green)', 'var(--neon-orange)', 'var(--neon-purple)'];
+            
+            options.forEach((opt, idx) => {
+                const balloon = document.createElement('div');
+                balloon.className = 'balloon';
+                
+                // Shuffle styles
+                const chosenColor = colors[Math.floor(Math.random() * colors.length)];
+                balloon.style.setProperty('--balloon-color', chosenColor);
+                balloon.style.setProperty('--balloon-glow', chosenColor + '50');
+
+                balloon.innerText = opt;
+
+                // Random horizontal positioning within the zone, accounting for balloon radius (190px)
+                const minX = zoneWidth * idx + 10;
+                const maxX = zoneWidth * (idx + 1) - 200;
+                const posX = Math.max(minX, minX + Math.random() * (maxX - minX));
+
+                // Vertically, position in middle space of screen
+                const minY = 280;
+                const maxY = arenaHeight - 240;
+                const posY = minY + Math.random() * (maxY - minY);
+
+                balloon.style.left = posX + 'px';
+                balloon.style.top = posY + 'px';
+
+                // Add random float CSS animation to make them drift dynamically
+                balloon.style.animation = `floatAnim${idx} ${4 + Math.random() * 2}s ease-in-out infinite alternate`;
+
+                // Whiteboard Touch/Click mapping
+                balloon.addEventListener('pointerdown', (e) => handleBalloonHit(e, opt === currentTargetWord, balloon));
+
+                document.getElementById('game-arena').appendChild(balloon);
+            });
+
+            questionActive = true;
+        }
+
+        // Whiteboard Hit handler (Debouncing & Jitter prevention)
+        function handleBalloonHit(event, isCorrect, balloonElement) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!isPlaying || !questionActive) return;
+
+            // Debouncing: Lock question area instantly
+            questionActive = false;
+
+            // Get target center coordinates for particle explosion
+            const rect = balloonElement.getBoundingClientRect();
+            const hitX = rect.left + rect.width / 2;
+            const hitY = rect.top + rect.height / 2;
+
+            if (isCorrect) {
+                // Popped animation
+                balloonElement.classList.add('hit-cooldown');
+                
+                // Audio
+                if (!window.isMuted) {
+                    sfxHit.currentTime = 0; sfxHit.play().catch(() => {});
+                }
+
+                // confetti
+                createExplosion(hitX, hitY);
+
+                // Scoring calculations
+                if (gameMode === 'solo') {
+                    combo++;
+                    if (combo >= 5) {
+                        multiplier = 3;
+                        if (combo === 5 && !window.isMuted) sfxCombo.play().catch(() => {});
+                        showComboPopup('🔥 FEVER x3');
+                    } else if (combo >= 2) {
+                        multiplier = 2;
+                        showComboPopup('⚡ COMBO x2');
+                    }
+                    score += 10 * multiplier;
+                    document.getElementById('solo-score').innerText = score;
+                } else {
+                    // Team battle scoring
+                    if (currentTurn === 'red') {
+                        teamRedScore += 10;
+                        document.getElementById('team-red-score').innerText = teamRedScore;
+                    } else {
+                        teamBlueScore += 10;
+                        document.getElementById('team-blue-score').innerText = teamBlueScore;
+                    }
+                }
+
+                // Wait 1 second (gives student time to retrieve ball) before showing next prompt
+                setTimeout(() => {
+                    if (gameMode === 'solo') {
+                        nextQuestion();
+                    } else {
+                        advanceTeamTurn();
+                    }
+                }, 1200);
+
+            } else {
+                // Incorrect throw
+                balloonElement.classList.add('jiggly');
+                if (!window.isMuted) {
+                    sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {});
+                }
+
+                // Flash red screen
+                flashRedScreen();
+
+                if (gameMode === 'solo') {
+                    combo = 0;
+                    multiplier = 1;
+                    score = Math.max(0, score - 5);
+                    document.getElementById('solo-score').innerText = score;
+                }
+
+                // Shake animation reset
+                setTimeout(() => {
+                    balloonElement.classList.remove('jiggly');
+                    // Allow retry on whiteboard
+                    questionActive = true;
+                }, 500);
+            }
+        }
+
+        // Alternate team turns
+        function advanceTeamTurn() {
+            if (currentTurn === 'red') {
+                currentTurn = 'blue';
+            } else {
+                currentTurn = 'red';
+                teamRound++;
+            }
+
+            if (teamRound > totalTeamRounds) {
+                endGame();
+            } else {
+                document.getElementById('team-round').innerText = `${teamRound} / ${totalTeamRounds}`;
+                announceTeamTurn();
+            }
+        }
+
+        // Clear existing balloons from DOM
+        function clearBalloons() {
+            const arena = document.getElementById('game-arena');
+            arena.innerHTML = '';
+        }
+
+        // Screen flash indicator
+        function flashRedScreen() {
+            const flash = document.getElementById('error-flash');
+            flash.style.opacity = '1';
+            setTimeout(() => flash.style.opacity = '0', 180);
+        }
+
+        // Announce visual float text for combos
+        function showComboPopup(text) {
+            const div = document.createElement('div');
+            div.className = 'combo-text-effect';
+            div.innerText = text;
+            div.style.left = (window.innerWidth / 2 - 100) + 'px';
+            div.style.top = (window.innerHeight - 200) + 'px';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 800);
+        }
+
+        // ═══════════════════════════════════════════
+        // Confetti / Particle System (Canvas)
+        // ═══════════════════════════════════════════
+        class ConfettiParticle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 10 + 6;
+                this.speedX = (Math.random() - 0.5) * 16;
+                this.speedY = (Math.random() - 0.5) * 16 - 5; // Slight upward velocity
+                this.gravity = 0.35;
+                this.color = color;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.01;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.speedY += this.gravity;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function createExplosion(x, y) {
+            const colors = ['#ec4899', '#3b82f6', '#10b981', '#f97316', '#8b5cf6', '#fbbf24'];
+            for (let i = 0; i < 40; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particles.push(new ConfettiParticle(x, y, color));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Render and filter active particles
+            particles = particles.filter(p => p.alpha > 0);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            if (isPlaying || particles.length > 0) {
+                requestAnimationFrame(animateParticles);
+            }
+        }
+
+        // ═══════════════════════════════════════════
+        // End Game & Scoreboard Logic
+        // ═══════════════════════════════════════════
+        function endGame() {
+            isPlaying = false;
+            questionActive = false;
+            clearInterval(mainTimerInterval);
+            bgm.pause();
+            
+            if (!window.isMuted) {
+                sfxVictory.play().catch(() => {});
+            }
+
+            clearBalloons();
+            document.getElementById('game-arena').style.display = 'none';
+            document.getElementById('question-board').style.display = 'none';
+            document.getElementById('hud').style.visibility = 'hidden';
+
+            const endScreen = document.getElementById('end-screen');
+            const endTitle = document.getElementById('end-title');
+            const resultPanel = document.getElementById('result-details');
+
+            endScreen.classList.add('active-screen');
+
+            // Format outcome display
+            if (gameMode === 'solo') {
+                endTitle.innerText = '⏱️ 挑戰時間結束！';
+                resultPanel.innerHTML = `
+                    <div style="background:#fbbf24; color:#0f172a; padding:15px; border-radius:15px; font-size:24px; font-weight:900; margin-bottom:15px;">
+                        🏆 個人得分：${score} 分
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">挑戰關卡</span>
+                        <span class="result-val">${document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text.split(':')[0]}</span>
+                    </div>
+                `;
+            } else {
+                let winAnnouncement = '';
+                let winStyle = '';
+                
+                if (teamRedScore > teamBlueScore) {
+                    winAnnouncement = '🎉 紅隊大獲全勝！ 🔴';
+                    winStyle = 'background: #ef4444; color: white;';
+                } else if (teamBlueScore > teamRedScore) {
+                    winAnnouncement = '🎉 藍隊大獲全勝！ 🔵';
+                    winStyle = 'background: #3b82f6; color: white;';
+                } else {
+                    winAnnouncement = '🤝 雙方勢均力敵，平手！ 🤝';
+                    winStyle = 'background: #64748b; color: white;';
+                }
+
+                endTitle.innerText = '⚔️ 班級對決賽果';
+                resultPanel.innerHTML = `
+                    <div style="${winStyle} padding:18px; border-radius:15px; font-size:26px; font-weight:900; margin-bottom:15px; text-shadow:0 2px 5px rgba(0,0,0,0.5);">
+                        ${winAnnouncement}
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">🔴 紅隊最終得分</span>
+                        <span class="result-val" style="color:#ef4444; font-size:18px;">${teamRedScore} 分</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">🔵 藍隊最終得分</span>
+                        <span class="result-val" style="color:#3b82f6; font-size:18px;">${teamBlueScore} 分</span>
+                    </div>
+                    <div class="result-row" style="margin-top: 10px;">
+                        <span class="result-label">挑戰關卡</span>
+                        <span class="result-val">${document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text.split(':')[0]}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Restart from current settings
+        function restartGame() {
+            document.getElementById('end-screen').classList.remove('active-screen');
+            startGame();
+        }
+
+        // Reset to initial menu
+        function backToMenu() {
+            document.getElementById('end-screen').classList.remove('active-screen');
+            document.getElementById('start-screen').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
