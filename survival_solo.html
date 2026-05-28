@@ -32,7 +32,7 @@
         .round-timer { font-size: 24px; color: white; text-shadow: 0 0 10px var(--gold); font-variant-numeric: tabular-nums; transition: 0.2s;}
         .timer-warning { color: #e74c3c !important; transform: scale(1.2); animation: shake 0.3s infinite; }
         /* 題目區 */
-        .question-box { background: white; color: var(--dark); padding: 15px; border-radius: 15px; font-size: 24px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); flex-shrink: 0;}
+        .question-box { background: white; color: var(--text-dark, #2d3436); padding: 15px; border-radius: 15px; font-size: 24px; font-weight: 900; width: 100%; max-width: 800px; text-align: center; margin-bottom: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); flex-shrink: 0;}
         /* 2x2 石板區域 */
         .platforms-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 800px; flex-grow: 1; min-height: 200px; margin-bottom: 10px;}
         .platform {
@@ -49,7 +49,7 @@
         .start-zone { grid-column: span 2; height: 80px; background: #34495e; border-color: #2c3e50; }
         .start-zone .platform-title { font-size: 16px; color: var(--gold); }
         .avatar { background: #3498db; color: white; padding: 2px 6px; border-radius: 6px; font-weight: 900; font-size: 12px; box-shadow: 0 2px 0 #2980b9; transition: all 0.3s ease; white-space: nowrap; }
-        .avatar.is-me { background: var(--gold); color: var(--dark); box-shadow: 0 2px 0 #d4ac0d; border: 1px solid white; transform: scale(1.1); z-index: 10;}
+        .avatar.is-me { background: var(--gold); color: var(--text-dark, #2d3436); box-shadow: 0 2px 0 #d4ac0d; border: 1px solid white; transform: scale(1.1); z-index: 10;}
         /* 下方操作按鈕 */
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 800px; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom);}
         .opt-btn { height: 70px; color: white; border: none; font-size: 20px; font-weight: 900; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;}
@@ -58,7 +58,7 @@
         .opt-btn.selected { border: 3px solid white; box-shadow: 0 0 15px white, 0 6px 0 rgba(0,0,0,0.3); transform: scale(1.05); z-index: 10;}
         .color-0 { background: #e74c3c; box-shadow: 0 6px 0 #c0392b;} 
         .color-1 { background: #3498db; box-shadow: 0 6px 0 #2980b9;} 
-        .color-2 { background: #f1c40f; color: var(--dark); box-shadow: 0 6px 0 #f39c12;} 
+        .color-2 { background: #f1c40f; color: var(--text-dark, #2d3436); box-shadow: 0 6px 0 #f39c12;} 
         .color-3 { background: #2ecc71; box-shadow: 0 6px 0 #27ae60;}
         /* 匹配中特效 */
         .match-pulse { font-size: 60px; margin: 20px 0; animation: pulse 1s infinite alternate; }
