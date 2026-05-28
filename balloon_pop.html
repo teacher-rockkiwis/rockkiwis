@@ -806,7 +806,7 @@
 
     <!-- ═══════════════════════════════════════════
          Game JavaScript Logic
-         ═══════════════════════════════════════════ */
+         ═══════════════════════════════════════════ -->
     <script>
         // Web Speech synthesis lock state
         window.isMuted = false;
@@ -951,6 +951,7 @@
 
         // Initialize and Start Game
         async function startGame() {
+            console.log('startGame() called!');
             const themeSelect = document.getElementById('theme-select');
             currentTheme = themeSelect.value;
 
