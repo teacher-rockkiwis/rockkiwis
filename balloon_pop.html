@@ -670,6 +670,7 @@
 
     <!-- ✨ Controls Top Right ✨ -->
     <div class="controls-row">
+        <button id="speech-btn" class="exit-btn" style="border-color: var(--neon-blue); display: none;" onclick="toggleSpeech(event)">🗣️ 語音：開</button>
         <button id="sound-btn" class="exit-btn" style="border-color: var(--neon-green);" onclick="toggleSound(event)">🔊 音效：開</button>
         <button class="exit-btn" onclick="exitGame()">🚪 離開</button>
     </div>
@@ -810,7 +811,22 @@
          ═══════════════════════════════════════════ -->
     <script>
         // Web Speech synthesis lock state
-        window.isMuted = false;
+        window.isSpeechMuted = false;
+
+        function toggleSpeech(event) {
+            if (event) event.preventDefault();
+            window.isSpeechMuted = !window.isSpeechMuted;
+            const btn = document.getElementById('speech-btn');
+            if (window.isSpeechMuted) {
+                btn.innerText = '🙊 語音：關';
+                btn.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+                btn.style.color = '#ef4444';
+            } else {
+                btn.innerText = '🗣️ 語音：開';
+                btn.style.borderColor = 'var(--neon-blue)';
+                btn.style.color = '#94a3b8';
+            }
+        }
 
         // Prevent right click / long press context menu
         window.oncontextmenu = function(e) { e.preventDefault(); return false; };
@@ -931,7 +947,7 @@
 
         // Speech engine for phonics
         function speakWord(text) {
-            if (window.isMuted) return;
+            if (window.isSpeechMuted) return;
             try {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
@@ -1003,6 +1019,13 @@
             
             const hud = document.getElementById('hud');
             hud.style.visibility = 'visible';
+
+            // Show speech toggle button only in phonics mode
+            if (isPhonicsMode) {
+                document.getElementById('speech-btn').style.display = 'block';
+            } else {
+                document.getElementById('speech-btn').style.display = 'none';
+            }
 
             // Reset scores & parameters
             isPlaying = true;
