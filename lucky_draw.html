@@ -144,15 +144,19 @@
     <audio id="sfx-win" src="bgm/victory.mp3" preload="auto"></audio>
 
     <script>
-        // 獎項清單與相對權重 (總和 7251)
+        // 獎項清單與相對權重 (總和 10000，相當於 100.00%)
         const rewards = [
-            { name: "✨ 點數翻倍 ✨", weight: 100, color: "#9b59b6" },
-            { name: "🍪 小餅乾 🍪", weight: 1000, color: "#e67e22" },
-            { name: "🍜 科學麵 🍜", weight: 3000, color: "#e74c3c" },
-            { name: "🥤 罐裝飲料 🥤", weight: 3000, color: "#3498db" },
-            { name: "🧋 珍珠奶茶一杯 🧋", weight: 50, color: "#f1c40f" },
-            { name: "✏️ 精美文具 ✏️", weight: 1, color: "#2ecc71" },
-            { name: "💯 平時成績 +20 分 💯", weight: 100, color: "#ec4899" }
+            { name: "✨ 點數翻倍 ✨", weight: 200, color: "#9b59b6" },           // 2%
+            { name: "🧋 珍珠奶茶一杯 🧋", weight: 200, color: "#f1c40f" },       // 2%
+            { name: "💯 平時成績 +20 分 💯", weight: 100, color: "#ec4899" },    // 1%
+            { name: "✏️ 精美文具 ✏️", weight: 5, color: "#2ecc71" },             // 0.05%
+            { name: "🍜 科學麵 1 包 🍜", weight: 2500, color: "#e74c3c" },      // 25%
+            { name: "🍜 科學麵 3 包 🍜", weight: 1000, color: "#e74c3c" },      // 10%
+            { name: "🍜 科學麵 5 包 🍜", weight: 295, color: "#e74c3c" },       // 2.95%
+            { name: "🥤 罐裝飲料 1 罐 🥤", weight: 2500, color: "#3498db" },    // 25%
+            { name: "🥤 罐裝飲料 2 罐 🥤", weight: 1000, color: "#3498db" },    // 10%
+            { name: "🍪 小餅乾 3 包 🍪", weight: 1500, color: "#e67e22" },      // 15%
+            { name: "🍪 小餅乾 5 包 🍪", weight: 700, color: "#e67e22" }        // 7%
         ];
 
         let isOpening = false;
