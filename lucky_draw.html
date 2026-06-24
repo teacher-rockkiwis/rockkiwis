@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ROCK 老師上課專區 - Lucky Draw</title>
+    <link rel="stylesheet" href="common.css?v=3.1">
+    <script src="common.js?v=3.1"></script>
+    <style>
+        body {
+            background: #0a0e1a;
+            margin: 0; padding: 0;
+            height: 100vh; height: 100dvh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden;
+            font-family: 'Quicksand', 'Outfit', sans-serif;
+            color: #f1f5f9;
+        }
+
+        /* Ambient background glow */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background: radial-gradient(ellipse 600px 600px at 50% 50%, rgba(243, 156, 18, 0.15), transparent);
+            pointer-events: none; z-index: 0;
+        }
+
+        .back-btn {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50px;
+            padding: 10px 20px; font-size: 16px; font-weight: 900; color: white; text-decoration: none;
+            transition: 0.2s; z-index: 100;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); border-color: white; }
+
+        .container {
+            z-index: 10;
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 48px; color: var(--gold); margin-bottom: 10px;
+            text-shadow: 0 5px 15px rgba(243, 156, 18, 0.5);
+            letter-spacing: 2px;
+        }
+        p.subtitle {
+            font-size: 20px; color: #bdc3c7; margin-bottom: 50px; font-weight: 700;
+        }
+
+        /* Mystery Box */
+        .box-container {
+            position: relative;
+            width: 300px; height: 300px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .box-container:hover { transform: scale(1.05); }
+        .box-container:active { transform: scale(0.95); }
+
+        .box-icon {
+            font-size: 180px; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.8));
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; z-index: 2;
+        }
+        
+        .box-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 250px; height: 250px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(241,196,15,0.8) 0%, transparent 70%);
+            animation: pulseGlow 2s infinite alternate; z-index: 1;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            100% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+        }
+
+        .shake { animation: shakeBox 0.5s cubic-bezier(.36,.07,.19,.97) both infinite; }
+        @keyframes shakeBox {
+            0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+            25% { transform: translate3d(-10px, -10px, 0) rotate(-5deg); }
+            50% { transform: translate3d(10px, 10px, 0) rotate(5deg); }
+            75% { transform: translate3d(-10px, 10px, 0) rotate(-5deg); }
+        }
+
+        /* Result Overlay */
+        #result-overlay {
+            position: fixed; inset: 0; background: rgba(10, 14, 26, 0.95);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.5s;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        }
+        #result-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .result-title {
+            font-size: 36px; color: #bdc3c7; margin-bottom: 20px; font-weight: 800;
+        }
+        .result-reward {
+            font-size: 80px; font-weight: 900; color: var(--gold);
+            text-shadow: 0 0 40px rgba(241, 196, 15, 0.8), 0 10px 20px rgba(0,0,0,0.8);
+            margin-bottom: 50px; text-align: center; line-height: 1.2;
+            padding: 0 20px;
+            transform: scale(0.5); opacity: 0; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #result-overlay.active .result-reward { transform: scale(1); opacity: 1; }
+
+        .reset-btn {
+            background: var(--gold); color: #2d3436; padding: 15px 50px; font-size: 24px; border-radius: 50px;
+            font-weight: 900; box-shadow: 0 6px 0 #d4ac0d; border: none; cursor: pointer; transition: 0.1s;
+        }
+        .reset-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #d4ac0d; }
+
+        /* Confetti Canvas */
+        #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+    </style>
+</head>
+<body>
+
+    <a href="teacher.html" class="back-btn">🔙 回老師專區</a>
+
+    <div class="container">
+        <h1>🎁 Lucky Draw</h1>
+        <p class="subtitle">表現優異專屬福利！點擊寶箱抽取獎勵</p>
+
+        <div class="box-container" onclick="openBox()">
+            <div class="box-glow"></div>
+            <div class="box-icon" id="box">🎁</div>
+        </div>
+        <p style="margin-top: 30px; font-size: 18px; color: #94a3b8; font-weight: 700;">點擊寶箱開啟</p>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="result-overlay">
+        <canvas id="confetti"></canvas>
+        <div class="result-title">🎉 恭喜獲得 🎉</div>
+        <div class="result-reward" id="reward-text"></div>
+        <button class="reset-btn" onclick="resetBox()">抽下一個</button>
+    </div>
+
+    <!-- Audio -->
+    <audio id="sfx-shake" src="bgm/shoot.mp3" preload="auto"></audio>
+    <audio id="sfx-win" src="bgm/victory.mp3" preload="auto"></audio>
+
+    <script>
+        // 獎項清單與相對權重 (總和 7251)
+        const rewards = [
+            { name: "✨ 點數翻倍 ✨", weight: 100, color: "#9b59b6" },
+            { name: "🍪 小餅乾 🍪", weight: 1000, color: "#e67e22" },
+            { name: "🍜 科學麵 🍜", weight: 3000, color: "#e74c3c" },
+            { name: "🥤 罐裝飲料 🥤", weight: 3000, color: "#3498db" },
+            { name: "🧋 珍珠奶茶一杯 🧋", weight: 50, color: "#f1c40f" },
+            { name: "✏️ 精美文具 ✏️", weight: 1, color: "#2ecc71" },
+            { name: "💯 平時成績 +20 分 💯", weight: 100, color: "#ec4899" }
+        ];
+
+        let isOpening = false;
+
+        function openBox() {
+            if (isOpening) return;
+            isOpening = true;
+
+            const box = document.getElementById('box');
+            const shakeAudio = document.getElementById('sfx-shake');
+            
+            // 播放震動音效並讓寶箱震動
+            shakeAudio.currentTime = 0;
+            shakeAudio.play().catch(() => {});
+            box.classList.add('shake');
+
+            // 抽獎邏輯
+            setTimeout(() => {
+                box.classList.remove('shake');
+                showReward();
+            }, 1500);
+        }
+
+        function showReward() {
+            // 計算總權重
+            const totalWeight = rewards.reduce((sum, item) => sum + item.weight, 0);
+            let rand = Math.floor(Math.random() * totalWeight);
+            
+            let selectedReward = rewards[0];
+            for (let i = 0; i < rewards.length; i++) {
+                if (rand < rewards[i].weight) {
+                    selectedReward = rewards[i];
+                    break;
+                }
+                rand -= rewards[i].weight;
+            }
+
+            // 顯示結果
+            const overlay = document.getElementById('result-overlay');
+            const rewardText = document.getElementById('reward-text');
+            const winAudio = document.getElementById('sfx-win');
+
+            rewardText.innerText = selectedReward.name;
+            rewardText.style.color = selectedReward.color;
+            rewardText.style.textShadow = `0 0 40px ${selectedReward.color}80, 0 10px 20px rgba(0,0,0,0.8)`;
+
+            overlay.classList.add('active');
+            winAudio.currentTime = 0;
+            winAudio.play().catch(() => {});
+            
+            triggerConfetti();
+        }
+
+        function resetBox() {
+            const overlay = document.getElementById('result-overlay');
+            overlay.classList.remove('active');
+            isOpening = false;
+            // 清除碎紙花
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = [];
+        }
+
+        // ═══════════════════════════════════════════
+        // Confetti / Particle System (Canvas)
+        // ═══════════════════════════════════════════
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class ConfettiParticle {
+            constructor() {
+                this.x = window.innerWidth / 2;
+                this.y = window.innerHeight / 2 + 100;
+                this.size = Math.random() * 15 + 10;
+                this.speedX = (Math.random() - 0.5) * 40;
+                this.speedY = (Math.random() - 1) * 35; 
+                this.gravity = 0.8;
+                this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = (Math.random() - 0.5) * 20;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.speedY += this.gravity;
+                this.rotation += this.rotSpeed;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        function triggerConfetti() {
+            particles = [];
+            for (let i = 0; i < 150; i++) {
+                particles.push(new ConfettiParticle());
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles = particles.filter(p => p.y < canvas.height + 50);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            if (particles.length > 0) {
+                requestAnimationFrame(animateConfetti);
+            }
+        }
+    </script>
+</body>
+</html>
