@@ -157,12 +157,13 @@
         /* Podium styling */
         .podium { display: flex; justify-content: center; align-items: flex-end; gap: 20px; height: 260px; width: 100%; margin-top: 30px; }
         .podium-place { display: flex; flex-direction: column; align-items: center; width: 100px; text-align: center; }
-        .podium-column { width: 100%; border-radius: 10px 10px 0 0; background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%); border: 2px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 15px; }
-        .podium-p1 { height: 160px; border-color: gold; box-shadow: 0 0 25px rgba(255,215,0,0.2); }
-        .podium-p2 { height: 120px; border-color: silver; }
-        .podium-p3 { height: 90px; border-color: #cd7f32; }
+        .podium-column { width: 100%; border-radius: 10px 10px 0 0; background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%); border: 2px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 15px; height: 0; transition: height 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .podium-active .podium-p1 { height: 160px !important; border-color: gold; box-shadow: 0 0 25px rgba(255,215,0,0.2); }
+        .podium-active .podium-p2 { height: 120px !important; border-color: silver; }
+        .podium-active .podium-p3 { height: 90px !important; border-color: #cd7f32; }
         .podium-num { font-size: 32px; font-weight: 900; }
-        .podium-name { font-size: 18px; font-weight: 900; margin-bottom: 6px; word-break: break-all; }
+        .podium-name { font-size: 18px; font-weight: 900; margin-bottom: 6px; word-break: break-all; opacity: 0; transition: opacity 0.5s ease 1s; }
+        .podium-active .podium-name { opacity: 1; }
         
         .bounce-in { animation: bIn .4s cubic-bezier(.175,.885,.32,1.275); }
         @keyframes bIn { 0% { transform: scale(0) } 80% { transform: scale(1.08) } 100% { transform: scale(1) } }
@@ -318,6 +319,29 @@
                 <div id="t-lb-rows"></div>
             </div>
         </div>
+        
+        <!-- Player Choices columns -->
+        <div>
+            <div class="lbl">各選項選擇名單</div>
+            <div id="t-players-choices" style="display:flex;justify-content:space-around;width:100%;margin-top:6px;gap:10px;flex-wrap:wrap;">
+                <div class="choice-list" style="flex:1;min-width:120px;background:rgba(226,27,60,0.1);border:1px solid #e21b3c;border-radius:10px;padding:8px;font-size:13px;min-height:80px;max-height:120px;overflow-y:auto;text-align:center;">
+                    <div style="font-weight:900;color:#e21b3c;margin-bottom:4px;">▲ 選項 A</div>
+                    <div id="choice-list-0" style="color:white;font-weight:700;line-height:1.4;"></div>
+                </div>
+                <div class="choice-list" style="flex:1;min-width:120px;background:rgba(19,104,206,0.1);border:1px solid #1368ce;border-radius:10px;padding:8px;font-size:13px;min-height:80px;max-height:120px;overflow-y:auto;text-align:center;">
+                    <div style="font-weight:900;color:#1368ce;margin-bottom:4px;">◆ 選項 B</div>
+                    <div id="choice-list-1" style="color:white;font-weight:700;line-height:1.4;"></div>
+                </div>
+                <div class="choice-list" style="flex:1;min-width:120px;background:rgba(216,158,0,0.1);border:1px solid #d89e00;border-radius:10px;padding:8px;font-size:13px;min-height:80px;max-height:120px;overflow-y:auto;text-align:center;">
+                    <div style="font-weight:900;color:#d89e00;margin-bottom:4px;">● 選項 C</div>
+                    <div id="choice-list-2" style="color:white;font-weight:700;line-height:1.4;"></div>
+                </div>
+                <div class="choice-list" style="flex:1;min-width:120px;background:rgba(38,137,12,0.1);border:1px solid #26890c;border-radius:10px;padding:8px;font-size:13px;min-height:80px;max-height:120px;overflow-y:auto;text-align:center;">
+                    <div style="font-weight:900;color:#26890c;margin-bottom:4px;">■ 選項 D</div>
+                    <div id="choice-list-3" style="color:white;font-weight:700;line-height:1.4;"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -466,6 +490,12 @@ fetch('data/b2-questions.json')
             selectRole('student');
             document.getElementById('s-code').value = qRoom;
         }
+        
+        // Restore name if previously joined
+        const savedName = sessionStorage.getItem('kahoot_name');
+        if (savedName) {
+            document.getElementById('s-name').value = savedName;
+        }
     })
     .catch(err => {
         console.error("Failed to load questions:", err);
@@ -554,7 +584,7 @@ function teacherCreate() {
     // Filter questions
     let filtered = [];
     if (selectedUnit === 'all') {
-        filtered = [...questionsData];
+        filtered = questionsData.filter(q => q.unit !== 'Rock 老師的八卦');
     } else {
         filtered = questionsData.filter(q => q.unit === selectedUnit);
     }
@@ -565,7 +595,23 @@ function teacherCreate() {
     }
 
     // Shuffle and pick subset
-    const selectedQuestions = shuffle(filtered).slice(0, Math.min(totalRounds, filtered.length));
+    let selectedQuestions = [];
+    if (selectedUnit === 'Rock 老師的八卦') {
+        selectedQuestions = shuffle(filtered).slice(0, Math.min(totalRounds, filtered.length));
+    } else {
+        const gossipPool = shuffle(questionsData.filter(q => q.unit === 'Rock 老師的八卦'));
+        const mainQuestions = shuffle(filtered).slice(0, Math.min(totalRounds, filtered.length));
+        let finalQuestions = [];
+        let gossipIdx = 0;
+        for (let i = 0; i < mainQuestions.length; i++) {
+            finalQuestions.push(mainQuestions[i]);
+            if ((i + 1) % 4 === 0 && gossipIdx < gossipPool.length) {
+                finalQuestions.push(gossipPool[gossipIdx]);
+                gossipIdx++;
+            }
+        }
+        selectedQuestions = finalQuestions;
+    }
     totalRounds = selectedQuestions.length; // Adjust rounds if questions are fewer
 
     roomRef = db.ref('rooms/kahoot-' + roomCode);
@@ -717,10 +763,24 @@ function renderTReveal(d) {
     // Calculate statistics
     const counts = [0, 0, 0, 0];
     const totalPlayers = d.players ? Object.keys(d.players).length : 0;
+    
+    // Clear player choice name lists
+    for (let i = 0; i < 4; i++) {
+        const el = document.getElementById(`choice-list-${i}`);
+        if (el) el.innerHTML = '';
+    }
+    
     if (d.players) {
         Object.values(d.players).forEach(p => {
             if (p.answer >= 0 && p.answer < 4) {
                 counts[p.answer]++;
+                
+                // Add name to list
+                const nameDiv = document.createElement('div');
+                nameDiv.style.margin = '2px 0';
+                nameDiv.textContent = p.name;
+                const el = document.getElementById(`choice-list-${p.answer}`);
+                if (el) el.appendChild(nameDiv);
             }
         });
     }
@@ -793,20 +853,39 @@ function studentJoin() {
         joinBtn.textContent = '加入 →';
         joinBtn.disabled = false;
         
-        if (!snap.exists() || snap.val().phase !== 'lobby') {
-            err.textContent = '⚠️ 找不到房間，或遊戲已經開始！';
+        if (!snap.exists()) {
+            err.textContent = '⚠️ 找不到房間！';
             err.style.display = 'block';
             return;
         }
         
+        const roomData = snap.val();
+        const existingPlayer = roomData.players && roomData.players[playerId];
+        
+        if (roomData.phase !== 'lobby' && !existingPlayer) {
+            err.textContent = '⚠️ 遊戲已經開始，無法加入新玩家！';
+            err.style.display = 'block';
+            return;
+        }
+        
+        const currentScore = existingPlayer ? (existingPlayer.score || 0) : 0;
+        
+        // Save name for seamless reconnects
+        sessionStorage.setItem('kahoot_name', name);
+        
         playerRef = roomRef.child('players/' + playerId);
         playerRef.set({
             name,
-            score: 0,
+            score: currentScore,
             answer: -1,
             scored: 0
         });
-        playerRef.onDisconnect().remove();
+        
+        if (roomData.phase === 'lobby') {
+            playerRef.onDisconnect().remove();
+        } else {
+            playerRef.onDisconnect().cancel();
+        }
         
         document.getElementById('s-wait-name').textContent = `👋 嗨，${name}！已成功進入房間。`;
         showScreen('student-wait');
@@ -834,6 +913,9 @@ function listenStudent() {
         }
         
         if (d.phase === 'question' && d.questionStart) {
+            if (playerRef) {
+                playerRef.onDisconnect().cancel();
+            }
             if (d.round !== currentQRound) {
                 currentQRound = d.round;
                 currentRound = d.round;
@@ -1009,10 +1091,17 @@ function showFinal(d) {
 
     // Render podium on teacher/host view
     if (role === 'teacher') {
-        document.getElementById('t-podium').style.display = 'flex';
+        const podiumEl = document.getElementById('t-podium');
+        podiumEl.classList.remove('podium-active');
+        podiumEl.style.display = 'flex';
+        
         if (sorted[0]) document.getElementById('podium-name-1').textContent = sorted[0].name;
         if (sorted[1]) document.getElementById('podium-name-2').textContent = sorted[1].name;
         if (sorted[2]) document.getElementById('podium-name-3').textContent = sorted[2].name;
+        
+        setTimeout(() => {
+            podiumEl.classList.add('podium-active');
+        }, 50);
         
         // Sound effects
         if (!window.isMuted) {
