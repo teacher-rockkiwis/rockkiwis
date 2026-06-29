@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Exam Kahoot 🎓</title>
+    <link rel="stylesheet" href="common.css?v=3.1">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    <style>
+        /* ═══════════════════════════════════════════
+           Mobile Compatibility Touch Overrides
+           ═══════════════════════════════════════════ */
+        html, body {
+            touch-action: auto !important;
+            user-select: auto !important;
+            -webkit-user-select: auto !important;
+            overflow-y: auto !important;
+            height: auto !important;
+        }
+        body.game-active {
+            height: 100dvh !important;
+            width: 100vw !important;
+            overflow: hidden !important;
+        }
+        button, .ch-btn, .s-ch, .role-btn, .gold-btn {
+            touch-action: manipulation !important;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+
+        /* ═══════════════════════════════════════════
+           Custom Styles for Kahoot-style Game
+           ═══════════════════════════════════════════ */
+        #back-btn {
+            position: fixed; top: max(12px, env(safe-area-inset-top)); left: 12px;
+            background: rgba(231, 76, 60, 0.85); color: white; border: none;
+            padding: 8px 14px; border-radius: 10px; font-weight: 900; font-size: 14px;
+            cursor: pointer; z-index: 50000; box-shadow: 0 3px 0 #922b21;
+        }
+        .screen {
+            display: none; flex-direction: column; align-items: center;
+            width: 100%; min-height: 100dvh;
+            padding: max(60px, calc(env(safe-area-inset-top) + 50px)) 14px 28px; gap: 14px;
+        }
+        .screen.on { display: flex; }
+        .big-title { font-size: 44px; font-weight: 900; color: var(--gold); margin: 0; text-align: center; }
+        .sub { font-size: 15px; color: #bdc3c7; font-weight: 700; text-align: center; margin: 0; }
+        .panel {
+            background: var(--card); border-radius: 24px; padding: 24px;
+            width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+        }
+        .lbl { font-size: 12px; font-weight: 900; color: #bdc3c7; letter-spacing: 1px; text-transform: uppercase; }
+        .inp {
+            width: 100%; font-size: 24px; padding: 12px; border-radius: 14px;
+            border: 3px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06);
+            color: white; text-align: center; font-family: 'Quicksand'; font-weight: 900;
+        }
+        .inp::placeholder { color: rgba(255,255,255,0.25); font-size: 16px; }
+        select.inp { appearance: none; -webkit-appearance: none; cursor: pointer; }
+        .gold-btn {
+            background: var(--gold); color: #2d3436; border: none; padding: 14px;
+            border-radius: 50px; font-size: 19px; font-weight: 900; cursor: pointer;
+            font-family: 'Quicksand'; box-shadow: 0 5px 0 #d4ac0d; width: 100%; transition: .1s;
+        }
+        .gold-btn:active { transform: translateY(5px); box-shadow: none; }
+        .gold-btn:disabled { background: #636e72; box-shadow: none; cursor: default; }
+        
+        .code-big {
+            font-size: 72px; font-weight: 900; color: var(--gold); letter-spacing: 10px;
+            text-align: center; background: rgba(255,255,255,0.05); border-radius: 14px;
+            padding: 12px 20px; width: 100%; max-width: 380px; text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+        .role-btn {
+            padding: 24px; border: none; border-radius: 24px; font-size: 22px; font-weight: 900;
+            cursor: pointer; font-family: 'Quicksand'; box-shadow: 0 6px 0 rgba(0,0,0,0.3);
+            transition: .1s; width: 180px; text-align: center; line-height: 1.4;
+        }
+        .role-btn:active { transform: translateY(6px); box-shadow: none; }
+
+        /* Timer */
+        .timer-track { flex: 1; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+        .timer-fill { height: 100%; border-radius: 6px; background: var(--gold); transition: width .1s linear, background-color .3s; }
+        .timer-num { font-size: 26px; font-weight: 900; min-width: 36px; text-align: right; }
+
+        /* Kahoot Grid & Option Colors */
+        .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+        .ch-btn {
+            border: none; border-radius: 16px; padding: 20px 16px; font-size: 20px; font-weight: 900;
+            cursor: pointer; display: flex; align-items: center; gap: 14px; color: white;
+            min-height: 84px; text-align: left; line-height: 1.3; transition: .12s;
+        }
+        .ch-btn .ico {
+            font-size: 26px; width: 44px; height: 44px; display: inline-flex;
+            align-items: center; justify-content: center; border-radius: 50%;
+            background: rgba(255,255,255,0.2); flex-shrink: 0;
+        }
+        /* Kahoot specific option styles */
+        .opt-a { background: #e21b3c; box-shadow: 0 6px 0 #9d0c22; }
+        .opt-b { background: #1368ce; box-shadow: 0 6px 0 #094086; }
+        .opt-c { background: #d89e00; box-shadow: 0 6px 0 #956c00; }
+        .opt-d { background: #26890c; box-shadow: 0 6px 0 #185a06; }
+        
+        .ch-btn.reveal-ok { box-shadow: 0 0 0 6px white, 0 0 24px rgba(255,255,255,0.6) !important; transform: scale(1.02); }
+        .ch-btn.reveal-no { opacity: .25; }
+        .ch-btn:disabled { cursor: default; }
+
+        /* Chart results */
+        .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 180px; width: 100%; margin-top: 14px; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 14px; }
+        .chart-bar { width: 50px; background: #555; border-radius: 8px 8px 0 0; display: flex; flex-direction: column-reverse; align-items: center; color: white; font-weight: 900; font-size: 16px; min-height: 24px; transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .chart-label { margin-top: 8px; font-weight: 900; font-size: 18px; }
+
+        /* Student game panels */
+        .s-q { background: var(--card); border-radius: 18px; padding: 18px 16px; text-align: center; font-size: 24px; font-weight: 900; line-height: 1.3; width: 100%; border: 1px solid var(--glass-border); }
+        .s-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .s-ch {
+            border: none; border-radius: 16px; padding: 16px 12px; font-size: 18px; font-weight: 900;
+            cursor: pointer; color: white; min-height: 100px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center; line-height: 1.3; transition: .1s;
+        }
+        .s-ch .ico { font-size: 22px; margin-bottom: 6px; }
+        .s-ch:active { transform: scale(.93); }
+        .s-ch:disabled { cursor: default; }
+        .s-ch.my-pick { box-shadow: 0 0 0 6px white; }
+        .s-ch.reveal-ok { box-shadow: 0 0 0 6px white, 0 0 20px rgba(255,255,255,0.5); }
+        .s-ch.reveal-no { opacity: .25; }
+
+        /* Leaderboard and Chips */
+        .mini-lb { background: rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 12px 16px; width: 100%; display: flex; flex-direction: column; gap: 6px; }
+        .lb-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: rgba(255,255,255,0.06); border-radius: 10px; }
+        .lb-rank { font-size: 20px; font-weight: 900; min-width: 34px; text-align: center; }
+        .lb-name { flex: 1; font-size: 17px; font-weight: 900; }
+        .lb-score { font-size: 18px; font-weight: 900; color: var(--gold); }
+        .r1 { color: gold; } .r2 { color: silver; } .r3 { color: #cd7f32; }
+
+        .chip { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 8px 14px; font-size: 15px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+        .result-bar { border-radius: 14px; padding: 14px 18px; font-size: 20px; font-weight: 900; text-align: center; width: 100%; display: none; }
+        .result-bar.ok { background: rgba(39,174,96,0.25); border: 2px solid #27ae60; color: #2ecc71; }
+        .result-bar.ng { background: rgba(231,76,60,0.2); border: 2px solid #e74c3c; color: #e74c3c; }
+        .result-bar.tm { background: rgba(127,140,141,0.2); border: 2px solid #7f8c8d; color: #bdc3c7; }
+
+        /* Sound Button */
+        #sound-btn {
+            position: fixed; top: max(12px, env(safe-area-inset-top)); right: 12px;
+            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px;
+            padding: 8px 14px; font-size: 14px; font-weight: 900; color: white; cursor: pointer; z-index: 50000;
+        }
+
+        /* Lobby player container */
+        #t-player-list {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px; width: 100%; max-width: 700px; max-height: 280px; overflow-y: auto; padding: 10px;
+        }
+
+        /* Podium styling */
+        .podium { display: flex; justify-content: center; align-items: flex-end; gap: 20px; height: 260px; width: 100%; margin-top: 30px; }
+        .podium-place { display: flex; flex-direction: column; align-items: center; width: 100px; text-align: center; }
+        .podium-column { width: 100%; border-radius: 10px 10px 0 0; background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%); border: 2px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 15px; }
+        .podium-p1 { height: 160px; border-color: gold; box-shadow: 0 0 25px rgba(255,215,0,0.2); }
+        .podium-p2 { height: 120px; border-color: silver; }
+        .podium-p3 { height: 90px; border-color: #cd7f32; }
+        .podium-num { font-size: 32px; font-weight: 900; }
+        .podium-name { font-size: 18px; font-weight: 900; margin-bottom: 6px; word-break: break-all; }
+        
+        .bounce-in { animation: bIn .4s cubic-bezier(.175,.885,.32,1.275); }
+        @keyframes bIn { 0% { transform: scale(0) } 80% { transform: scale(1.08) } 100% { transform: scale(1) } }
+        .spin { display: inline-block; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg) } }
+
+        @media (max-width: 600px) {
+            .big-title { font-size: 32px; }
+            .ch-btn { font-size: 16px; padding: 12px; min-height: 70px; }
+            .s-q { font-size: 19px; }
+            .s-ch { font-size: 15px; min-height: 80px; }
+        }
+    </style>
+    <script src="common.js"></script>
+</head>
+<body class="with-ambient-bg">
+<audio id="sfx-ok" src="bgm/bingo.mp3"></audio>
+<audio id="sfx-ng" src="bgm/fail.mp3"></audio>
+<audio id="sfx-podium" src="bgm/drumroll.mp3"></audio>
+<audio id="sfx-victory" src="bgm/victory.mp3"></audio>
+<audio id="sfx-lobby" src="bgm/music.mp3" loop></audio>
+
+<button id="back-btn" onclick="exitGame()">🔙 離開</button>
+<button id="sound-btn" onclick="toggleLocalSound()">🔊 音效：開</button>
+
+<!-- ROLE SELECTION -->
+<div id="role-screen" class="screen on">
+    <div style="font-size:72px;margin-bottom:8px;">🎓</div>
+    <h1 class="big-title">Exam Kahoot</h1>
+    <p class="sub">康軒國一英語 (B2) 互動測驗</p>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:14px;">
+        <button class="role-btn" style="background:#46178f;color:white;" onclick="selectRole('teacher')">📺 老師螢幕<br><small style="font-size:13px;font-weight:700;opacity:0.8;">建立房間</small></button>
+        <button class="role-btn" style="background:#00c2e0;color:#2d3436;" onclick="selectRole('student')">📱 學生手機<br><small style="font-size:13px;font-weight:700;opacity:0.8;">加入遊戲</small></button>
+    </div>
+</div>
+
+<!-- TEACHER SETUP -->
+<div id="teacher-setup" class="screen">
+    <h1 class="big-title" style="font-size:32px;">📺 建立測驗房間</h1>
+    <div class="panel">
+        <div>
+            <div class="lbl">選擇測驗範圍</div>
+            <select id="t-unit" class="inp">
+                <option value="Unit 1">Unit 1 Vocabulary & Grammar</option>
+                <option value="Unit 2">Unit 2 Vocabulary & Grammar</option>
+                <option value="Unit 3">Unit 3 Vocabulary & Grammar</option>
+                <option value="Unit 4">Unit 4 Vocabulary & Grammar</option>
+                <option value="Unit 5">Unit 5 Vocabulary & Grammar</option>
+                <option value="Unit 6">Unit 6 Vocabulary & Grammar</option>
+                <option value="all" selected>全冊總複習 (Units 1-6)</option>
+            </select>
+        </div>
+        <div>
+            <div class="lbl">題目數</div>
+            <select id="t-rounds" class="inp">
+                <option value="10">10 題</option>
+                <option value="15">15 題</option>
+                <option value="20" selected>20 題</option>
+                <option value="30">30 題</option>
+                <option value="50">50 題 (整單元)</option>
+            </select>
+        </div>
+        <div>
+            <div class="lbl">每題答題時間</div>
+            <select id="t-time" class="inp">
+                <option value="8">8 秒 (個人極速)</option>
+                <option value="12" selected>12 秒 (標準)</option>
+                <option value="15">15 秒 (適中)</option>
+                <option value="20">20 秒 (慢速讀題)</option>
+            </select>
+        </div>
+        <button class="gold-btn" id="t-create-btn" onclick="teacherCreate()">建立房間 →</button>
+    </div>
+</div>
+
+<!-- TEACHER LOBBY -->
+<div id="teacher-lobby" class="screen">
+    <h1 class="big-title" style="font-size:28px;">等待學生加入中...</h1>
+    <div class="sub">請在手機輸入 Room PIN 加入</div>
+    <div class="code-big" id="t-lobby-code">----</div>
+    <p class="sub" id="t-player-count" style="font-size:20px;color:white;font-weight:900;">已加入：0 人</p>
+    <div id="t-player-list"></div>
+    <div style="width:100%;max-width:440px;margin-top:14px;">
+        <button class="gold-btn" id="t-start-btn" onclick="teacherStart()" disabled>開始遊戲 ▶</button>
+    </div>
+</div>
+
+<!-- TEACHER GAME -->
+<div id="teacher-game" class="screen" style="max-width:900px;margin:0 auto;">
+    <div class="top-bar" style="display:flex;justify-content:space-between;align-items:center;width:100%;gap:12px;">
+        <div class="pill">第 <span id="t-round">1</span>/<span id="t-total">10</span> 題</div>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;max-width:300px;">
+            <div class="timer-track"><div class="timer-fill" id="t-bar"></div></div>
+            <div class="timer-num" id="t-sec">12</div>
+        </div>
+        <div class="pill">已答：✅ <span id="t-ans-count">0</span>/<span id="t-player-total">0</span></div>
+    </div>
+
+    <div class="s-q" style="width:100%;margin-top:14px;padding:26px 20px;">
+        <div class="lbl" id="t-q-unit" style="margin-bottom:8px;color:var(--gold);">[Unit 1]</div>
+        <div class="q-text" id="t-q-text" style="font-size:28px;line-height:1.4;">讀取中...</div>
+    </div>
+
+    <div class="choices-grid" id="t-choices"></div>
+
+    <div style="width:100%;display:flex;gap:12px;margin-top:14px;">
+        <button class="gold-btn" id="t-reveal-btn" onclick="teacherReveal()" style="display:none;background:#f39c12;box-shadow:0 5px 0 #b77c0b;">🔍 顯示答案</button>
+        <button class="gold-btn" id="t-next-btn" onclick="teacherNext()" style="display:none;background:#2ecc71;box-shadow:0 5px 0 #219d53;">下一題 →</button>
+    </div>
+
+    <!-- Leaderboard or Response Chart during reveal -->
+    <div id="t-result-panel" style="display:none;width:100%;flex-direction:column;gap:14px;margin-top:14px;">
+        <div style="display:flex;gap:20px;width:100%;flex-wrap:wrap;">
+            <!-- Chart -->
+            <div style="flex:1;min-width:300px;">
+                <div class="lbl">答題統計</div>
+                <div class="chart-container">
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div class="chart-bar opt-a" id="bar-a" style="height: 0px;">0</div>
+                        <div class="chart-label" style="color:#e21b3c;">▲</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div class="chart-bar opt-b" id="bar-b" style="height: 0px;">0</div>
+                        <div class="chart-label" style="color:#1368ce;">◆</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div class="chart-bar opt-c" id="bar-c" style="height: 0px;">0</div>
+                        <div class="chart-label" style="color:#d89e00;">●</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div class="chart-bar opt-d" id="bar-d" style="height: 0px;">0</div>
+                        <div class="chart-label" style="color:#26890c;">■</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Mini Leaderboard -->
+            <div id="t-mini-lb" class="mini-lb" style="flex:1;min-width:300px;">
+                <div class="lbl">🏆 即時排行</div>
+                <div id="t-lb-rows"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STUDENT JOIN -->
+<div id="student-join" class="screen">
+    <div style="font-size:64px;margin-bottom:8px;">📱</div>
+    <h1 class="big-title">加入測驗</h1>
+    <div class="panel">
+        <div>
+            <div class="lbl">暱稱 (Nickname)</div>
+            <input id="s-name" class="inp" placeholder="輸入你的名字" maxlength="10" type="text">
+        </div>
+        <div>
+            <div class="lbl">房間 PIN 碼</div>
+            <input id="s-code" class="inp" placeholder="1234" maxlength="4" type="text" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <button class="gold-btn" id="s-join-btn" style="background:#00c2e0;color:#2d3436;box-shadow:0 5px 0 #008fa6;" onclick="studentJoin()">加入 →</button>
+        <div id="s-join-err" style="color:#ef4444;font-weight:900;font-size:14px;display:none;text-align:center;"></div>
+    </div>
+</div>
+
+<!-- STUDENT WAITING -->
+<div id="student-wait" class="screen" style="justify-content:center;gap:16px;">
+    <div style="font-size:60px;"><span class="spin">⏳</span></div>
+    <h2 style="font-size:26px;color:var(--gold);margin:0;" id="s-wait-msg">等待老師開始測驗...</h2>
+    <p class="sub" id="s-wait-name" style="font-size:18px;color:white;font-weight:900;"></p>
+</div>
+
+<!-- STUDENT GAME -->
+<div id="student-game" class="screen" style="max-width:500px;margin:0 auto;justify-content:flex-start;">
+    <div class="top-bar" style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+        <div class="pill">🏆 得分: <span id="s-score">0</span></div>
+        <div style="display:flex;align-items:center;gap:6px;flex:1;max-width:140px;">
+            <div class="timer-track"><div class="timer-fill" id="s-bar"></div></div>
+            <div class="timer-num" style="font-size:20px;" id="s-sec">12</div>
+        </div>
+        <div class="pill">排名: #<span id="s-rank">-</span></div>
+    </div>
+
+    <!-- Student Question text -->
+    <div class="s-q" id="s-q-text" style="margin-top:10px;font-size:20px;padding:12px;">讀取中...</div>
+    
+    <!-- Big Tap Buttons -->
+    <div class="s-grid" id="s-choices" style="margin-top:14px;"></div>
+    
+    <div class="result-bar" id="s-result" style="margin-top:14px;"></div>
+</div>
+
+<!-- FINAL LEADERS -->
+<div id="final-screen" class="screen">
+    <div style="font-size:72px;">🏆</div>
+    <h1 class="big-title">最終排行！</h1>
+    
+    <!-- Host final podium -->
+    <div id="t-podium" class="podium" style="display:none;">
+        <div class="podium-place">
+            <div class="podium-name" id="podium-name-2">-</div>
+            <div class="podium-column podium-p2">
+                <div class="podium-num">2</div>
+            </div>
+        </div>
+        <div class="podium-place">
+            <div class="podium-name" id="podium-name-1" style="color:var(--gold);font-size:22px;">-</div>
+            <div class="podium-column podium-p1">
+                <div class="podium-num">1</div>
+            </div>
+        </div>
+        <div class="podium-place">
+            <div class="podium-name" id="podium-name-3">-</div>
+            <div class="podium-column podium-p3">
+                <div class="podium-num">3</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="final-lb" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:440px;margin-top:20px;"></div>
+    
+    <div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:10px;margin-top:20px;">
+        <button class="gold-btn" id="final-restart" onclick="location.reload()" style="background:#2ecc71;box-shadow:0 5px 0 #219d53;">再玩一次</button>
+        <button class="gold-btn" onclick="exitGame()" style="background:rgba(255,255,255,0.1);color:white;box-shadow:none;border:2px solid rgba(255,255,255,0.3);">🔙 回老師頁面</button>
+    </div>
+</div>
+
+<script>
+// ── Firebase Configuration ───────────────────────────────────
+const firebaseConfig = {
+    apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
+    authDomain: "rockgames-48853.firebaseapp.com",
+    databaseURL: "https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "rockgames-48853",
+    storageBucket: "rockgames-48853.firebasestorage.app",
+    messagingSenderId: "313395129447",
+    appId: "1:313395129447:web:618531167064c7afdd38c2"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ── Game Data & Constants ─────────────────────────────────────
+let questionsData = [];
+const SHAPES = ['▲', '◆', '●', '■'];
+const CLS = ['opt-a', 'opt-b', 'opt-c', 'opt-d'];
+
+// ── State ─────────────────────────────────────────────────────
+let role = '';
+let roomCode = '';
+let roomRef = null;
+let playerId = '';
+let playerRef = null;
+let totalRounds = 20;
+let timeLimit = 12;
+let currentRound = 0;
+let currentQ = null;
+let questionStartTime = 0;
+let myAnswer = -1;
+let myName = '';
+let timerInterval = null;
+let gameListener = null;
+let tCurrentRound = -1;
+let currentQRound = -1;
+
+const sfxOk = document.getElementById('sfx-ok');
+const sfxNg = document.getElementById('sfx-ng');
+const sfxPodium = document.getElementById('sfx-podium');
+const sfxVictory = document.getElementById('sfx-victory');
+const sfxLobby = document.getElementById('sfx-lobby');
+
+sfxOk.volume = 0.5;
+sfxNg.volume = 0.5;
+sfxPodium.volume = 0.5;
+sfxVictory.volume = 0.5;
+sfxLobby.volume = 0.35;
+
+// Load questions on startup
+fetch('data/b2-questions.json')
+    .then(res => res.json())
+    .then(data => {
+        questionsData = data;
+        console.log(`Loaded ${questionsData.length} questions from database.`);
+    })
+    .catch(err => {
+        console.error("Failed to load questions:", err);
+    });
+
+// ── Audio Utils ────────────────────────────────────────────────
+function toggleLocalSound() {
+    window.isMuted = !window.isMuted;
+    const btn = document.getElementById('sound-btn');
+    if (window.isMuted) {
+        btn.innerHTML = "🔇 音效：關";
+        btn.style.borderColor = "var(--error)";
+        document.querySelectorAll('audio').forEach(a => a.muted = true);
+        sfxLobby.pause();
+    } else {
+        btn.innerHTML = "🔊 音效：開";
+        btn.style.borderColor = "var(--success)";
+        document.querySelectorAll('audio').forEach(a => a.muted = false);
+        if (role === 'teacher' && (document.getElementById('teacher-lobby').classList.contains('on') || document.getElementById('role-screen').classList.contains('on'))) {
+            sfxLobby.play().catch(() => {});
+        }
+    }
+}
+
+// Play lobby BGM on user interaction
+document.body.addEventListener('click', () => {
+    if (!window.isMuted && sfxLobby.paused && (role === '' || role === 'teacher')) {
+        sfxLobby.play().catch(() => {});
+    }
+}, { once: true });
+
+// ── Common Helpers ────────────────────────────────────────────
+function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+    document.getElementById(id).classList.add('on');
+    // Lock body scroll on active game screen
+    if (id === 'teacher-game' || id === 'student-game') {
+        document.body.classList.add('game-active');
+    } else {
+        document.body.classList.remove('game-active');
+    }
+}
+
+function getPid() {
+    let id = sessionStorage.getItem('kahoot_pid');
+    if (!id) {
+        id = 'p' + Math.random().toString(36).slice(2, 10);
+        sessionStorage.setItem('kahoot_pid', id);
+    }
+    return id;
+}
+
+function exitGame() {
+    if (roomRef && role === 'teacher') {
+        roomRef.remove();
+    }
+    location.href = 'teacher.html';
+}
+
+// ── Role Selection ────────────────────────────────────────────
+function selectRole(r) {
+    role = r;
+    if (r === 'teacher') {
+        roomCode = String(Math.floor(1000 + Math.random() * 9000));
+        document.getElementById('t-lobby-code').textContent = roomCode;
+        showScreen('teacher-setup');
+    } else {
+        playerId = getPid();
+        showScreen('student-join');
+    }
+}
+
+// ── Teacher Setup & Lobby ─────────────────────────────────────
+function teacherCreate() {
+    const selectedUnit = document.getElementById('t-unit').value;
+    totalRounds = parseInt(document.getElementById('t-rounds').value);
+    timeLimit = parseInt(document.getElementById('t-time').value);
+
+    if (questionsData.length === 0) {
+        alert("題目資料加載中，請稍候再試...");
+        return;
+    }
+
+    // Filter questions
+    let filtered = [];
+    if (selectedUnit === 'all') {
+        filtered = [...questionsData];
+    } else {
+        filtered = questionsData.filter(q => q.unit === selectedUnit);
+    }
+
+    if (filtered.length === 0) {
+        alert("該範圍內無可選題目！");
+        return;
+    }
+
+    // Shuffle and pick subset
+    const selectedQuestions = shuffle(filtered).slice(0, Math.min(totalRounds, filtered.length));
+    totalRounds = selectedQuestions.length; // Adjust rounds if questions are fewer
+
+    roomRef = db.ref('rooms/kahoot-' + roomCode);
+    roomRef.set({
+        phase: 'lobby',
+        round: 0,
+        totalRounds,
+        timeLimit,
+        questions: selectedQuestions,
+        players: {},
+        teacherOnline: true
+    });
+
+    roomRef.onDisconnect().remove();
+
+    showScreen('teacher-lobby');
+    
+    // Listen for student joins
+    roomRef.child('players').on('value', snap => {
+        const ps = snap.val() || {};
+        const list = Object.values(ps);
+        document.getElementById('t-player-count').textContent = '已加入：' + list.length + ' 人';
+        const container = document.getElementById('t-player-list');
+        container.innerHTML = '';
+        list.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'chip bounce-in';
+            div.innerHTML = `<span>🟢</span> ${p.name}`;
+            container.appendChild(div);
+        });
+        document.getElementById('t-start-btn').disabled = list.length === 0;
+    });
+}
+
+// ── Teacher Game Logic ────────────────────────────────────────
+function teacherStart() {
+    sfxLobby.pause();
+    roomRef.child('players').off();
+    currentRound = 0;
+    showScreen('teacher-game');
+    listenTeacher();
+    teacherSendQuestion();
+}
+
+function teacherSendQuestion() {
+    roomRef.once('value', snap => {
+        const data = snap.val();
+        currentQ = data.questions[currentRound];
+        
+        // Reset player answers for this round
+        const updates = {
+            phase: 'question',
+            round: currentRound,
+            questionStart: firebase.database.ServerValue.TIMESTAMP
+        };
+        Object.keys(data.players || {}).forEach(pid => {
+            updates[`players/${pid}/answer`] = -1;
+            updates[`players/${pid}/scored`] = 0;
+        });
+        
+        roomRef.update(updates);
+    });
+}
+
+function listenTeacher() {
+    if (gameListener) roomRef.off('value', gameListener);
+    
+    gameListener = roomRef.on('value', snap => {
+        if (!snap.exists()) return;
+        const d = snap.val();
+        
+        if (d.phase === 'question' && d.questionStart) {
+            if (d.round !== tCurrentRound) {
+                tCurrentRound = d.round;
+                renderTQ(d);
+                startTimer(d.questionStart, d.timeLimit, 't');
+            }
+            // Count answers
+            if (d.players) {
+                const total = Object.keys(d.players).length;
+                const answered = Object.values(d.players).filter(p => p.answer >= 0).length;
+                document.getElementById('t-ans-count').textContent = answered;
+                document.getElementById('t-player-total').textContent = total;
+                if (answered === total && total > 0) {
+                    teacherReveal();
+                }
+            }
+        }
+        
+        if (d.phase === 'reveal') {
+            renderTReveal(d);
+        }
+        
+        if (d.phase === 'final') {
+            showFinal(d);
+        }
+    });
+}
+
+function renderTQ(d) {
+    const q = d.questions[d.round];
+    currentQ = q;
+    
+    document.getElementById('t-round').textContent = d.round + 1;
+    document.getElementById('t-total').textContent = d.totalRounds;
+    document.getElementById('t-q-unit').textContent = `[${q.unit} Q${q.number}]`;
+    document.getElementById('t-q-text').textContent = q.question;
+    
+    const grid = document.getElementById('t-choices');
+    grid.innerHTML = '';
+    
+    q.choices.forEach((choice, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `ch-btn ${CLS[idx]}`;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="ico">${SHAPES[idx]}</span> ${choice}`;
+        grid.appendChild(btn);
+    });
+    
+    document.getElementById('t-reveal-btn').style.display = 'block';
+    document.getElementById('t-next-btn').style.display = 'none';
+    document.getElementById('t-result-panel').style.display = 'none';
+}
+
+function teacherReveal() {
+    clearTimer();
+    roomRef.update({ phase: 'reveal' });
+}
+
+function renderTReveal(d) {
+    clearTimer();
+    const q = d.questions[d.round];
+    
+    // Highlight correct choice
+    document.querySelectorAll('#t-choices .ch-btn').forEach((btn, idx) => {
+        btn.classList.add(idx === q.correct ? 'reveal-ok' : 'reveal-no');
+    });
+    
+    document.getElementById('t-reveal-btn').style.display = 'none';
+    const nextBtn = document.getElementById('t-next-btn');
+    nextBtn.style.display = 'block';
+    nextBtn.textContent = d.round >= d.totalRounds - 1 ? '🏆 最終結果' : '下一題 →';
+    
+    // Calculate statistics
+    const counts = [0, 0, 0, 0];
+    const totalPlayers = d.players ? Object.keys(d.players).length : 0;
+    if (d.players) {
+        Object.values(d.players).forEach(p => {
+            if (p.answer >= 0 && p.answer < 4) {
+                counts[p.answer]++;
+            }
+        });
+    }
+    
+    // Animate Chart Bars
+    CLS.forEach((cls, idx) => {
+        const bar = document.getElementById(`bar-${idx.toString()}`);
+        if (bar) {
+            const count = counts[idx];
+            const pct = totalPlayers > 0 ? (count / totalPlayers) * 100 : 0;
+            bar.style.height = `${pct + 10}%`; // Minimum height for style
+            bar.textContent = count;
+        }
+    });
+    
+    // Render Mini Leaderboard
+    if (d.players) {
+        const sorted = Object.values(d.players).sort((a, b) => b.score - a.score).slice(0, 5);
+        const rows = document.getElementById('t-lb-rows');
+        rows.innerHTML = '';
+        sorted.forEach((p, idx) => {
+            const div = document.createElement('div');
+            div.className = 'lb-row';
+            const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+            div.innerHTML = `<span class="lb-rank ${idx < 3 ? 'r' + (idx + 1) : ''}">${medal}</span><span class="lb-name">${p.name}</span><span class="lb-score">${p.score || 0}</span>`;
+            rows.appendChild(div);
+        });
+    }
+    
+    document.getElementById('t-result-panel').style.display = 'flex';
+}
+
+function teacherNext() {
+    currentRound++;
+    roomRef.once('value', snap => {
+        if (currentRound >= snap.val().totalRounds) {
+            roomRef.update({ phase: 'final' });
+        } else {
+            teacherSendQuestion();
+        }
+    });
+}
+
+// ── Student Join & Game Logic ─────────────────────────────────
+function studentJoin() {
+    const name = document.getElementById('s-name').value.trim();
+    const code = document.getElementById('s-code').value.replace(/\D/g, '').trim();
+    const err = document.getElementById('s-join-err');
+    
+    if (!name) { err.textContent = '請輸入暱稱！'; err.style.display = 'block'; return; }
+    if (code.length !== 4) { err.textContent = '請輸入 4 位數 PIN 碼！'; err.style.display = 'block'; return; }
+    
+    // Check bad words
+    if (typeof badWords !== 'undefined' && badWords.some(w => name.toLowerCase().includes(w))) {
+        err.textContent = '⚠️ 請使用適當的暱稱！';
+        err.style.display = 'block';
+        return;
+    }
+    
+    err.style.display = 'none';
+    const joinBtn = document.getElementById('s-join-btn');
+    joinBtn.textContent = '⏳ 連線中...';
+    joinBtn.disabled = true;
+    
+    myName = name;
+    roomCode = code;
+    roomRef = db.ref('rooms/kahoot-' + code);
+    
+    roomRef.once('value', snap => {
+        joinBtn.textContent = '加入 →';
+        joinBtn.disabled = false;
+        
+        if (!snap.exists() || snap.val().phase !== 'lobby') {
+            err.textContent = '⚠️ 找不到房間，或遊戲已經開始！';
+            err.style.display = 'block';
+            return;
+        }
+        
+        playerRef = roomRef.child('players/' + playerId);
+        playerRef.set({
+            name,
+            score: 0,
+            answer: -1,
+            scored: 0
+        });
+        playerRef.onDisconnect().remove();
+        
+        document.getElementById('s-wait-name').textContent = `👋 嗨，${name}！已成功進入房間。`;
+        showScreen('student-wait');
+        listenStudent();
+    }, e => {
+        joinBtn.textContent = '加入 →';
+        joinBtn.disabled = false;
+        err.textContent = '⚠️ 連線失敗: ' + e.message;
+        err.style.display = 'block';
+    });
+}
+
+function listenStudent() {
+    roomRef.on('value', snap => {
+        if (!snap.exists()) return;
+        const d = snap.val();
+        
+        const me = d.players && d.players[playerId];
+        if (me) {
+            document.getElementById('s-score').textContent = me.score || 0;
+            if (d.players) {
+                const rank = Object.values(d.players).sort((a, b) => b.score - a.score).findIndex(p => p.name === myName) + 1;
+                document.getElementById('s-rank').textContent = rank || '-';
+            }
+        }
+        
+        if (d.phase === 'question' && d.questionStart) {
+            if (d.round !== currentQRound) {
+                currentQRound = d.round;
+                currentRound = d.round;
+                currentQ = d.questions[d.round];
+                myAnswer = -1;
+                showScreen('student-game');
+                renderSQ(d);
+                startTimer(d.questionStart, d.timeLimit, 's');
+            }
+        }
+        
+        if (d.phase === 'reveal') {
+            renderSReveal(d);
+        }
+        
+        if (d.phase === 'final') {
+            showFinal(d);
+        }
+    });
+}
+
+function renderSQ(d) {
+    const q = d.questions[d.round];
+    document.getElementById('s-q-text').textContent = q.question;
+    document.getElementById('s-result').style.display = 'none';
+    
+    const grid = document.getElementById('s-choices');
+    grid.innerHTML = '';
+    
+    q.choices.forEach((choice, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `s-ch ${CLS[idx]}`;
+        btn.innerHTML = `<span class="ico">${SHAPES[idx]}</span> ${choice}`;
+        // Support pointerdown for instant click reaction
+        btn.addEventListener('pointerdown', (e) => {
+            submitAnswer(idx);
+        });
+        grid.appendChild(btn);
+    });
+}
+
+function submitAnswer(idx) {
+    if (myAnswer >= 0) return;
+    myAnswer = idx;
+    
+    const elapsed = (Date.now() - questionStartTime) / 1000;
+    const remaining = Math.max(0, timeLimit - elapsed);
+    const ok = idx === currentQ.correct;
+    
+    // kahoot points decay formula (max 1000, min 500 based on speed)
+    const pts = ok ? Math.max(500, Math.round(500 + 500 * (remaining / timeLimit))) : 0;
+    
+    document.querySelectorAll('.s-ch').forEach((btn, i) => {
+        if (i === idx) btn.classList.add('my-pick');
+        btn.disabled = true;
+    });
+    
+    playerRef.update({
+        answer: idx,
+        scored: pts,
+        score: firebase.database.ServerValue.increment(pts)
+    });
+}
+
+function renderSReveal(d) {
+    clearTimer();
+    const q = d.questions[d.round];
+    
+    document.querySelectorAll('.s-ch').forEach((btn, idx) => {
+        btn.disabled = true;
+        btn.classList.add(idx === q.correct ? 'reveal-ok' : 'reveal-no');
+    });
+    
+    const bar = document.getElementById('s-result');
+    if (bar.style.display === 'block') return; // Avoid re-triggering sound
+    
+    const me = d.players && d.players[playerId];
+    if (myAnswer < 0) {
+        bar.className = 'result-bar tm';
+        bar.textContent = '⏱️ 時間到！正確答案是：' + q.choices[q.correct];
+    } else if (myAnswer === q.correct) {
+        const pts = me && me.scored ? me.scored : 0;
+        bar.className = 'result-bar ok';
+        bar.textContent = `🎉 答對了！ +${pts} 分`;
+        sfxOk.currentTime = 0;
+        sfxOk.play().catch(() => {});
+    } else {
+        bar.className = 'result-bar ng';
+        bar.textContent = '❌ 答錯了！正確答案是：' + q.choices[q.correct];
+        sfxNg.currentTime = 0;
+        sfxNg.play().catch(() => {});
+    }
+    bar.style.display = 'block';
+}
+
+// ── Timer Helper ──────────────────────────────────────────────
+function startTimer(startTs, limit, who) {
+    questionStartTime = startTs;
+    clearTimer();
+    
+    timerInterval = setInterval(() => {
+        const rem = Math.max(0, limit - (Date.now() - startTs) / 1000);
+        const pct = (rem / limit) * 100;
+        const color = rem > limit * 0.5 ? '#2ecc71' : rem > limit * 0.25 ? '#f39c12' : '#e74c3c';
+        
+        const bar = document.getElementById(who + '-bar');
+        const num = document.getElementById(who + '-sec');
+        
+        if (bar) {
+            bar.style.width = pct + '%';
+            bar.style.backgroundColor = color;
+        }
+        if (num) {
+            num.textContent = Math.ceil(rem);
+        }
+        
+        if (rem <= 0) {
+            clearTimer();
+            if (who === 't') {
+                teacherReveal();
+            }
+        }
+    }, 100);
+}
+
+function clearTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+}
+
+// ── Final Screen & Podium ─────────────────────────────────────
+function showFinal(d) {
+    clearTimer();
+    showScreen('final-screen');
+    
+    if (!d.players) return;
+    const sorted = Object.values(d.players).sort((a, b) => b.score - a.score);
+    
+    // Leaderboard list
+    const lb = document.getElementById('final-lb');
+    lb.innerHTML = '';
+    sorted.forEach((p, idx) => {
+        const div = document.createElement('div');
+        div.className = 'lb-row bounce-in';
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `  #${idx + 1}`;
+        div.innerHTML = `<span class="lb-rank ${idx < 3 ? 'r' + (idx + 1) : ''}">${medal}</span><span class="lb-name">${p.name}</span><span class="lb-score">${p.score || 0} pts</span>`;
+        lb.appendChild(div);
+    });
+
+    // Render podium on teacher/host view
+    if (role === 'teacher') {
+        document.getElementById('t-podium').style.display = 'flex';
+        if (sorted[0]) document.getElementById('podium-name-1').textContent = sorted[0].name;
+        if (sorted[1]) document.getElementById('podium-name-2').textContent = sorted[1].name;
+        if (sorted[2]) document.getElementById('podium-name-3').textContent = sorted[2].name;
+        
+        // Sound effects
+        if (!window.isMuted) {
+            sfxPodium.play().catch(() => {});
+            setTimeout(() => {
+                sfxVictory.play().catch(() => {});
+            }, 1500);
+        }
+    }
+}
+</script>
+</body>
+</html>
