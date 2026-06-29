@@ -534,7 +534,7 @@ function teacherCreate() {
     // Filter questions
     let filtered = [];
     if (selectedUnit === 'all') {
-        filtered = questionsData.filter(q => q.unit !== 'Rock 老師的八卦');
+        filtered = [...questionsData];
     } else {
         filtered = questionsData.filter(q => q.unit === selectedUnit);
     }
