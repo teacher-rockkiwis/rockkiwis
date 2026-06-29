@@ -181,6 +181,7 @@
 <body class="with-ambient-bg">
 <audio id="sfx-ok" src="bgm/bingo.mp3"></audio>
 <audio id="sfx-ng" src="bgm/fail.mp3"></audio>
+<audio id="sfx-67" src="bgm/67.mp3"></audio>
 <audio id="sfx-podium" src="bgm/drumroll.mp3"></audio>
 <audio id="sfx-victory" src="bgm/victory.mp3"></audio>
 <audio id="sfx-lobby" src="bgm/music.mp3" loop></audio>
@@ -427,12 +428,14 @@ let currentQRound = -1;
 
 const sfxOk = document.getElementById('sfx-ok');
 const sfxNg = document.getElementById('sfx-ng');
+const sfx67 = document.getElementById('sfx-67');
 const sfxPodium = document.getElementById('sfx-podium');
 const sfxVictory = document.getElementById('sfx-victory');
 const sfxLobby = document.getElementById('sfx-lobby');
 
 sfxOk.volume = 0.5;
 sfxNg.volume = 0.5;
+sfx67.volume = 0.55;
 sfxPodium.volume = 0.5;
 sfxVictory.volume = 0.5;
 sfxLobby.volume = 0.35;
@@ -856,7 +859,19 @@ function submitAnswer(idx) {
     const ok = idx === currentQ.correct;
     
     // kahoot points decay formula (max 1000, min 500 based on speed)
-    const pts = ok ? Math.max(500, Math.round(500 + 500 * (remaining / timeLimit))) : 0;
+    let pts = ok ? Math.max(500, Math.round(500 + 500 * (remaining / timeLimit))) : 0;
+    
+    // Rock's special age question logic
+    const selectedChoiceText = currentQ.choices[idx];
+    const isAgeQuestion = currentQ.question.includes("Rock老師今年幾歲");
+    
+    if (isAgeQuestion) {
+        if (ok) {
+            pts = pts * 5; // 5x points!
+        } else if (selectedChoiceText === "67歲") {
+            pts = -1000; // -1000 penalty!
+        }
+    }
     
     document.querySelectorAll('.s-ch').forEach((btn, i) => {
         if (i === idx) btn.classList.add('my-pick');
@@ -889,14 +904,26 @@ function renderSReveal(d) {
     } else if (myAnswer === q.correct) {
         const pts = me && me.scored ? me.scored : 0;
         bar.className = 'result-bar ok';
-        bar.textContent = `🎉 答對了！ +${pts} 分`;
+        if (q.question.includes("Rock老師今年幾歲")) {
+            bar.textContent = `🔥 答對了！馬屁精加成 5 倍！ +${pts} 分`;
+        } else {
+            bar.textContent = `🎉 答對了！ +${pts} 分`;
+        }
         sfxOk.currentTime = 0;
         sfxOk.play().catch(() => {});
     } else {
-        bar.className = 'result-bar ng';
-        bar.textContent = '❌ 答錯了！正確答案是：' + q.choices[q.correct];
-        sfxNg.currentTime = 0;
-        sfxNg.play().catch(() => {});
+        const selectedChoiceText = q.choices[myAnswer];
+        if (q.question.includes("Rock老師今年幾歲") && selectedChoiceText === "67歲") {
+            bar.className = 'result-bar ng';
+            bar.textContent = '💀 竟然敢說老師67歲！扣 1000 分！';
+            sfx67.currentTime = 0;
+            sfx67.play().catch(() => {});
+        } else {
+            bar.className = 'result-bar ng';
+            bar.textContent = '❌ 答錯了！正確答案是：' + q.choices[q.correct];
+            sfxNg.currentTime = 0;
+            sfxNg.play().catch(() => {});
+        }
     }
     bar.style.display = 'block';
 }
