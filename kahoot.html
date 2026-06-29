@@ -212,6 +212,7 @@
                 <option value="Unit 4">Unit 4 Vocabulary & Grammar</option>
                 <option value="Unit 5">Unit 5 Vocabulary & Grammar</option>
                 <option value="Unit 6">Unit 6 Vocabulary & Grammar</option>
+                <option value="Rock 老師的八卦">🤫 Rock 老師的搞笑八卦</option>
                 <option value="all" selected>全冊總複習 (Units 1-6)</option>
             </select>
         </div>
@@ -530,7 +531,7 @@ function teacherCreate() {
     // Filter questions
     let filtered = [];
     if (selectedUnit === 'all') {
-        filtered = [...questionsData];
+        filtered = questionsData.filter(q => q.unit !== 'Rock 老師的八卦');
     } else {
         filtered = questionsData.filter(q => q.unit === selectedUnit);
     }
