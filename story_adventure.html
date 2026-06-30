@@ -1746,8 +1746,15 @@
         function toggleTeacherTeachingMode() {
             if (userRole !== 'teacher') return;
             
-            isTeachingMode = !isTeachingMode;
             const btn = document.getElementById('teacher-sync-toggle');
+            
+            // Cannot start teaching mode without a story selected
+            if (!isTeachingMode && !selectedStoryKey) {
+                alert('⚠️ 請先點選一個故事，再開啟課堂教學模式！');
+                return;
+            }
+            
+            isTeachingMode = !isTeachingMode;
             
             if (isTeachingMode) {
                 playSynthesizedSound('success');
@@ -1767,14 +1774,16 @@
                 btn.style.color = "#fbbf24";
             }
 
-            // Sync layout locally
+            // Sync layout locally for teacher
             renderParagraphsLayout();
 
-            // Push to Firebase
-            pushTeacherState({
+            // Push to Firebase — storyKey is guaranteed to exist here
+            syncRef.update({
                 isTeachingMode: isTeachingMode,
+                storyKey: selectedStoryKey,
                 currentParagraphIndex: currentParagraphIndex,
-                activeWord: ""
+                activeWord: "",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
             });
         }
 
@@ -1922,20 +1931,26 @@
         // Teacher Side: Pushing actions to Database
         function pushTeacherState(updates) {
             if (userRole !== 'teacher') return;
+            // Guard: don't push if no story selected yet — Firebase rejects null values
+            if (!selectedStoryKey && updates.storyKey !== undefined && !updates.storyKey) {
+                console.warn('[SYNC] pushTeacherState skipped: storyKey is null');
+                return;
+            }
             updates.timestamp = firebase.database.ServerValue.TIMESTAMP;
             updates.storyKey = selectedStoryKey;
             updates.isTeachingMode = isTeachingMode; // ALWAYS push current teaching mode
+            console.log('[SYNC] Teacher pushing state:', updates);
             syncRef.update(updates);
         }
 
-        // ==================== HIDDEN GESTURE MODULE ====================
+        // ==================== APP INITIALIZATION ====================
 
         // Hidden Secret Toggle for Teacher Mode (Long press title for 2.5 seconds)
         let pressTimer = null;
-        
-        window.addEventListener('DOMContentLoaded', () => {
+
+        function initApp() {
             updateSyncStatusUI();
-            
+
             // Set up long-press listener on the title for secret teacher toggle
             const navTitle = document.getElementById('nav-title');
             if (navTitle) {
@@ -1943,38 +1958,40 @@
                 navTitle.style.userSelect = 'none';
                 navTitle.style.webkitUserSelect = 'none';
 
-                const startPress = (e) => {
+                const startPress = () => {
                     clearTimeout(pressTimer);
                     pressTimer = setTimeout(() => {
                         toggleTeacherModeSecret();
-                    }, 2500); // 2.5 seconds hold
+                    }, 2500);
                 };
-
-                const cancelPress = () => {
-                    clearTimeout(pressTimer);
-                };
+                const cancelPress = () => clearTimeout(pressTimer);
 
                 navTitle.addEventListener('touchstart', startPress, { passive: true });
                 navTitle.addEventListener('touchend', cancelPress, { passive: true });
                 navTitle.addEventListener('touchcancel', cancelPress, { passive: true });
-
                 navTitle.addEventListener('mousedown', startPress);
                 navTitle.addEventListener('mouseup', cancelPress);
                 navTitle.addEventListener('mouseleave', cancelPress);
             }
 
-            // Expose teacher switch buttons if url parameter exists
+            // Expose teacher controls
             if (userRole === 'teacher') {
                 document.getElementById('teacher-sync-toggle').style.display = 'block';
             }
-            
+
+            // Register Firebase real-time listener for students
             if (userRole === 'student') {
                 syncRef.on('value', (snapshot) => {
                     const data = snapshot.val();
+                    console.log('[SYNC] Received Firebase update:', data);
                     if (data) handleIncomingSync(data);
                 });
+                console.log('[SYNC] Student Firebase listener registered on:', syncRef.toString());
             }
-        });
+        }
+
+        // Run immediately — the script is at end of <body> so DOM is ready
+        initApp();
 
         function toggleTeacherModeSecret() {
             if (userRole === 'student') {
