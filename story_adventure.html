@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ROCK 老師的英文故事派對</title>
+    <link rel="stylesheet" href="common.css?v=3.2">
+    <style>
+        :root {
+            --snack-theme: #f97316;
+            --tshirt-theme: #06b6d4;
+            --squirrel-theme: #10b981;
+            
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover-bg: rgba(255, 255, 255, 0.08);
+            
+            --bg-primary: #0a0e1a;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background: var(--bg-primary);
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            color: var(--text-primary);
+            font-family: 'Quicksand', 'Outfit', system-ui, -apple-system, sans-serif;
+            overflow-y: auto !important;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* Responsive Layout Grid */
+        .app-container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 20px 40px 20px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Top Bar */
+        .top-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 70px;
+            background: rgba(10, 14, 26, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .back-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .sound-toggle-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .sound-toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-title {
+            font-size: 22px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.2));
+        }
+
+        /* Story Selection Menu */
+        #story-menu-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+        }
+
+        .menu-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .menu-title h2 {
+            font-size: 38px;
+            margin: 0;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fef08a 0%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .menu-title p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+
+        .story-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .story-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .story-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 6px;
+            background: var(--theme-color, #fbbf24);
+        }
+
+        .story-card:active {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--theme-color);
+        }
+
+        .story-icon {
+            font-size: 55px;
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 20px;
+            border: 2px solid var(--card-border);
+            transition: all 0.3s;
+        }
+        
+        .story-card:active .story-icon {
+            transform: rotate(10deg) scale(1.1);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--theme-color);
+        }
+
+        .story-name-zh {
+            font-size: 24px;
+            font-weight: 900;
+            color: white;
+            margin: 0 0 5px 0;
+        }
+
+        .story-name-en {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .story-meta-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--theme-color);
+        }
+
+        /* Main Workspace Screen */
+        #story-workspace-screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Workspace Header */
+        .workspace-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 20px;
+        }
+
+        .workspace-title h3 {
+            font-size: 26px;
+            margin: 0;
+            font-weight: 900;
+        }
+        .workspace-title p {
+            margin: 5px 0 0 0;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .exit-workspace-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 10px 18px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .exit-workspace-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Workspace Tabs Layout */
+        .tabs-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            padding: 12px 22px;
+            border-radius: 15px;
+            font-size: 15px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active-tab {
+            background: var(--story-color, #fbbf24);
+            color: #2d3436;
+            border-color: transparent;
+            box-shadow: 0 4px 15px var(--story-color-glow, rgba(251, 191, 36, 0.3));
+        }
+
+        .tab-content {
+            display: none;
+            min-height: 50vh;
+        }
+
+        .tab-content.active-content {
+            display: block;
+        }
+
+        /* TAB 1: Story & Vocab Reading */
+        .reading-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 850px) {
+            .reading-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .paragraphs-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .story-paragraph {
+            margin-bottom: 30px;
+            border-bottom: 1px dashed rgba(255,255,255,0.06);
+            padding-bottom: 25px;
+        }
+        .story-paragraph:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .paragraph-title {
+            font-size: 14px;
+            color: var(--story-color, #fbbf24);
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .paragraph-content {
+            font-size: 19px;
+            line-height: 1.8;
+            color: #f1f5f9;
+            font-weight: 700;
+            margin: 0;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* Underlined Word styling */
+        .target-word {
+            display: inline-block;
+            color: #ef4444;
+            text-decoration: underline;
+            text-decoration-color: #ef4444;
+            text-decoration-thickness: 3px;
+            text-underline-offset: 4px;
+            cursor: pointer;
+            padding: 0 4px;
+            border-radius: 6px;
+            background: rgba(239, 68, 68, 0.08);
+            transition: all 0.2s;
+            font-weight: 900;
+        }
+        .target-word:active {
+            background: rgba(239, 68, 68, 0.25);
+            transform: scale(1.05);
+        }
+
+        /* Vocabulary details drawer sidebar */
+        .vocab-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 90px;
+        }
+
+        .vocab-panel-title {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 0 0 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vocab-detail-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .vocab-detail-box .placeholder-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-style: italic;
+        }
+
+        .active-word-en {
+            font-size: 32px;
+            font-weight: 900;
+            color: white;
+            margin: 0 0 5px 0;
+        }
+        .active-word-ch {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--story-color, #fbbf24);
+            margin: 0 0 15px 0;
+        }
+
+        .tts-speaker-btn {
+            background: var(--story-color, #fbbf24);
+            border: none;
+            color: #2d3436;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px var(--story-color-glow, rgba(251, 191, 36, 0.3));
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+        .tts-speaker-btn:active {
+            transform: scale(0.9);
+        }
+
+        .sentence-context {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 15px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            text-align: left;
+            width: 100%;
+        }
+        .sentence-context strong {
+            color: #f1f5f9;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        /* TAB 2: Sentence Builder UI */
+        .builder-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .builder-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .builder-prompt {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-weight: 800;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .sentence-display-area {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            min-height: 70px;
+            padding: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+
+        .sentence-display-area.correct {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .word-blocks-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+
+        .word-block {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .word-block:active {
+            transform: scale(0.95);
+        }
+        
+        .word-block.selected-in-pool {
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        .word-block.placed {
+            background: var(--story-color, #fbbf24);
+            color: #2d3436;
+            border-color: transparent;
+        }
+
+        .builder-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 900;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-check {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .btn-check:active { transform: scale(0.95); }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .btn-reset:active { transform: scale(0.95); }
+
+        .sentence-translation {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            font-weight: 800;
+            font-size: 16px;
+            display: none;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* TAB 3: Balloon Game UI */
+        .game-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .game-hud {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 12px 20px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .game-canvas-container {
+            width: 100%;
+            aspect-ratio: 4/5;
+            background: radial-gradient(circle, #101626 0%, #0a0e1a 100%);
+            border: 2px solid var(--card-border);
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            touch-action: none;
+        }
+
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .game-start-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .game-overlay-title {
+            font-size: 26px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            color: var(--story-color, #fbbf24);
+        }
+
+        .game-overlay-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 25px;
+            max-width: 400px;
+            font-weight: 700;
+        }
+
+        .btn-start-game {
+            background: var(--story-color, #fbbf24);
+            color: #2d3436;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 900;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px var(--story-color-glow, rgba(251, 191, 36, 0.3));
+            transition: all 0.2s;
+        }
+        .btn-start-game:active {
+            transform: scale(0.95);
+        }
+
+        /* TAB 4: Ending Creator */
+        .ending-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        @media (max-width: 800px) {
+            .ending-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ending-form-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 25px;
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+        }
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .text-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 15px;
+            font-family: inherit;
+            font-weight: 700;
+        }
+        .text-input:focus {
+            border-color: var(--story-color, #fbbf24);
+            outline: none;
+        }
+
+        .ending-options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .ending-option-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-weight: 700;
+            line-height: 1.4;
+            font-size: 15px;
+        }
+
+        .ending-option-card:active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .ending-option-card.selected {
+            border-color: var(--story-color, #fbbf24);
+            background: var(--story-color-glow, rgba(251, 191, 36, 0.1));
+        }
+
+        .option-radio {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .ending-option-card.selected .option-radio {
+            border-color: var(--story-color, #fbbf24);
+        }
+        
+        .ending-option-card.selected .option-radio::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--story-color, #fbbf24);
+        }
+
+        /* Ending Card Poster Display */
+        .poster-preview-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .ending-card-poster {
+            width: 100%;
+            max-width: 380px;
+            aspect-ratio: 3/4;
+            background: linear-gradient(145deg, #1e2640 0%, #0a0e1a 100%);
+            border-radius: 28px;
+            border: 4px solid var(--story-color, #fbbf24);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,255,255,0.03);
+            padding: 30px;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            color: white;
+        }
+
+        .ending-card-poster::before {
+            content: '⭐';
+            position: absolute;
+            top: 20px; left: 20px;
+            font-size: 20px;
+            opacity: 0.3;
+        }
+        .ending-card-poster::after {
+            content: '⭐';
+            position: absolute;
+            top: 20px; right: 20px;
+            font-size: 20px;
+            opacity: 0.3;
+        }
+
+        .poster-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--story-color, #fbbf24);
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .poster-title {
+            font-size: 26px;
+            font-weight: 900;
+            margin: 0 0 10px 0;
+            line-height: 1.2;
+        }
+
+        .poster-author {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 800;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.03);
+            padding: 5px 12px;
+            border-radius: 8px;
+        }
+
+        .poster-content-box {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .poster-ending-text {
+            font-size: 18px;
+            line-height: 1.6;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin: 0;
+            padding: 10px;
+            font-style: italic;
+        }
+
+        .poster-ending-translation {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        .poster-deco {
+            font-size: 40px;
+            margin-top: 20px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .btn-generate-ending {
+            background: var(--story-color, #fbbf24);
+            color: #2d3436;
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 900;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--story-color-glow, rgba(251, 191, 36, 0.2));
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+        .btn-generate-ending:active {
+            transform: scale(0.97);
+        }
+
+        .btn-print {
+            background: rgba(255,255,255,0.06);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+            width: 100%;
+            max-width: 380px;
+            padding: 12px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-print:active {
+            transform: scale(0.97);
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Ambient Glow effect inside workspaces */
+        .workspace-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle 350px at var(--glow-x, 50%) var(--glow-y, 30%), var(--story-color-glow, rgba(251, 191, 36, 0.04)), transparent);
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="with-ambient-bg">
+
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+        <a href="teacher.html" class="back-btn">🔙 回上課專區</a>
+        <div class="nav-title">📖 ROCK'S STORY PARTY</div>
+        <button class="sound-toggle-btn" id="sound-btn" onclick="toggleSoundEffect()">🔊 音效：開</button>
+    </nav>
+
+    <div class="app-container">
+        
+        <!-- ==================== SCREEN 1: Story Selection ==================== -->
+        <div id="story-menu-screen">
+            <div class="menu-title">
+                <h2>故事閱讀派對 🏰</h2>
+                <p>請選擇一篇故事，開啟你的單字與句型冒險！</p>
+            </div>
+            
+            <div class="story-grid">
+                <!-- Card 1: The Snack Thief -->
+                <div class="story-card" style="--theme-color: var(--snack-theme);" onclick="selectStory('snack')">
+                    <div class="story-icon" style="color: var(--snack-theme);">🐕</div>
+                    <h3 class="story-name-zh">零食小偷</h3>
+                    <span class="story-name-en">The Snack Thief</span>
+                    <div class="story-meta-badge" style="--theme-color: var(--snack-theme); --story-color-glow: rgba(249, 115, 22, 0.2);">14 單字 • 4 句型</div>
+                </div>
+
+                <!-- Card 2: The Flying T-shirt -->
+                <div class="story-card" style="--theme-color: var(--tshirt-theme);" onclick="selectStory('tshirt')">
+                    <div class="story-icon" style="color: var(--tshirt-theme);">👕</div>
+                    <h3 class="story-name-zh">飛天 T 恤</h3>
+                    <span class="story-name-en">The Flying T-shirt</span>
+                    <div class="story-meta-badge" style="--theme-color: var(--tshirt-theme); --story-color-glow: rgba(6, 182, 212, 0.2);">14 單字 • 4 句型</div>
+                </div>
+
+                <!-- Card 3: The Thirsty Squirrel -->
+                <div class="story-card" style="--theme-color: var(--squirrel-theme);" onclick="selectStory('squirrel')">
+                    <div class="story-icon" style="color: var(--squirrel-theme);">🐿️</div>
+                    <h3 class="story-name-zh">口渴的松鼠</h3>
+                    <span class="story-name-en">The Thirsty Squirrel</span>
+                    <div class="story-meta-badge" style="--theme-color: var(--squirrel-theme); --story-color-glow: rgba(16, 185, 129, 0.2);">10 單字 • 4 句型</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SCREEN 2: Workspace ==================== -->
+        <div id="story-workspace-screen">
+            <div class="workspace-glow" id="workspace-glow"></div>
+            
+            <div class="workspace-header">
+                <div class="workspace-title">
+                    <h3 id="ws-story-title-zh">零食小偷</h3>
+                    <p id="ws-story-title-en">The Snack Thief</p>
+                </div>
+                <button class="exit-workspace-btn" onclick="exitWorkspace()">🚪 選擇其他故事</button>
+            </div>
+
+            <!-- Tabs Nav -->
+            <div class="tabs-nav">
+                <button class="tab-btn active-tab" onclick="switchTab('reading')" id="tab-btn-reading">🗣️ 閱讀與單字</button>
+                <button class="tab-btn" onclick="switchTab('builder')" id="tab-btn-builder">🧩 句型積木組</button>
+                <button class="tab-btn" onclick="switchTab('game')" id="tab-btn-game">🎈 單字氣球爆</button>
+                <button class="tab-btn" onclick="switchTab('ending')" id="tab-btn-ending">🎨 結局大創作</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <!-- TAB 1: Reading & Vocab Hub -->
+            <div class="tab-content active-content" id="tab-content-reading">
+                <div class="reading-layout">
+                    <div class="paragraphs-panel" id="paragraphs-container">
+                        <!-- Paragraphs will be injected dynamically -->
+                    </div>
+                    
+                    <div class="vocab-panel">
+                        <h4 class="vocab-panel-title">💡 觸控發音單字卡</h4>
+                        <div class="vocab-detail-box" id="vocab-detail-box">
+                            <span class="placeholder-text">點選左側故事中畫底線的紅色單字，聽發音並看中文翻譯！</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Sentence Builder -->
+            <div class="tab-content" id="tab-content-builder">
+                <div class="builder-layout" id="builder-container">
+                    <!-- Sentence builders will be injected dynamically -->
+                </div>
+            </div>
+
+            <!-- TAB 3: Balloon Game -->
+            <div class="tab-content" id="tab-content-game">
+                <div class="game-layout">
+                    <div class="game-hud">
+                        <div id="hud-target-word">得分: 0</div>
+                        <div id="hud-score">Combo: 0</div>
+                        <div id="hud-time">剩餘時間: 45秒</div>
+                    </div>
+                    <div class="game-canvas-container" id="canvas-container">
+                        <canvas id="game-canvas"></canvas>
+                        <div class="game-start-overlay" id="game-start-overlay">
+                            <div class="game-overlay-title">🎈 單字氣球爆爆樂！</div>
+                            <div class="game-overlay-desc">點擊飄浮的氣球，爆破符合畫面上方中文的英文單字！連續答對會有 Combo 得分加成！</div>
+                            <button class="btn-start-game" onclick="startBalloonGame()">START GAME</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: Ending Creator -->
+            <div class="tab-content" id="tab-content-ending">
+                <div class="ending-layout">
+                    <div class="ending-form-panel">
+                        <h4 style="font-size: 20px; font-weight: 900; margin: 0 0 20px 0; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">🎨 創作第 5 段結局</h4>
+                        
+                        <div class="form-section">
+                            <span class="form-label">輸入你的個人資訊</span>
+                            <div class="input-row">
+                                <input type="text" id="student-class" class="text-input" placeholder="班級 (例如: 四甲)" maxlength="10">
+                                <input type="text" id="student-name" class="text-input" placeholder="你的姓名" maxlength="10">
+                                <input type="text" id="student-no" class="text-input" placeholder="座號" maxlength="5">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <span class="form-label">選擇故事結局 (Paragraph 5)</span>
+                            <div class="ending-options-grid" id="ending-options-container">
+                                <!-- Options will be injected dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <span class="form-label">自己寫一句自訂結局 (選填)</span>
+                            <input type="text" id="ending-custom-en" class="text-input" style="width: 100%; box-sizing: border-box;" placeholder="Or write your own sentence here..." maxlength="100">
+                        </div>
+
+                        <button class="btn-generate-ending" onclick="generateEndingPoster()">✨ 產生故事結局卡</button>
+                    </div>
+
+                    <div class="poster-preview-panel">
+                        <div class="ending-card-poster" id="ending-poster">
+                            <div class="poster-badge" id="poster-badge">ENDING CARD</div>
+                            <h4 class="poster-title" id="poster-story-title">THE SNACK THIEF</h4>
+                            <div class="poster-author" id="poster-author-name">四甲 小明 #07</div>
+                            <div class="poster-content-box">
+                                <p class="poster-ending-text" id="poster-ending-text">The dog shared the chips with Tom, and they played on the slide together.</p>
+                                <span class="poster-ending-translation" id="poster-ending-translation">狗狗和湯姆分享了洋芋片，他們一起在溜滑梯玩耍。</span>
+                            </div>
+                            <div class="poster-deco" id="poster-deco">🐕✨🏆</div>
+                        </div>
+
+                        <button class="btn-print" onclick="window.print()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>列印 / 儲存結局卡</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ==================== JS CONTROLS ==================== -->
+    <script>
+        // Story Data Setup
+        const STORIES = {
+            snack: {
+                titleZh: "公園裡的零食小偷",
+                titleEn: "The Snack Thief",
+                themeColor: "var(--snack-theme)",
+                glowColor: "rgba(249, 115, 22, 0.05)",
+                btnGlow: "rgba(249, 115, 22, 0.3)",
+                deco: "🐕✨🍿",
+                vocabulary: {
+                    "buys": { ch: "買", context: "Tom <strong>buys</strong> a big bag of chips at PX Mart." },
+                    "chips": { ch: "洋芋片", context: "Tom buys a big bag of <strong>chips</strong> at PX Mart." },
+                    "potato": { ch: "馬鈴薯", context: "\"I love <strong>potato</strong> chips so much!\"" },
+                    "puts": { ch: "放", context: "He <strong>puts</strong> his chips on the ground to tie his shoe." },
+                    "ground": { ch: "地面", context: "He puts his chips on the <strong>ground</strong> to tie his shoe." },
+                    "tie his shoe": { ch: "綁鞋帶", context: "He puts his chips on the ground to <strong>tie his shoe</strong>." },
+                    "Suddenly": { ch: "突然", context: "<strong>Suddenly</strong>, the dog takes the chips and runs away!" },
+                    "takes": { ch: "拿走", context: "Suddenly, the dog <strong>takes</strong> the chips and runs away!" },
+                    "runs away": { ch: "跑掉/逃跑", context: "Suddenly, the dog takes the chips and <strong>runs away</strong>!" },
+                    "Return": { ch: "歸還", context: "\"Hey! <strong>Return</strong> the chips to me!\"" },
+                    "follows": { ch: "跟隨", context: "Tom <strong>follows</strong> the dog to a big slide." },
+                    "mountain of": { ch: "一堆/山一樣多的", context: "He sees a <strong>mountain of</strong> snacks and three sad kids." },
+                    "sad": { ch: "傷心的", context: "He sees a mountain of snacks and three <strong>sad</strong> kids." },
+                    "thief": { ch: "小偷", context: "\"Wow! Are you a snack <strong>thief</strong>?\"" }
+                },
+                paragraphs: [
+                    {
+                        title: "Paragraph 1 (段落一)",
+                        narration: "Tom buys a big bag of chips at PX Mart.",
+                        dialogue: "\"I love potato chips so much!\"",
+                        words: ["buys", "chips", "potato"]
+                    },
+                    {
+                        title: "Paragraph 2 (段落二)",
+                        narration: "Tom walks to the park. He puts his chips on the ground to tie his shoe.",
+                        dialogue: "\"Wait a minute. My shoe is untied.\"",
+                        words: ["puts", "ground", "tie his shoe"]
+                    },
+                    {
+                        title: "Paragraph 3 (段落三)",
+                        narration: "Suddenly, the dog takes the chips and runs away!",
+                        dialogue: "\"Hey! Return the chips to me!\"",
+                        words: ["Suddenly", "takes", "runs away", "Return"]
+                    },
+                    {
+                        title: "Paragraph 4 (段落四)",
+                        narration: "Tom follows the dog to a big slide. He sees a mountain of snacks and three sad kids.",
+                        dialogue: "\"Wow! Are you a snack thief?\"",
+                        words: ["follows", "mountain of", "sad", "thief"]
+                    }
+                ],
+                sentenceBuilder: [
+                    { en: "Tom buys a big bag of chips at PX Mart.", ch: "Tom 在全聯買了一大包洋芋片。" },
+                    { en: "He puts his chips on the ground to tie his shoe.", ch: "他把洋芋片放在地上綁鞋帶。" },
+                    { en: "Suddenly, the dog takes the chips and runs away!", ch: "突然，狗狗拿走洋芋片並逃跑了！" },
+                    { en: "Tom follows the dog to a big slide.", ch: "Tom 跟隨狗狗來到一個大溜滑梯。" }
+                ],
+                endingOptions: [
+                    { en: "The dog shared the chips with Tom, and they played together.", ch: "狗狗和 Tom 分享了洋芋片，他們一起開心地玩耍。" },
+                    { en: "Tom caught the dog and said, \"Good dog, let's share the chips!\"", ch: "Tom 抓到了狗並說：「乖狗狗，我們一起分洋芋片吃吧！」" },
+                    { en: "The dog became Tom's best friend and never stole snacks again.", ch: "狗狗成為了 Tom 最好的朋友，從此再也不偷零食了。" }
+                ]
+            },
+            tshirt: {
+                titleZh: "飛天 T 恤",
+                titleEn: "The Flying T-shirt",
+                themeColor: "var(--tshirt-theme)",
+                glowColor: "rgba(6, 182, 212, 0.05)",
+                btnGlow: "rgba(6, 182, 212, 0.3)",
+                deco: "👕💨🐱",
+                vocabulary: {
+                    "washes": { ch: "洗", context: "Sam <strong>washes</strong> his favorite big T-shirt and hangs it outside." },
+                    "favorite": { ch: "最喜愛的", context: "Sam washes his <strong>favorite</strong> big T-shirt and hangs it outside." },
+                    "hangs": { ch: "掛/晾", context: "Sam washes his favorite big T-shirt and <strong>hangs</strong> it outside." },
+                    "blows very hard": { ch: "風吹得非常猛烈", context: "The wind <strong>blows very hard</strong> today." },
+                    "coolest": { ch: "最酷的", context: "\"This is my <strong>coolest</strong> shirt!\"" },
+                    "blows the T-shirt away": { ch: "吹走 (blows... away)", context: "A strong wind <strong>blows the T-shirt away</strong> into the sky." },
+                    "runs out of": { ch: "跑出", context: "Sam <strong>runs out of</strong> the house to catch it." },
+                    "lands": { ch: "降落/落到", context: "The shirt <strong>lands</strong> on a sleeping cat in the park." },
+                    "scared": { ch: "害怕的", context: "The cat gets <strong>scared</strong> and starts running around." },
+                    "running around": { ch: "跑來跑去", context: "The cat gets scared and starts <strong>running around</strong>." },
+                    "mine": { ch: "我的", context: "\"Stop, little cat! That is <strong>mine</strong>!\"" },
+                    "runs into": { ch: "跑進", context: "The cat <strong>runs into</strong> a supermarket with the shirt on its head." },
+                    "chases": { ch: "追趕", context: "Sam <strong>chases</strong> the cat into the busy store." },
+                    "Catch": { ch: "抓住", context: "\"Excuse me! <strong>Catch</strong> that flying shirt!\"" }
+                },
+                paragraphs: [
+                    {
+                        title: "Paragraph 1 (段落一)",
+                        narration: "Sam washes his favorite big T-shirt and hangs it outside. The wind blows very hard today.",
+                        dialogue: "\"This is my coolest shirt!\"",
+                        words: ["washes", "favorite", "hangs", "blows very hard", "coolest"]
+                    },
+                    {
+                        title: "Paragraph 2 (段落二)",
+                        narration: "A strong wind blows the T-shirt away into the sky. Sam runs out of the house to catch it.",
+                        dialogue: "\"Oh no! Come back here!\"",
+                        words: ["blows the T-shirt away", "runs out of"]
+                    },
+                    {
+                        title: "Paragraph 3 (段落三)",
+                        narration: "The shirt lands on a sleeping cat in the park. The cat gets scared and starts running around.",
+                        dialogue: "\"Stop, little cat! That is mine!\"",
+                        words: ["lands", "scared", "running around", "mine"]
+                    },
+                    {
+                        title: "Paragraph 4 (段落四)",
+                        narration: "The cat runs into a supermarket with the shirt on its head. Sam chases the cat into the busy store.",
+                        dialogue: "\"Excuse me! Catch that flying shirt!\"",
+                        words: ["runs into", "chases", "Catch"]
+                    }
+                ],
+                sentenceBuilder: [
+                    { en: "Sam washes his favorite big T-shirt and hangs it outside.", ch: "Sam 洗了他最愛的大 T 恤並掛在外面。" },
+                    { en: "A strong wind blows the T-shirt away into the sky.", ch: "一陣強風將 T 恤吹到了天空中。" },
+                    { en: "The cat gets scared and starts running around.", ch: "貓咪嚇壞了，開始到處亂跑。" },
+                    { en: "Sam chases the cat into the busy store.", ch: "Sam 追著貓咪進到了繁忙的商店裡。" }
+                ],
+                endingOptions: [
+                    { en: "Sam caught the cat and said, \"Thank you for wearing my shirt!\"", ch: "Sam 抓到了貓咪並說：「謝謝你穿上我的 T 恤！」" },
+                    { en: "The cat loved the soft T-shirt and slept inside it happily.", ch: "貓咪愛上了這件柔軟的 T 恤，並幸福地躺在裡面睡覺。" },
+                    { en: "Sam bought a fish for the cat to get his cool T-shirt back.", ch: "Sam 買了一條魚給貓咪，成功拿回了他最酷的 T 恤。" }
+                ]
+            },
+            squirrel: {
+                titleZh: "口渴的松鼠",
+                titleEn: "The Thirsty Squirrel",
+                themeColor: "var(--squirrel-theme)",
+                glowColor: "rgba(16, 185, 129, 0.05)",
+                btnGlow: "rgba(16, 185, 129, 0.3)",
+                deco: "🐿️🧋⚔️",
+                vocabulary: {
+                    "latte": { ch: "拿鐵", context: "Lily buys a cup of tea <strong>latte</strong> at 50 Lan." },
+                    "perfect": { ch: "完美的", context: "\"This cold drink is <strong>perfect</strong> for today!\"" },
+                    "bench": { ch: "長椅", context: "She sits on a <strong>bench</strong> in the park to rest." },
+                    "looks for": { ch: "尋找", context: "She puts her drink down and <strong>looks for</strong> her phone." },
+                    "squirrel": { ch: "松鼠", context: "A little <strong>squirrel</strong> jumps onto the bench and takes her straw." },
+                    "straw": { ch: "吸管", context: "A little squirrel jumps onto the bench and takes her <strong>straw</strong>." },
+                    "Give me back": { ch: "還給我", context: "\"Hey! <strong>Give me back</strong> my straw!\"" },
+                    "believe": { ch: "相信 (不敢相信眼睛)", context: "Lily looks up at the tree and cannot <strong>believe</strong> her eyes." },
+                    "pointing": { ch: "指著", context: "The squirrel is <strong>pointing</strong> the straw at her like a tiny sword." },
+                    "sword": { ch: "劍", context: "The squirrel is pointing the straw at her like a tiny <strong>sword</strong>." }
+                },
+                paragraphs: [
+                    {
+                        title: "Paragraph 1 (段落一)",
+                        narration: "Lily buys a cup of tea latte at 50 Lan.",
+                        dialogue: "\"This cold drink is perfect for today!\"",
+                        words: ["latte", "perfect"]
+                    },
+                    {
+                        title: "Paragraph 2 (段落二)",
+                        narration: "She sits on a bench in the park to rest. She puts her drink down and looks for her phone.",
+                        dialogue: "\"Where did I put my phone?\"",
+                        words: ["bench", "looks for"]
+                    },
+                    {
+                        title: "Paragraph 3 (段落三)",
+                        narration: "A little squirrel jumps onto the bench and takes her straw. The squirrel runs up a tall tree very fast.",
+                        dialogue: "\"Hey! Give me back my straw!\"",
+                        words: ["squirrel", "straw", "Give me back"]
+                    },
+                    {
+                        title: "Paragraph 4 (段落四)",
+                        narration: "Lily looks up at the tree and cannot believe her eyes. The squirrel is pointing the straw at her like a tiny sword.",
+                        dialogue: "\"Oh! Do you want to fight me?\"",
+                        words: ["believe", "pointing", "sword"]
+                    }
+                ],
+                sentenceBuilder: [
+                    { en: "Lily buys a cup of tea latte at 50 Lan.", ch: "Lily 在 50 嵐買了一杯紅茶拿鐵。" },
+                    { en: "She sits on a bench in the park to rest.", ch: "她坐在公園的長椅上休息。" },
+                    { en: "A little squirrel jumps onto the bench and takes her straw.", ch: "一隻小松鼠跳上長椅拿走了她的吸管。" },
+                    { en: "The squirrel is pointing the straw at her like a tiny sword.", ch: "松鼠正把吸管像小劍一樣指著她。" }
+                ],
+                endingOptions: [
+                    { en: "The squirrel used the straw to drink Lily's latte with her.", ch: "松鼠用那支吸管和 Lily 一起喝拿鐵。" },
+                    { en: "Lily laughed and gave the squirrel some nuts instead.", ch: "Lily 笑了笑，改拿了一些堅果給這隻可愛的松鼠。" },
+                    { en: "The squirrel returned the straw and they became drinking buddies.", ch: "松鼠歸還了吸管，他們成為了喝飲料的好夥伴。" }
+                ]
+            }
+        };
+
+        // State variables
+        let selectedStoryKey = null;
+        let selectedTab = 'reading';
+        let currentSpeechWord = null;
+        let activeWordKey = null;
+        
+        // Sound mute state from parent window settings or local fallback
+        window.isMuted = window.isMuted || false;
+
+        // Audio System (Synthesized via Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSynthesizedSound(type) {
+            if (window.isMuted) return;
+            // Resume context in case it got suspended by browser security
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'fail') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(95, now + 0.25);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'pop') {
+                const now = audioCtx.currentTime;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(280, now);
+                osc.frequency.exponentialRampToValueAtTime(15, now + 0.08);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'click') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(750, now);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+        }
+
+        function toggleSoundEffect() {
+            window.isMuted = !window.isMuted;
+            const btn = document.getElementById('sound-btn');
+            if (window.isMuted) {
+                btn.innerHTML = "🔇 音效：關";
+                btn.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                btn.style.color = "#fca5a5";
+            } else {
+                btn.innerHTML = "🔊 音效：開";
+                btn.style.borderColor = "rgba(16, 185, 129, 0.4)";
+                btn.style.color = "#a7f3d0";
+                playSynthesizedSound('click');
+            }
+        }
+
+        // TTS System (Speech Synthesis)
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel ongoing speak before playing new one
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85; // Slightly slower for kids
+                utterance.pitch = 1.0;
+                
+                // Select a natural-sounding English voice if available
+                const voices = window.speechSynthesis.getVoices();
+                const premiumVoice = voices.find(voice => 
+                    voice.lang.startsWith('en') && 
+                    (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Samantha'))
+                );
+                if (premiumVoice) utterance.voice = premiumVoice;
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('您的裝置不支援語音朗讀系統 (TTS)');
+            }
+        }
+
+        // Story Switch System
+        function selectStory(storyKey) {
+            playSynthesizedSound('click');
+            selectedStoryKey = storyKey;
+            const story = STORIES[storyKey];
+
+            // Set Title & Colors
+            document.getElementById('ws-story-title-zh').innerText = story.titleZh;
+            document.getElementById('ws-story-title-en').innerText = story.titleEn;
+            
+            // Set CSS Theme Variables Dynamically
+            const root = document.documentElement;
+            root.style.setProperty('--story-color', `var(--${storyKey}-theme)`);
+            root.style.setProperty('--story-color-glow', story.glowColor);
+            
+            // Reset Workspace Glow coordinates
+            const glow = document.getElementById('workspace-glow');
+            glow.style.setProperty('--story-color-glow', story.glowColor);
+
+            // Populate Paragraphs & Underlined Target Words
+            renderParagraphs(story);
+
+            // Populate Sentence Builders
+            renderSentenceBuilders(story);
+
+            // Populate Ending Cards Creators
+            renderEndingOptions(story);
+
+            // Switch Screen View
+            document.getElementById('story-menu-screen').style.display = 'none';
+            document.getElementById('story-workspace-screen').style.display = 'block';
+            
+            // Default to reading tab
+            switchTab('reading');
+            
+            // Reset Game & Ending
+            resetBalloonGame();
+            resetEndingPoster();
+        }
+
+        function exitWorkspace() {
+            playSynthesizedSound('click');
+            // Stop balloon game loop if active
+            isGamePlaying = false;
+            
+            document.getElementById('story-workspace-screen').style.display = 'none';
+            document.getElementById('story-menu-screen').style.display = 'flex';
+            selectedStoryKey = null;
+        }
+
+        // Tab Navigation
+        function switchTab(tabKey) {
+            playSynthesizedSound('click');
+            
+            // Deactivate all
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active-tab'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active-content'));
+            
+            // Activate current
+            selectedTab = tabKey;
+            document.getElementById(`tab-btn-${tabKey}`).classList.add('active-tab');
+            document.getElementById(`tab-content-${tabKey}`).classList.add('active-content');
+
+            // Specialized cleanups
+            if (tabKey !== 'game') {
+                isGamePlaying = false;
+            } else {
+                // Initialize canvas sizing when tab is opened
+                resizeCanvas();
+            }
+        }
+
+        // ==================== RENDERING LOGIC ====================
+
+        // TAB 1: Paragraphs Renderer
+        function renderParagraphs(story) {
+            const container = document.getElementById('paragraphs-container');
+            container.innerHTML = '';
+
+            story.paragraphs.forEach((p, index) => {
+                const pDiv = document.createElement('div');
+                pDiv.className = 'story-paragraph';
+
+                // Add Title
+                const pTitle = document.createElement('div');
+                pTitle.className = 'paragraph-title';
+                pTitle.innerHTML = `<span>📖</span> ${p.title}`;
+                pDiv.appendChild(pTitle);
+
+                // Add Narrative text with highlight replacement
+                const pNarration = document.createElement('p');
+                pNarration.className = 'paragraph-content';
+                pNarration.innerHTML = `<span style="color: #94a3b8; font-weight:800; font-size:15px; display:block; margin-bottom: 2px;">NARRATION:</span>` + 
+                                       replaceWordsWithInteractives(p.narration, p.words);
+                pDiv.appendChild(pNarration);
+
+                // Add Spacer
+                pDiv.appendChild(document.createElement('br'));
+
+                // Add Dialogue text with highlight replacement
+                const pDialogue = document.createElement('p');
+                pDialogue.className = 'paragraph-content';
+                pDialogue.style.fontStyle = 'italic';
+                pDialogue.innerHTML = `<span style="color: #94a3b8; font-weight:800; font-size:15px; display:block; margin-bottom: 2px;">DIALOGUE:</span>` + 
+                                      replaceWordsWithInteractives(p.dialogue, p.words);
+                pDiv.appendChild(pDialogue);
+
+                container.appendChild(pDiv);
+            });
+
+            // Initial Vocab Panel State
+            document.getElementById('vocab-detail-box').innerHTML = `
+                <span class="placeholder-text">點選左側故事中畫底線的紅色單字，聽發音並看中文翻譯！</span>
+            `;
+        }
+
+        // Helper to turn strings like "buys" into interactive underline span tags
+        function replaceWordsWithInteractives(text, wordsList) {
+            let processed = text;
+            // Sort by word length descending so we don't accidentally replace parts of longer phrases (e.g. "tie his shoe" before "shoe")
+            const sortedWords = [...wordsList].sort((a, b) => b.length - a.length);
+
+            sortedWords.forEach(word => {
+                // Escape regex characters
+                const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                // Regex matches word ignoring punctuation boundaries, case-insensitive
+                const regex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
+                
+                processed = processed.replace(regex, (matched) => {
+                    return `<span class="target-word" onclick="showVocabDetail('${word}')">${matched}</span>`;
+                });
+            });
+
+            return processed;
+        }
+
+        // Vocabulary Panel Updates
+        function showVocabDetail(wordKey) {
+            playSynthesizedSound('click');
+            activeWordKey = wordKey;
+            const vocabData = STORIES[selectedStoryKey].vocabulary[wordKey];
+            
+            if (!vocabData) return;
+
+            const vocabDetailBox = document.getElementById('vocab-detail-box');
+            vocabDetailBox.innerHTML = `
+                <h4 class="active-word-en">${wordKey}</h4>
+                <div class="active-word-ch">${vocabData.ch}</div>
+                <button class="tts-speaker-btn" onclick="speakText('${wordKey}')">🔊</button>
+                <div class="sentence-context">
+                    <strong>Story Sentence</strong>
+                    ${vocabData.context}
+                </div>
+            `;
+            
+            // Speak automatically
+            speakText(wordKey);
+        }
+
+        // TAB 2: Sentence Builder Renderer
+        let builderStates = []; // Track user puzzle inputs
+
+        function renderSentenceBuilders(story) {
+            const container = document.getElementById('builder-container');
+            container.innerHTML = '';
+            builderStates = [];
+
+            story.sentenceBuilder.forEach((builder, index) => {
+                const originalWords = builder.en.match(/\b[\w'-]+\b|[.,!?;"]/g); // Split words and keep punctuation separate
+                
+                // Shuffle words (keep punctuation, or just mix them all)
+                // Filter out empty spaces
+                const wordsOnly = originalWords.filter(w => w.trim().length > 0);
+                
+                // Fisher-Yates shuffle
+                let shuffled = [...wordsOnly];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+
+                // In case shuffle matches original, swap first two
+                if (shuffled.join(' ') === wordsOnly.join(' ') && shuffled.length > 1) {
+                    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+                }
+
+                builderStates.push({
+                    correctWords: wordsOnly,
+                    currentAnswers: [],
+                    shuffledPool: shuffled,
+                    isCompleted: false
+                });
+
+                const card = document.createElement('div');
+                card.className = 'builder-card';
+                card.id = `builder-card-${index}`;
+
+                // Add Title/Header
+                const header = document.createElement('div');
+                header.className = 'builder-prompt';
+                header.innerHTML = `<span>挑戰 ${index + 1}：重組句子</span> <span id="builder-status-${index}">❌ 未完成</span>`;
+                card.appendChild(header);
+
+                // Add Display Zone (where words go)
+                const displayArea = document.createElement('div');
+                displayArea.className = 'sentence-display-area';
+                displayArea.id = `sentence-display-${index}`;
+                displayArea.innerHTML = `<span style="color:#64748b; font-size: 15px; font-weight:800;">點擊下方積木來拼湊句子...</span>`;
+                card.appendChild(displayArea);
+
+                // Add Pool Zone (scrambled blocks)
+                const poolZone = document.createElement('div');
+                poolZone.className = 'word-blocks-pool';
+                poolZone.id = `word-pool-${index}`;
+                
+                shuffled.forEach((word, wordIndex) => {
+                    const block = document.createElement('button');
+                    block.className = 'word-block';
+                    block.innerText = word;
+                    block.id = `block-${index}-${wordIndex}`;
+                    block.onclick = () => placeWordBlock(index, wordIndex, word);
+                    poolZone.appendChild(block);
+                });
+                card.appendChild(poolZone);
+
+                // Add Controls
+                const controls = document.createElement('div');
+                controls.className = 'builder-controls';
+                
+                const checkBtn = document.createElement('button');
+                checkBtn.className = 'btn-action btn-check';
+                checkBtn.innerText = '✅ 檢查答案';
+                checkBtn.onclick = () => checkSentence(index);
+                controls.appendChild(checkBtn);
+
+                const resetBtn = document.createElement('button');
+                resetBtn.className = 'btn-action btn-reset';
+                resetBtn.innerText = '🔄 重設';
+                resetBtn.onclick = () => resetSentence(index);
+                controls.appendChild(resetBtn);
+                
+                card.appendChild(controls);
+
+                // Add Translation (hidden initially)
+                const trans = document.createElement('div');
+                trans.className = 'sentence-translation';
+                trans.id = `builder-translation-${index}`;
+                trans.innerHTML = `💡 中文意思：${builder.ch}`;
+                card.appendChild(trans);
+
+                container.appendChild(card);
+            });
+        }
+
+        // Block Placements
+        function placeWordBlock(sentenceIndex, blockIndex, word) {
+            playSynthesizedSound('click');
+            const state = builderStates[sentenceIndex];
+            if (state.isCompleted) return;
+
+            const block = document.getElementById(`block-${sentenceIndex}-${blockIndex}`);
+            
+            // Add word to current answers
+            state.currentAnswers.push({ word, blockIndex });
+            block.classList.add('selected-in-pool');
+
+            renderBuilderDisplayArea(sentenceIndex);
+        }
+
+        function removeWordBlock(sentenceIndex, answerIndex) {
+            playSynthesizedSound('click');
+            const state = builderStates[sentenceIndex];
+            if (state.isCompleted) return;
+
+            const removed = state.currentAnswers.splice(answerIndex, 1)[0];
+            
+            // Restore block in pool
+            const block = document.getElementById(`block-${sentenceIndex}-${removed.blockIndex}`);
+            block.classList.remove('selected-in-pool');
+
+            renderBuilderDisplayArea(sentenceIndex);
+        }
+
+        function renderBuilderDisplayArea(sentenceIndex) {
+            const state = builderStates[sentenceIndex];
+            const display = document.getElementById(`sentence-display-${sentenceIndex}`);
+            display.innerHTML = '';
+
+            if (state.currentAnswers.length === 0) {
+                display.innerHTML = `<span style="color:#64748b; font-size: 15px; font-weight:800;">點擊下方積木來拼湊句子...</span>`;
+                return;
+            }
+
+            state.currentAnswers.forEach((ans, ansIndex) => {
+                const block = document.createElement('button');
+                block.className = 'word-block placed';
+                block.innerText = ans.word;
+                block.onclick = () => removeWordBlock(sentenceIndex, ansIndex);
+                display.appendChild(block);
+            });
+        }
+
+        function checkSentence(sentenceIndex) {
+            const state = builderStates[sentenceIndex];
+            if (state.isCompleted) return;
+
+            const userText = state.currentAnswers.map(ans => ans.word.toLowerCase()).join(' ');
+            const correctText = state.correctWords.map(w => w.toLowerCase()).join(' ');
+
+            // Basic punctuation cleanups for soft checking
+            const cleanString = (str) => str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g,"").replace(/\s{2,}/g," ");
+
+            if (cleanString(userText) === cleanString(correctText)) {
+                // Correct!
+                playSynthesizedSound('success');
+                state.isCompleted = true;
+                
+                document.getElementById(`builder-status-${sentenceIndex}`).innerHTML = '🟢 正確';
+                document.getElementById(`builder-status-${sentenceIndex}`).style.color = '#10b981';
+                document.getElementById(`sentence-display-${sentenceIndex}`).classList.add('correct');
+                document.getElementById(`builder-translation-${sentenceIndex}`).style.display = 'block';
+
+                // Speak sentence
+                const fullSentence = STORIES[selectedStoryKey].sentenceBuilder[sentenceIndex].en;
+                speakText(fullSentence);
+            } else {
+                // Incorrect
+                playSynthesizedSound('fail');
+                alert('順序不對喔！再試一次看看 💪');
+            }
+        }
+
+        function resetSentence(sentenceIndex) {
+            playSynthesizedSound('click');
+            const state = builderStates[sentenceIndex];
+            state.isCompleted = false;
+            state.currentAnswers = [];
+
+            // Reset pool display classes
+            state.shuffledPool.forEach((_, wordIndex) => {
+                const block = document.getElementById(`block-${sentenceIndex}-${wordIndex}`);
+                if (block) block.classList.remove('selected-in-pool');
+            });
+
+            // Reset display area
+            const display = document.getElementById(`sentence-display-${sentenceIndex}`);
+            display.classList.remove('correct');
+            display.innerHTML = `<span style="color:#64748b; font-size: 15px; font-weight:800;">點擊下方積木來拼湊句子...</span>`;
+
+            // Hide Translation
+            document.getElementById(`builder-translation-${sentenceIndex}`).style.display = 'none';
+            document.getElementById(`builder-status-${sentenceIndex}`).innerHTML = '❌ 未完成';
+            document.getElementById(`builder-status-${sentenceIndex}`).style.color = 'var(--text-secondary)';
+        }
+
+
+        // TAB 3: Canvas Balloon Game
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let balloons = [];
+        let gameScore = 0;
+        let gameCombo = 0;
+        let gameTimeLeft = 45;
+        let isGamePlaying = false;
+        let gameTimer = null;
+        let currentTargetWord = null;
+        let gameThemeColor = '#fbbf24';
+
+        function resizeCanvas() {
+            const rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        // Listen for sizing shifts
+        window.addEventListener('resize', () => {
+            if (selectedTab === 'game') resizeCanvas();
+        });
+
+        // Balloon Class
+        class Balloon {
+            constructor(word, translation, isCorrect) {
+                this.word = word;
+                this.translation = translation;
+                this.isCorrect = isCorrect;
+                this.radius = 45 + Math.random() * 15;
+                this.x = this.radius + Math.random() * (canvas.width - this.radius * 2);
+                this.y = canvas.height + this.radius + Math.random() * 150;
+                this.speed = 1.6 + Math.random() * 2.2;
+                this.color = this.getRandomColor();
+                this.wiggleRange = 10 + Math.random() * 10;
+                this.wiggleSpeed = 0.02 + Math.random() * 0.03;
+                this.wigglePhase = Math.random() * Math.PI * 2;
+                this.isPopped = false;
+            }
+
+            getRandomColor() {
+                const colors = [
+                    '#ec4899', // pink
+                    '#3b82f6', // blue
+                    '#10b981', // green
+                    '#f97316', // orange
+                    '#8b5cf6', // purple
+                    '#06b6d4'  // cyan
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.y -= this.speed;
+                this.wigglePhase += this.wiggleSpeed;
+                this.xOffset = Math.sin(this.wigglePhase) * this.wiggleRange;
+            }
+
+            draw() {
+                ctx.save();
+                const drawX = this.x + this.xOffset;
+
+                // Draw Balloon String
+                ctx.beginPath();
+                ctx.moveTo(drawX, this.y + this.radius);
+                ctx.quadraticCurveTo(drawX - 10, this.y + this.radius + 30, drawX, this.y + this.radius + 65);
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw Balloon Body
+                ctx.beginPath();
+                ctx.ellipse(drawX, this.y, this.radius * 0.9, this.radius, 0, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+
+                // Highlight shine
+                ctx.beginPath();
+                ctx.ellipse(drawX - this.radius * 0.3, this.y - this.radius * 0.4, this.radius * 0.2, this.radius * 0.3, Math.PI / 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
+
+                // Draw Knot
+                ctx.beginPath();
+                ctx.moveTo(drawX - 8, this.y + this.radius);
+                ctx.lineTo(drawX + 8, this.y + this.radius);
+                ctx.lineTo(drawX, this.y + this.radius - 8);
+                ctx.closePath();
+                ctx.fillStyle = this.color;
+                ctx.fill();
+
+                // Draw Word Text
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 0; // turn off shadow for text readability
+                ctx.font = 'bold 15px Quicksand, Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Handle text wrapping for multiple-word terms like "tie his shoe"
+                const words = this.word.split(' ');
+                if (words.length > 1) {
+                    ctx.fillText(words.slice(0, 2).join(' '), drawX, this.y - 8);
+                    ctx.fillText(words.slice(2).join(' '), drawX, this.y + 10);
+                } else {
+                    ctx.fillText(this.word, drawX, this.y);
+                }
+
+                ctx.restore();
+            }
+
+            checkClick(clickX, clickY) {
+                const drawX = this.x + this.xOffset;
+                const dist = Math.hypot(clickX - drawX, clickY - this.y);
+                return dist < this.radius;
+            }
+        }
+
+        // Balloon pop particles
+        let particles = [];
+        class PopParticle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = 2 + Math.random() * 4;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8;
+                this.alpha = 1.0;
+                this.decay = 0.02 + Math.random() * 0.02;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Game Loop Controls
+        function startBalloonGame() {
+            playSynthesizedSound('click');
+            document.getElementById('game-start-overlay').style.display = 'none';
+            
+            gameScore = 0;
+            gameCombo = 0;
+            gameTimeLeft = 45;
+            isGamePlaying = true;
+            balloons = [];
+            particles = [];
+            
+            updateHUD();
+            selectNewTargetWord();
+            
+            // Timer loop
+            clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                gameTimeLeft--;
+                if (gameTimeLeft <= 0) {
+                    endBalloonGame();
+                }
+                updateHUD();
+            }, 1000);
+
+            // Start animation frame
+            resizeCanvas();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endBalloonGame() {
+            isGamePlaying = false;
+            clearInterval(gameTimer);
+            playSynthesizedSound('success');
+            
+            // Show Overlay
+            const overlay = document.getElementById('game-start-overlay');
+            overlay.style.display = 'flex';
+            overlay.innerHTML = `
+                <div class="game-overlay-title">🎉 挑戰時間結束！</div>
+                <div style="font-size:32px; font-weight:900; color:white; margin-bottom:15px;">總得分：${gameScore}</div>
+                <div class="game-overlay-desc">好棒的單字爆破手！要再挑戰一次，刷新個人分數紀錄嗎？</div>
+                <button class="btn-start-game" onclick="startBalloonGame()">🎯 重新挑戰</button>
+            `;
+        }
+
+        function resetBalloonGame() {
+            isGamePlaying = false;
+            clearInterval(gameTimer);
+            document.getElementById('game-start-overlay').style.display = 'flex';
+            document.getElementById('game-start-overlay').innerHTML = `
+                <div class="game-overlay-title">🎈 單字氣球爆爆樂！</div>
+                <div class="game-overlay-desc">點擊飄浮的氣球，爆破符合畫面上方中文的英文單字！連續答對會有 Combo 得分加成！</div>
+                <button class="btn-start-game" onclick="startBalloonGame()">START GAME</button>
+            `;
+            gameScore = 0;
+            gameCombo = 0;
+            gameTimeLeft = 45;
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-score').innerText = `得分: ${gameScore}`;
+            document.getElementById('hud-time').innerText = `剩餘時間: ${gameTimeLeft}秒`;
+            
+            const targetWordBox = document.getElementById('hud-target-word');
+            if (currentTargetWord) {
+                targetWordBox.innerHTML = `🔍 尋找中文為：<span style="color:var(--story-color, #fbbf24); font-size:18px;">${currentTargetWord.ch}</span>`;
+            } else {
+                targetWordBox.innerText = `準備中...`;
+            }
+        }
+
+        function selectNewTargetWord() {
+            const vocabKeys = Object.keys(STORIES[selectedStoryKey].vocabulary);
+            const randomKey = vocabKeys[Math.floor(Math.random() * vocabKeys.length)];
+            const data = STORIES[selectedStoryKey].vocabulary[randomKey];
+            
+            currentTargetWord = {
+                en: randomKey,
+                ch: data.ch
+            };
+            updateHUD();
+        }
+
+        // Spawning Balloons
+        let spawnCooldown = 0;
+        function gameLoop() {
+            if (!isGamePlaying) return;
+
+            // Clear Frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Spawn Control
+            spawnCooldown--;
+            if (spawnCooldown <= 0) {
+                spawnBalloon();
+                spawnCooldown = 50 + Math.random() * 40; // frames interval
+            }
+
+            // Update & Draw Balloons
+            balloons.forEach((b, index) => {
+                b.update();
+                b.draw();
+
+                // Check offscreen
+                if (b.y < -b.radius) {
+                    balloons.splice(index, 1);
+                    if (b.isCorrect) {
+                        // missed correct balloon
+                        gameCombo = 0;
+                    }
+                }
+            });
+
+            // Update & Draw Particles
+            particles.forEach((p, index) => {
+                p.update();
+                p.draw();
+                if (p.alpha <= 0) particles.splice(index, 1);
+            });
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnBalloon() {
+            const vocab = STORIES[selectedStoryKey].vocabulary;
+            const vocabKeys = Object.keys(vocab);
+            
+            // 35% chance to spawn the correct target balloon if not already on screen
+            const correctOnScreen = balloons.some(b => b.isCorrect);
+            let spawnCorrect = !correctOnScreen && Math.random() < 0.45;
+            
+            let enWord, chTranslation, isCorrect;
+
+            if (spawnCorrect && currentTargetWord) {
+                enWord = currentTargetWord.en;
+                chTranslation = currentTargetWord.ch;
+                isCorrect = true;
+            } else {
+                const randomKey = vocabKeys[Math.floor(Math.random() * vocabKeys.length)];
+                enWord = randomKey;
+                chTranslation = vocab[randomKey].ch;
+                isCorrect = (currentTargetWord && randomKey === currentTargetWord.en);
+            }
+
+            // Avoid spawning duplicate correct balloon easily
+            if (isCorrect && correctOnScreen) return;
+
+            balloons.push(new Balloon(enWord, chTranslation, isCorrect));
+        }
+
+        // Tap Canvas Event handler
+        canvas.addEventListener('touchstart', handleCanvasClick);
+        canvas.addEventListener('mousedown', handleCanvasClick);
+
+        function handleCanvasClick(e) {
+            if (!isGamePlaying) return;
+            e.preventDefault();
+
+            let clickX, clickY;
+            const rect = canvas.getBoundingClientRect();
+            
+            if (e.touches && e.touches.length > 0) {
+                clickX = e.touches[0].clientX - rect.left;
+                clickY = e.touches[0].clientY - rect.top;
+            } else {
+                clickX = e.clientX - rect.left;
+                clickY = e.clientY - rect.top;
+            }
+
+            // Convert to canvas internal scale
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const finalX = clickX * scaleX;
+            const finalY = clickY * scaleY;
+
+            // Check intersections
+            for (let i = balloons.length - 1; i >= 0; i--) {
+                const b = balloons[i];
+                if (b.checkClick(finalX, finalY)) {
+                    // Create explosion
+                    createPopExplosion(finalX, finalY, b.color);
+                    playSynthesizedSound('pop');
+                    balloons.splice(i, 1);
+
+                    // Check result
+                    if (b.isCorrect) {
+                        gameCombo++;
+                        gameScore += 10 + Math.min(gameCombo, 5) * 2;
+                        speakText(b.word); // Read word aloud as reinforcement
+                        selectNewTargetWord();
+                    } else {
+                        gameCombo = 0;
+                        gameScore = Math.max(0, gameScore - 5);
+                        playSynthesizedSound('fail');
+                    }
+                    updateHUD();
+                    break;
+                }
+            }
+        }
+
+        function createPopExplosion(x, y, color) {
+            for (let i = 0; i < 20; i++) {
+                particles.push(new PopParticle(x, y, color));
+            }
+        }
+
+
+        // TAB 4: Ending Creator
+        function renderEndingOptions(story) {
+            const container = document.getElementById('ending-options-container');
+            container.innerHTML = '';
+
+            story.endingOptions.forEach((opt, index) => {
+                const div = document.createElement('div');
+                div.className = 'ending-option-card';
+                div.id = `ending-opt-${index}`;
+                div.onclick = () => selectEndingOption(index);
+
+                div.innerHTML = `
+                    <div class="option-radio"></div>
+                    <div>
+                        <div style="color:white; margin-bottom:4px;">${opt.en}</div>
+                        <div style="color:var(--text-secondary); font-size:13px;">${opt.ch}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        let selectedEndingIndex = -1;
+        function selectEndingOption(index) {
+            playSynthesizedSound('click');
+            selectedEndingIndex = index;
+            
+            document.querySelectorAll('.ending-option-card').forEach(card => card.classList.remove('selected'));
+            document.getElementById(`ending-opt-${index}`).classList.add('selected');
+        }
+
+        function generateEndingPoster() {
+            playSynthesizedSound('success');
+            
+            const cls = document.getElementById('student-class').value.trim() || "某班";
+            const name = document.getElementById('student-name').value.trim() || "小畫家";
+            const no = document.getElementById('student-no').value.trim() || "00";
+            
+            const customText = document.getElementById('ending-custom-en').value.trim();
+            const story = STORIES[selectedStoryKey];
+
+            // Setup display text
+            let endingEn = "";
+            let endingCh = "";
+
+            if (customText) {
+                endingEn = customText;
+                endingCh = "(學生原創結尾，請試著唸唸看！)";
+            } else if (selectedEndingIndex !== -1) {
+                endingEn = story.endingOptions[selectedEndingIndex].en;
+                endingCh = story.endingOptions[selectedEndingIndex].ch;
+            } else {
+                endingEn = "Tom and the dog shared the chips on the slide happily.";
+                endingCh = "Tom 和狗狗在溜滑梯上開心地分吃了洋芋片。";
+            }
+
+            // Update DOM Card Elements
+            document.getElementById('poster-story-title').innerText = story.titleEn.toUpperCase();
+            document.getElementById('poster-author-name').innerText = `${cls} ${name} #${no}`;
+            document.getElementById('poster-ending-text').innerText = `"${endingEn}"`;
+            document.getElementById('poster-ending-translation').innerText = endingCh;
+            document.getElementById('poster-deco').innerText = story.deco;
+            
+            // TTS speak the selected ending!
+            speakText(endingEn);
+        }
+
+        function resetEndingPoster() {
+            selectedEndingIndex = -1;
+            document.getElementById('student-class').value = "";
+            document.getElementById('student-name').value = "";
+            document.getElementById('student-no').value = "";
+            document.getElementById('ending-custom-en').value = "";
+            
+            // Re-render
+            const story = STORIES[selectedStoryKey];
+            document.getElementById('poster-story-title').innerText = story.titleEn.toUpperCase();
+            document.getElementById('poster-author-name').innerText = "四甲 小名 #01";
+            document.getElementById('poster-ending-text').innerText = "(在此處填寫結局，生成您的完結卡！)";
+            document.getElementById('poster-ending-translation').innerText = "";
+            document.getElementById('poster-deco').innerText = story.deco;
+        }
+
+        // Initialize voice load triggers
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                // Preload voices
+            };
+        }
+    </script>
+</body>
+</html>
