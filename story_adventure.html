@@ -1834,26 +1834,29 @@
                     selectStory(data.storyKey, false);
                 }
 
-                // Force tab to reading
-                if (selectedTab !== 'reading') {
-                    switchTab('reading', false);
-                }
+                // Only proceed with workspace updates if a story is active!
+                if (selectedStoryKey) {
+                    // Force tab to reading
+                    if (selectedTab !== 'reading') {
+                        switchTab('reading', false);
+                    }
 
-                // Sync active paragraph page
-                if (typeof data.currentParagraphIndex === 'number' && data.currentParagraphIndex !== currentParagraphIndex) {
-                    currentParagraphIndex = data.currentParagraphIndex;
-                }
+                    // Sync active paragraph page
+                    if (typeof data.currentParagraphIndex === 'number' && data.currentParagraphIndex !== currentParagraphIndex) {
+                        currentParagraphIndex = data.currentParagraphIndex;
+                    }
 
-                // Render layouts
-                renderParagraphsLayout();
+                    // Render layouts
+                    renderParagraphsLayout();
 
-                // Sync active fullscreen word popup
-                if (data.activeWord && data.activeWord !== '') {
-                    activeWordKey = data.activeWord;
-                    showForcedVocabPopup(data.activeWord);
-                } else {
-                    activeWordKey = "";
-                    document.getElementById('forced-vocab-overlay').style.display = 'none';
+                    // Sync active fullscreen word popup
+                    if (data.activeWord && data.activeWord !== '') {
+                        activeWordKey = data.activeWord;
+                        showForcedVocabPopup(data.activeWord);
+                    } else {
+                        activeWordKey = "";
+                        document.getElementById('forced-vocab-overlay').style.display = 'none';
+                    }
                 }
             } else {
                 // Return control back to Student
@@ -1891,6 +1894,7 @@
 
         // Helper to render Fullscreen Vocabulary focus card
         function showForcedVocabPopup(wordKey) {
+            if (!selectedStoryKey) return;
             const vocabData = STORIES[selectedStoryKey].vocabulary[wordKey];
             if (!vocabData) return;
 
@@ -1920,6 +1924,7 @@
             if (userRole !== 'teacher') return;
             updates.timestamp = firebase.database.ServerValue.TIMESTAMP;
             updates.storyKey = selectedStoryKey;
+            updates.isTeachingMode = isTeachingMode; // ALWAYS push current teaching mode
             syncRef.update(updates);
         }
 
@@ -2127,6 +2132,8 @@
 
         // Reading Tab Layout Controller (Normal Grid vs Teaching Page-by-page)
         function renderParagraphsLayout() {
+            if (!selectedStoryKey) return; // Guard clause to prevent TypeError before selecting a story
+            
             const normalBox = document.getElementById('reading-layout-box');
             const teachingBox = document.getElementById('teaching-reading-container');
             const teacherNav = document.getElementById('teacher-nav-controls');
