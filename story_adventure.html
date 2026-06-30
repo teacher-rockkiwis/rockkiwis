@@ -1170,7 +1170,7 @@
     <!-- Top Navigation Bar -->
     <nav class="top-nav">
         <a href="teacher.html" class="back-btn">🔙 回上課專區</a>
-        <div class="nav-title">📖 ROCK'S STORY PARTY</div>
+        <div class="nav-title" id="nav-title" style="cursor: pointer;">📖 ROCK'S STORY PARTY</div>
         
         <div class="controls-group">
             <!-- Sync Indicator Pill -->
@@ -1733,9 +1733,31 @@
             syncRef.update(updates);
         }
 
-        // Initialize Firebase Listeners on load
+        // Hidden Secret Toggle for Teacher Mode (Tap title 5 times)
+        let headerTapCount = 0;
+        let headerTapTimer = null;
+        
+        // Initialize Firebase Listeners & Gestures on load
         window.addEventListener('DOMContentLoaded', () => {
             updateSyncStatusUI();
+            
+            // Set up click listener on the title for secret teacher toggle
+            const navTitle = document.getElementById('nav-title');
+            if (navTitle) {
+                navTitle.addEventListener('click', () => {
+                    headerTapCount++;
+                    clearTimeout(headerTapTimer);
+                    
+                    headerTapTimer = setTimeout(() => {
+                        headerTapCount = 0;
+                    }, 2000); // Reset count after 2 seconds of inactivity
+
+                    if (headerTapCount >= 5) {
+                        headerTapCount = 0;
+                        toggleTeacherModeSecret();
+                    }
+                });
+            }
             
             if (userRole === 'student') {
                 syncRef.on('value', (snapshot) => {
@@ -1744,6 +1766,18 @@
                 });
             }
         });
+
+        function toggleTeacherModeSecret() {
+            if (userRole === 'student') {
+                playSynthesizedSound('success');
+                alert('✨ 成功解鎖教師模式！正在重新載入網頁...');
+                window.location.href = window.location.pathname + '?role=teacher';
+            } else {
+                playSynthesizedSound('click');
+                alert('ℹ️ 切換回學生模式...');
+                window.location.href = window.location.pathname;
+            }
+        }
 
         // ==================== WORKSPACE FLOWS ====================
 
