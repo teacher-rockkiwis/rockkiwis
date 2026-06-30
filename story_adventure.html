@@ -833,10 +833,10 @@
         
         .hunt-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 6px;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 5px;
             width: 100%;
-            max-width: 440px;
+            max-width: 520px;
             background: rgba(255,255,255,0.02);
             border: 2px solid var(--card-border);
             border-radius: 20px;
@@ -847,11 +847,11 @@
             aspect-ratio: 1;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 900;
             color: #e2e8f0;
             cursor: pointer;
@@ -1321,7 +1321,8 @@
                 <div class="hunt-layout">
                     <div style="text-align:center;">
                         <h4 style="font-size:20px; font-weight:900; margin:0 0 5px 0;">🔍 單字大搜尋 (Word Hunt)</h4>
-                        <p style="color:var(--text-secondary); font-size:14px; margin:0;">在網格中找出下方的英文單字！點擊單字的首尾字母進行圈選。</p>
+                        <p style="color:var(--text-secondary); font-size:14px; margin:0 0 12px 0;">在 10×10 網格中找出下方的英文單字！點擊單字的首尾字母進行圈選。</p>
+                        <button onclick="initWordHunt()" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: white; padding: 8px 20px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer;">🔄 換一批新單字</button>
                     </div>
                     <div class="hunt-grid" id="hunt-grid-container">
                         <!-- Hunt cells injected dynamically -->
@@ -2845,24 +2846,28 @@
         let huntWordsFound = [];
 
         function initWordHunt() {
+            const GRID_SIZE = 10;
+            const WORD_COUNT = 7;
+
             const vocab = STORIES[selectedStoryKey].vocabulary;
-            const candidates = Object.keys(vocab).filter(w => w.length <= 8 && !w.includes(' ') && !w.includes('-'));
+            const candidates = Object.keys(vocab).filter(w => w.length <= 9 && !w.includes(' ') && !w.includes('-'));
             
-            huntWords = [...candidates].sort(() => 0.5 - Math.random()).slice(0, 4);
-            huntGrid = Array(8).fill(null).map(() => Array(8).fill(''));
+            huntWords = [...candidates].sort(() => 0.5 - Math.random()).slice(0, Math.min(WORD_COUNT, candidates.length));
+            huntGrid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(''));
             huntWordsFound = [];
             huntGridSelection = null;
 
+            // Place each word in the grid
             huntWords.forEach(word => {
                 let placed = false;
                 let attempts = 0;
                 const upperWord = word.toUpperCase();
 
-                while (!placed && attempts < 100) {
+                while (!placed && attempts < 200) {
                     attempts++;
                     const isHorizontal = Math.random() < 0.5;
-                    const r = Math.floor(Math.random() * (isHorizontal ? 8 : (8 - upperWord.length + 1)));
-                    const c = Math.floor(Math.random() * (isHorizontal ? (8 - upperWord.length + 1) : 8));
+                    const r = Math.floor(Math.random() * (isHorizontal ? GRID_SIZE : (GRID_SIZE - upperWord.length + 1)));
+                    const c = Math.floor(Math.random() * (isHorizontal ? (GRID_SIZE - upperWord.length + 1) : GRID_SIZE));
 
                     let fits = true;
                     for (let i = 0; i < upperWord.length; i++) {
@@ -2885,19 +2890,21 @@
                 }
             });
 
+            // Fill empty cells with random letters
             const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            for (let r = 0; r < 8; r++) {
-                for (let c = 0; c < 8; c++) {
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
                     if (huntGrid[r][c] === '') {
                         huntGrid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
                     }
                 }
             }
 
+            // Render grid
             const gridContainer = document.getElementById('hunt-grid-container');
             gridContainer.innerHTML = '';
-            for (let r = 0; r < 8; r++) {
-                for (let c = 0; c < 8; c++) {
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
                     const cellDiv = document.createElement('div');
                     cellDiv.className = 'hunt-cell';
                     cellDiv.id = `hunt-cell-${r}-${c}`;
@@ -2907,6 +2914,7 @@
                 }
             }
 
+            // Render word bank
             const bankContainer = document.getElementById('hunt-word-bank');
             bankContainer.innerHTML = '';
             huntWords.forEach(word => {
