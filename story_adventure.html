@@ -1733,30 +1733,41 @@
             syncRef.update(updates);
         }
 
-        // Hidden Secret Toggle for Teacher Mode (Tap title 5 times)
-        let headerTapCount = 0;
-        let headerTapTimer = null;
+        // Hidden Secret Toggle for Teacher Mode (Long press title for 2.5 seconds)
+        let pressTimer = null;
         
         // Initialize Firebase Listeners & Gestures on load
         window.addEventListener('DOMContentLoaded', () => {
             updateSyncStatusUI();
             
-            // Set up click listener on the title for secret teacher toggle
+            // Set up long-press listener on the title for secret teacher toggle
             const navTitle = document.getElementById('nav-title');
             if (navTitle) {
-                navTitle.addEventListener('click', () => {
-                    headerTapCount++;
-                    clearTimeout(headerTapTimer);
-                    
-                    headerTapTimer = setTimeout(() => {
-                        headerTapCount = 0;
-                    }, 2000); // Reset count after 2 seconds of inactivity
+                // Prevent browser touch zoom on this element
+                navTitle.style.touchAction = 'none';
+                navTitle.style.userSelect = 'none';
+                navTitle.style.webkitUserSelect = 'none';
 
-                    if (headerTapCount >= 5) {
-                        headerTapCount = 0;
+                const startPress = (e) => {
+                    clearTimeout(pressTimer);
+                    pressTimer = setTimeout(() => {
                         toggleTeacherModeSecret();
-                    }
-                });
+                    }, 2500); // 2.5 seconds hold
+                };
+
+                const cancelPress = () => {
+                    clearTimeout(pressTimer);
+                };
+
+                // iPad Touch Events
+                navTitle.addEventListener('touchstart', startPress, { passive: true });
+                navTitle.addEventListener('touchend', cancelPress, { passive: true });
+                navTitle.addEventListener('touchcancel', cancelPress, { passive: true });
+
+                // PC Mouse Events
+                navTitle.addEventListener('mousedown', startPress);
+                navTitle.addEventListener('mouseup', cancelPress);
+                navTitle.addEventListener('mouseleave', cancelPress);
             }
             
             if (userRole === 'student') {
