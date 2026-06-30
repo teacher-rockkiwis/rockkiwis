@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ROCK 老師的英文故事派對</title>
+    
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
     <link rel="stylesheet" href="common.css?v=3.2">
     <style>
         :root {
@@ -37,7 +42,7 @@
             width: 100%;
             max-width: 1100px;
             margin: 0 auto;
-            padding: 80px 20px 40px 20px;
+            padding: 85px 20px 40px 20px;
             box-sizing: border-box;
             position: relative;
             z-index: 10;
@@ -47,7 +52,7 @@
         .top-nav {
             position: fixed;
             top: 0; left: 0; right: 0;
-            height: 70px;
+            height: 75px;
             background: rgba(10, 14, 26, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -76,6 +81,61 @@
         .back-btn:active {
             transform: scale(0.95);
             background: rgba(255, 255, 255, 0.12);
+        }
+
+        .controls-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Sync Status Badge */
+        .sync-badge {
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .sync-badge:active {
+            transform: scale(0.95);
+        }
+        
+        .sync-badge.connected {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            animation: pulse-green 2s infinite;
+        }
+        
+        .sync-badge.self {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+            color: #818cf8;
+        }
+
+        .sync-badge.teacher-mode {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+            animation: pulse-gold 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         }
 
         .sound-toggle-btn {
@@ -276,16 +336,16 @@
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
             color: var(--text-secondary);
-            padding: 12px 22px;
+            padding: 12px 20px;
             border-radius: 15px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 900;
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .tab-btn.active-tab {
@@ -329,6 +389,7 @@
             margin-bottom: 30px;
             border-bottom: 1px dashed rgba(255,255,255,0.06);
             padding-bottom: 25px;
+            scroll-margin-top: 100px;
         }
         .story-paragraph:last-child {
             margin-bottom: 0;
@@ -373,9 +434,10 @@
             transition: all 0.2s;
             font-weight: 900;
         }
-        .target-word:active {
+        .target-word.active-clicked {
             background: rgba(239, 68, 68, 0.25);
             transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
 
         /* Vocabulary details drawer sidebar */
@@ -684,6 +746,154 @@
             transform: scale(0.95);
         }
 
+        /* Memory Match Styles */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .memory-card {
+            aspect-ratio: 3/4;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .memory-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-radius: 16px;
+        }
+        
+        .memory-card.flipped .memory-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .memory-card-front, .memory-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            border: 2px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+            font-weight: 900;
+        }
+        
+        .memory-card-front {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: var(--story-color, #fbbf24);
+            font-size: 32px;
+        }
+        
+        .memory-card-back {
+            background: rgba(255,255,255,0.06);
+            color: white;
+            transform: rotateY(180deg);
+            font-size: 16px;
+            line-height: 1.4;
+        }
+        
+        .memory-card.matched .memory-card-back {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+            color: #34d399;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Word Hunt Styles */
+        .hunt-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .hunt-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            width: 100%;
+            max-width: 440px;
+            background: rgba(255,255,255,0.02);
+            border: 2px solid var(--card-border);
+            border-radius: 20px;
+            padding: 10px;
+        }
+        
+        .hunt-cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 900;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .hunt-cell:active {
+            transform: scale(0.95);
+        }
+        
+        .hunt-cell.selected {
+            background: var(--story-color, #fbbf24);
+            color: #2d3436;
+            border-color: transparent;
+            box-shadow: 0 0 10px var(--story-color-glow);
+        }
+        
+        .hunt-cell.found {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border-color: #10b981;
+            text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+        
+        .hunt-word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .hunt-bank-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-secondary);
+        }
+        
+        .hunt-bank-item.completed {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+            color: #34d399;
+            text-decoration: line-through;
+        }
+
         /* TAB 4: Ending Creator */
         .ending-layout {
             display: grid;
@@ -961,7 +1171,12 @@
     <nav class="top-nav">
         <a href="teacher.html" class="back-btn">🔙 回上課專區</a>
         <div class="nav-title">📖 ROCK'S STORY PARTY</div>
-        <button class="sound-toggle-btn" id="sound-btn" onclick="toggleSoundEffect()">🔊 音效：開</button>
+        
+        <div class="controls-group">
+            <!-- Sync Indicator Pill -->
+            <div id="sync-status" class="sync-badge self" onclick="toggleSyncMode()">🔒 離線自主</div>
+            <button class="sound-toggle-btn" id="sound-btn" onclick="toggleSoundEffect()">🔊 音效：開</button>
+        </div>
     </nav>
 
     <div class="app-container">
@@ -1016,7 +1231,9 @@
             <div class="tabs-nav">
                 <button class="tab-btn active-tab" onclick="switchTab('reading')" id="tab-btn-reading">🗣️ 閱讀與單字</button>
                 <button class="tab-btn" onclick="switchTab('builder')" id="tab-btn-builder">🧩 句型積木組</button>
-                <button class="tab-btn" onclick="switchTab('game')" id="tab-btn-game">🎈 單字氣球爆</button>
+                <button class="tab-btn" onclick="switchTab('game')" id="tab-btn-game">🎈 氣球爆爆樂</button>
+                <button class="tab-btn" onclick="switchTab('memory')" id="tab-btn-memory">🃏 記憶翻牌樂</button>
+                <button class="tab-btn" onclick="switchTab('hunt')" id="tab-btn-hunt">🔍 單字大搜尋</button>
                 <button class="tab-btn" onclick="switchTab('ending')" id="tab-btn-ending">🎨 結局大創作</button>
             </div>
 
@@ -1063,7 +1280,34 @@
                 </div>
             </div>
 
-            <!-- TAB 4: Ending Creator -->
+            <!-- TAB 4: Memory Match Game -->
+            <div class="tab-content" id="tab-content-memory">
+                <div style="text-align:center; margin-bottom: 20px;">
+                    <h4 style="font-size:20px; font-weight:900; margin:0 0 5px 0;">🃏 記憶翻牌樂</h4>
+                    <p style="color:var(--text-secondary); font-size:14px; margin:0;">翻開兩張卡片，將英文單字與中文意思配對起來！</p>
+                </div>
+                <div class="memory-grid" id="memory-grid-container">
+                    <!-- Memory Cards will be injected dynamically -->
+                </div>
+            </div>
+
+            <!-- TAB 5: Word Hunt Game -->
+            <div class="tab-content" id="tab-content-hunt">
+                <div class="hunt-layout">
+                    <div style="text-align:center;">
+                        <h4 style="font-size:20px; font-weight:900; margin:0 0 5px 0;">🔍 單字大搜尋 (Word Hunt)</h4>
+                        <p style="color:var(--text-secondary); font-size:14px; margin:0;">在網格中找出下方的英文單字！點擊單字的首尾字母進行圈選。</p>
+                    </div>
+                    <div class="hunt-grid" id="hunt-grid-container">
+                        <!-- Hunt cells injected dynamically -->
+                    </div>
+                    <div class="hunt-word-bank" id="hunt-word-bank">
+                        <!-- Placed words list shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: Ending Creator -->
             <div class="tab-content" id="tab-content-ending">
                 <div class="ending-layout">
                     <div class="ending-form-panel">
@@ -1302,18 +1546,36 @@
         // State variables
         let selectedStoryKey = null;
         let selectedTab = 'reading';
-        let currentSpeechWord = null;
         let activeWordKey = null;
         
-        // Sound mute state from parent window settings or local fallback
+        // Sound mute state
         window.isMuted = window.isMuted || false;
 
-        // Audio System (Synthesized via Web Audio API)
+        // Firebase Setup (Zero Config Sync Mode)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX5CkzX7_zXV9T4H3EuW9Alo2eJp9px7E",
+            authDomain: "rockgames-48853.firebaseapp.com",
+            databaseURL: "https://rockgames-48853-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rockgames-48853",
+            storageBucket: "rockgames-48853.firebasestorage.app",
+            messagingSenderId: "313395129447",
+            appId: "1:313395129447:web:618531167064c7afdd38c2"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const syncRef = db.ref("story_sync/active_state");
+
+        // Role setup
+        const urlParams = new URLSearchParams(window.location.search);
+        const userRole = urlParams.get('role') || 'student'; // 'teacher' or 'student'
+        let syncActive = (userRole === 'student'); // Student defaults to synced, Teacher pushes changes
+
+        // Audio System
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         function playSynthesizedSound(type) {
             if (window.isMuted) return;
-            // Resume context in case it got suspended by browser security
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
@@ -1377,33 +1639,116 @@
             }
         }
 
-        // TTS System (Speech Synthesis)
+        // TTS System
         function speakText(text) {
             if ('speechSynthesis' in window) {
-                // Cancel ongoing speak before playing new one
                 window.speechSynthesis.cancel();
-                
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'en-US';
-                utterance.rate = 0.85; // Slightly slower for kids
+                utterance.rate = 0.85;
                 utterance.pitch = 1.0;
                 
-                // Select a natural-sounding English voice if available
                 const voices = window.speechSynthesis.getVoices();
                 const premiumVoice = voices.find(voice => 
                     voice.lang.startsWith('en') && 
                     (voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Samantha'))
                 );
                 if (premiumVoice) utterance.voice = premiumVoice;
-
                 window.speechSynthesis.speak(utterance);
-            } else {
-                alert('您的裝置不支援語音朗讀系統 (TTS)');
             }
         }
 
+        // ==================== SYSTEM SYNC MODULE ====================
+
+        function updateSyncStatusUI() {
+            const badge = document.getElementById('sync-status');
+            if (userRole === 'teacher') {
+                badge.className = "sync-badge teacher-mode";
+                badge.innerHTML = "📢 老師同步中";
+            } else {
+                if (syncActive) {
+                    badge.className = "sync-badge connected";
+                    badge.innerHTML = "🟢 已同步老師";
+                } else {
+                    badge.className = "sync-badge self";
+                    badge.innerHTML = "🔒 離線自主";
+                }
+            }
+        }
+
+        function toggleSyncMode() {
+            if (userRole === 'teacher') return; // Teacher doesn't toggle sync
+            
+            playSynthesizedSound('click');
+            syncActive = !syncActive;
+            updateSyncStatusUI();
+
+            if (syncActive) {
+                // Immediately pull state from Firebase
+                syncRef.once('value').then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) handleIncomingSync(data);
+                });
+            }
+        }
+
+        // Student Side: Processing Incoming Teacher Action
+        function handleIncomingSync(data) {
+            if (!syncActive || userRole === 'teacher') return;
+
+            // 1. Sync Selected Story
+            if (data.storyKey && data.storyKey !== selectedStoryKey) {
+                selectStory(data.storyKey, false); // select story without triggering push
+            }
+
+            // 2. Sync Tab Page
+            if (data.tab && data.tab !== selectedTab) {
+                switchTab(data.tab, false);
+            }
+
+            // 3. Sync Clicked Highlight Word & Highlight scroll
+            if (selectedTab === 'reading') {
+                if (data.activeWord) {
+                    showVocabDetail(data.activeWord, false);
+                    
+                    // Highlight the target word in DOM and scroll paragraph into view
+                    document.querySelectorAll('.target-word').forEach(el => {
+                        el.classList.remove('active-clicked');
+                        if (el.innerText.trim().toLowerCase() === data.activeWord.trim().toLowerCase() ||
+                            (data.activeWord === "blows the T-shirt away" && el.innerText.includes("blows"))) {
+                            el.classList.add('active-clicked');
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                } else {
+                    closeVocabDetail();
+                }
+            }
+        }
+
+        // Teacher Side: Pushing actions to Database
+        function pushTeacherState(updates) {
+            if (userRole !== 'teacher') return;
+            updates.timestamp = firebase.database.ServerValue.TIMESTAMP;
+            syncRef.update(updates);
+        }
+
+        // Initialize Firebase Listeners on load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSyncStatusUI();
+            
+            if (userRole === 'student') {
+                syncRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) handleIncomingSync(data);
+                });
+            }
+        });
+
+        // ==================== WORKSPACE FLOWS ====================
+
         // Story Switch System
-        function selectStory(storyKey) {
+        function selectStory(storyKey, triggerPush = true) {
             playSynthesizedSound('click');
             selectedStoryKey = storyKey;
             const story = STORIES[storyKey];
@@ -1412,39 +1757,42 @@
             document.getElementById('ws-story-title-zh').innerText = story.titleZh;
             document.getElementById('ws-story-title-en').innerText = story.titleEn;
             
-            // Set CSS Theme Variables Dynamically
             const root = document.documentElement;
             root.style.setProperty('--story-color', `var(--${storyKey}-theme)`);
             root.style.setProperty('--story-color-glow', story.glowColor);
             
-            // Reset Workspace Glow coordinates
-            const glow = document.getElementById('workspace-glow');
-            glow.style.setProperty('--story-color-glow', story.glowColor);
+            // Sync background glow
+            document.getElementById('workspace-glow').style.setProperty('--story-color-glow', story.glowColor);
 
-            // Populate Paragraphs & Underlined Target Words
+            // Populate workspace features
             renderParagraphs(story);
-
-            // Populate Sentence Builders
             renderSentenceBuilders(story);
-
-            // Populate Ending Cards Creators
             renderEndingOptions(story);
+            
+            // Reset games
+            resetBalloonGame();
+            resetMemoryGame();
+            resetWordHunt();
+            resetEndingPoster();
 
             // Switch Screen View
             document.getElementById('story-menu-screen').style.display = 'none';
             document.getElementById('story-workspace-screen').style.display = 'block';
             
             // Default to reading tab
-            switchTab('reading');
-            
-            // Reset Game & Ending
-            resetBalloonGame();
-            resetEndingPoster();
+            switchTab('reading', false);
+
+            if (triggerPush) {
+                pushTeacherState({
+                    storyKey: storyKey,
+                    tab: 'reading',
+                    activeWord: ''
+                });
+            }
         }
 
         function exitWorkspace() {
             playSynthesizedSound('click');
-            // Stop balloon game loop if active
             isGamePlaying = false;
             
             document.getElementById('story-workspace-screen').style.display = 'none';
@@ -1453,7 +1801,7 @@
         }
 
         // Tab Navigation
-        function switchTab(tabKey) {
+        function switchTab(tabKey, triggerPush = true) {
             playSynthesizedSound('click');
             
             // Deactivate all
@@ -1465,12 +1813,26 @@
             document.getElementById(`tab-btn-${tabKey}`).classList.add('active-tab');
             document.getElementById(`tab-content-${tabKey}`).classList.add('active-content');
 
-            // Specialized cleanups
-            if (tabKey !== 'game') {
-                isGamePlaying = false;
-            } else {
-                // Initialize canvas sizing when tab is opened
-                resizeCanvas();
+            // Autopause sync if student leaves Reading Tab to play games
+            if (userRole === 'student' && tabKey !== 'reading') {
+                if (syncActive) {
+                    syncActive = false;
+                    updateSyncStatusUI();
+                }
+            }
+
+            // Loaders / Cleanups
+            if (tabKey !== 'game') isGamePlaying = false;
+            
+            if (tabKey === 'game') resizeCanvas();
+            else if (tabKey === 'memory') initMemoryGame();
+            else if (tabKey === 'hunt') initWordHunt();
+
+            if (triggerPush) {
+                pushTeacherState({
+                    tab: tabKey,
+                    activeWord: ''
+                });
             }
         }
 
@@ -1484,6 +1846,7 @@
             story.paragraphs.forEach((p, index) => {
                 const pDiv = document.createElement('div');
                 pDiv.className = 'story-paragraph';
+                pDiv.id = `paragraph-${index}`;
 
                 // Add Title
                 const pTitle = document.createElement('div');
@@ -1491,17 +1854,16 @@
                 pTitle.innerHTML = `<span>📖</span> ${p.title}`;
                 pDiv.appendChild(pTitle);
 
-                // Add Narrative text with highlight replacement
+                // Add Narration
                 const pNarration = document.createElement('p');
                 pNarration.className = 'paragraph-content';
                 pNarration.innerHTML = `<span style="color: #94a3b8; font-weight:800; font-size:15px; display:block; margin-bottom: 2px;">NARRATION:</span>` + 
                                        replaceWordsWithInteractives(p.narration, p.words);
                 pDiv.appendChild(pNarration);
 
-                // Add Spacer
                 pDiv.appendChild(document.createElement('br'));
 
-                // Add Dialogue text with highlight replacement
+                // Add Dialogue
                 const pDialogue = document.createElement('p');
                 pDialogue.className = 'paragraph-content';
                 pDialogue.style.fontStyle = 'italic';
@@ -1518,16 +1880,16 @@
             `;
         }
 
-        // Helper to turn strings like "buys" into interactive underline span tags
         function replaceWordsWithInteractives(text, wordsList) {
             let processed = text;
-            // Sort by word length descending so we don't accidentally replace parts of longer phrases (e.g. "tie his shoe" before "shoe")
             const sortedWords = [...wordsList].sort((a, b) => b.length - a.length);
 
             sortedWords.forEach(word => {
-                // Escape regex characters
-                const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                // Regex matches word ignoring punctuation boundaries, case-insensitive
+                // Split verb mapping support
+                let escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                if (word === "blows the T-shirt away") {
+                    escapedWord = "blows the T-shirt away";
+                }
                 const regex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
                 
                 processed = processed.replace(regex, (matched) => {
@@ -1539,12 +1901,21 @@
         }
 
         // Vocabulary Panel Updates
-        function showVocabDetail(wordKey) {
+        function showVocabDetail(wordKey, triggerPush = true) {
             playSynthesizedSound('click');
             activeWordKey = wordKey;
             const vocabData = STORIES[selectedStoryKey].vocabulary[wordKey];
             
             if (!vocabData) return;
+
+            // Highlight class setting locally
+            document.querySelectorAll('.target-word').forEach(el => {
+                el.classList.remove('active-clicked');
+                if (el.innerText.trim().toLowerCase() === wordKey.trim().toLowerCase() ||
+                    (wordKey === "blows the T-shirt away" && el.innerText.includes("blows"))) {
+                    el.classList.add('active-clicked');
+                }
+            });
 
             const vocabDetailBox = document.getElementById('vocab-detail-box');
             vocabDetailBox.innerHTML = `
@@ -1557,12 +1928,25 @@
                 </div>
             `;
             
-            // Speak automatically
             speakText(wordKey);
+
+            if (triggerPush) {
+                pushTeacherState({
+                    activeWord: wordKey
+                });
+            }
+        }
+
+        function closeVocabDetail() {
+            activeWordKey = null;
+            document.querySelectorAll('.target-word').forEach(el => el.classList.remove('active-clicked'));
+            document.getElementById('vocab-detail-box').innerHTML = `
+                <span class="placeholder-text">點選左側故事中畫底線的紅色單字，聽發音並看中文翻譯！</span>
+            `;
         }
 
         // TAB 2: Sentence Builder Renderer
-        let builderStates = []; // Track user puzzle inputs
+        let builderStates = [];
 
         function renderSentenceBuilders(story) {
             const container = document.getElementById('builder-container');
@@ -1570,20 +1954,15 @@
             builderStates = [];
 
             story.sentenceBuilder.forEach((builder, index) => {
-                const originalWords = builder.en.match(/\b[\w'-]+\b|[.,!?;"]/g); // Split words and keep punctuation separate
-                
-                // Shuffle words (keep punctuation, or just mix them all)
-                // Filter out empty spaces
+                const originalWords = builder.en.match(/\b[\w'-]+\b|[.,!?;"]/g);
                 const wordsOnly = originalWords.filter(w => w.trim().length > 0);
                 
-                // Fisher-Yates shuffle
                 let shuffled = [...wordsOnly];
                 for (let i = shuffled.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
                 }
 
-                // In case shuffle matches original, swap first two
                 if (shuffled.join(' ') === wordsOnly.join(' ') && shuffled.length > 1) {
                     [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
                 }
@@ -1599,20 +1978,17 @@
                 card.className = 'builder-card';
                 card.id = `builder-card-${index}`;
 
-                // Add Title/Header
                 const header = document.createElement('div');
                 header.className = 'builder-prompt';
                 header.innerHTML = `<span>挑戰 ${index + 1}：重組句子</span> <span id="builder-status-${index}">❌ 未完成</span>`;
                 card.appendChild(header);
 
-                // Add Display Zone (where words go)
                 const displayArea = document.createElement('div');
                 displayArea.className = 'sentence-display-area';
                 displayArea.id = `sentence-display-${index}`;
                 displayArea.innerHTML = `<span style="color:#64748b; font-size: 15px; font-weight:800;">點擊下方積木來拼湊句子...</span>`;
                 card.appendChild(displayArea);
 
-                // Add Pool Zone (scrambled blocks)
                 const poolZone = document.createElement('div');
                 poolZone.className = 'word-blocks-pool';
                 poolZone.id = `word-pool-${index}`;
@@ -1627,7 +2003,6 @@
                 });
                 card.appendChild(poolZone);
 
-                // Add Controls
                 const controls = document.createElement('div');
                 controls.className = 'builder-controls';
                 
@@ -1642,10 +2017,8 @@
                 resetBtn.innerText = '🔄 重設';
                 resetBtn.onclick = () => resetSentence(index);
                 controls.appendChild(resetBtn);
-                
                 card.appendChild(controls);
 
-                // Add Translation (hidden initially)
                 const trans = document.createElement('div');
                 trans.className = 'sentence-translation';
                 trans.id = `builder-translation-${index}`;
@@ -1656,18 +2029,14 @@
             });
         }
 
-        // Block Placements
         function placeWordBlock(sentenceIndex, blockIndex, word) {
             playSynthesizedSound('click');
             const state = builderStates[sentenceIndex];
             if (state.isCompleted) return;
 
             const block = document.getElementById(`block-${sentenceIndex}-${blockIndex}`);
-            
-            // Add word to current answers
             state.currentAnswers.push({ word, blockIndex });
             block.classList.add('selected-in-pool');
-
             renderBuilderDisplayArea(sentenceIndex);
         }
 
@@ -1677,11 +2046,8 @@
             if (state.isCompleted) return;
 
             const removed = state.currentAnswers.splice(answerIndex, 1)[0];
-            
-            // Restore block in pool
             const block = document.getElementById(`block-${sentenceIndex}-${removed.blockIndex}`);
             block.classList.remove('selected-in-pool');
-
             renderBuilderDisplayArea(sentenceIndex);
         }
 
@@ -1710,12 +2076,9 @@
 
             const userText = state.currentAnswers.map(ans => ans.word.toLowerCase()).join(' ');
             const correctText = state.correctWords.map(w => w.toLowerCase()).join(' ');
-
-            // Basic punctuation cleanups for soft checking
             const cleanString = (str) => str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g,"").replace(/\s{2,}/g," ");
 
             if (cleanString(userText) === cleanString(correctText)) {
-                // Correct!
                 playSynthesizedSound('success');
                 state.isCompleted = true;
                 
@@ -1724,11 +2087,9 @@
                 document.getElementById(`sentence-display-${sentenceIndex}`).classList.add('correct');
                 document.getElementById(`builder-translation-${sentenceIndex}`).style.display = 'block';
 
-                // Speak sentence
                 const fullSentence = STORIES[selectedStoryKey].sentenceBuilder[sentenceIndex].en;
                 speakText(fullSentence);
             } else {
-                // Incorrect
                 playSynthesizedSound('fail');
                 alert('順序不對喔！再試一次看看 💪');
             }
@@ -1740,18 +2101,15 @@
             state.isCompleted = false;
             state.currentAnswers = [];
 
-            // Reset pool display classes
             state.shuffledPool.forEach((_, wordIndex) => {
                 const block = document.getElementById(`block-${sentenceIndex}-${wordIndex}`);
                 if (block) block.classList.remove('selected-in-pool');
             });
 
-            // Reset display area
             const display = document.getElementById(`sentence-display-${sentenceIndex}`);
             display.classList.remove('correct');
             display.innerHTML = `<span style="color:#64748b; font-size: 15px; font-weight:800;">點擊下方積木來拼湊句子...</span>`;
 
-            // Hide Translation
             document.getElementById(`builder-translation-${sentenceIndex}`).style.display = 'none';
             document.getElementById(`builder-status-${sentenceIndex}`).innerHTML = '❌ 未完成';
             document.getElementById(`builder-status-${sentenceIndex}`).style.color = 'var(--text-secondary)';
@@ -1769,7 +2127,6 @@
         let isGamePlaying = false;
         let gameTimer = null;
         let currentTargetWord = null;
-        let gameThemeColor = '#fbbf24';
 
         function resizeCanvas() {
             const rect = canvas.parentNode.getBoundingClientRect();
@@ -1777,12 +2134,10 @@
             canvas.height = rect.height;
         }
 
-        // Listen for sizing shifts
         window.addEventListener('resize', () => {
             if (selectedTab === 'game') resizeCanvas();
         });
 
-        // Balloon Class
         class Balloon {
             constructor(word, translation, isCorrect) {
                 this.word = word;
@@ -1800,14 +2155,7 @@
             }
 
             getRandomColor() {
-                const colors = [
-                    '#ec4899', // pink
-                    '#3b82f6', // blue
-                    '#10b981', // green
-                    '#f97316', // orange
-                    '#8b5cf6', // purple
-                    '#06b6d4'  // cyan
-                ];
+                const colors = ['#ec4899', '#3b82f6', '#10b981', '#f97316', '#8b5cf6', '#06b6d4'];
                 return colors[Math.floor(Math.random() * colors.length)];
             }
 
@@ -1821,7 +2169,6 @@
                 ctx.save();
                 const drawX = this.x + this.xOffset;
 
-                // Draw Balloon String
                 ctx.beginPath();
                 ctx.moveTo(drawX, this.y + this.radius);
                 ctx.quadraticCurveTo(drawX - 10, this.y + this.radius + 30, drawX, this.y + this.radius + 65);
@@ -1829,7 +2176,6 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // Draw Balloon Body
                 ctx.beginPath();
                 ctx.ellipse(drawX, this.y, this.radius * 0.9, this.radius, 0, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
@@ -1837,13 +2183,11 @@
                 ctx.shadowColor = this.color;
                 ctx.fill();
 
-                // Highlight shine
                 ctx.beginPath();
                 ctx.ellipse(drawX - this.radius * 0.3, this.y - this.radius * 0.4, this.radius * 0.2, this.radius * 0.3, Math.PI / 4, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.fill();
 
-                // Draw Knot
                 ctx.beginPath();
                 ctx.moveTo(drawX - 8, this.y + this.radius);
                 ctx.lineTo(drawX + 8, this.y + this.radius);
@@ -1852,14 +2196,12 @@
                 ctx.fillStyle = this.color;
                 ctx.fill();
 
-                // Draw Word Text
                 ctx.fillStyle = '#ffffff';
-                ctx.shadowBlur = 0; // turn off shadow for text readability
+                ctx.shadowBlur = 0;
                 ctx.font = 'bold 15px Quicksand, Outfit, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                // Handle text wrapping for multiple-word terms like "tie his shoe"
                 const words = this.word.split(' ');
                 if (words.length > 1) {
                     ctx.fillText(words.slice(0, 2).join(' '), drawX, this.y - 8);
@@ -1867,7 +2209,6 @@
                 } else {
                     ctx.fillText(this.word, drawX, this.y);
                 }
-
                 ctx.restore();
             }
 
@@ -1878,7 +2219,6 @@
             }
         }
 
-        // Balloon pop particles
         let particles = [];
         class PopParticle {
             constructor(x, y, color) {
@@ -1911,7 +2251,6 @@
             }
         }
 
-        // Game Loop Controls
         function startBalloonGame() {
             playSynthesizedSound('click');
             document.getElementById('game-start-overlay').style.display = 'none';
@@ -1926,7 +2265,6 @@
             updateHUD();
             selectNewTargetWord();
             
-            // Timer loop
             clearInterval(gameTimer);
             gameTimer = setInterval(() => {
                 gameTimeLeft--;
@@ -1936,7 +2274,6 @@
                 updateHUD();
             }, 1000);
 
-            // Start animation frame
             resizeCanvas();
             requestAnimationFrame(gameLoop);
         }
@@ -1946,7 +2283,6 @@
             clearInterval(gameTimer);
             playSynthesizedSound('success');
             
-            // Show Overlay
             const overlay = document.getElementById('game-start-overlay');
             overlay.style.display = 'flex';
             overlay.innerHTML = `
@@ -1979,8 +2315,6 @@
             const targetWordBox = document.getElementById('hud-target-word');
             if (currentTargetWord) {
                 targetWordBox.innerHTML = `🔍 尋找中文為：<span style="color:var(--story-color, #fbbf24); font-size:18px;">${currentTargetWord.ch}</span>`;
-            } else {
-                targetWordBox.innerText = `準備中...`;
             }
         }
 
@@ -1989,44 +2323,30 @@
             const randomKey = vocabKeys[Math.floor(Math.random() * vocabKeys.length)];
             const data = STORIES[selectedStoryKey].vocabulary[randomKey];
             
-            currentTargetWord = {
-                en: randomKey,
-                ch: data.ch
-            };
+            currentTargetWord = { en: randomKey, ch: data.ch };
             updateHUD();
         }
 
-        // Spawning Balloons
         let spawnCooldown = 0;
         function gameLoop() {
             if (!isGamePlaying) return;
-
-            // Clear Frame
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Spawn Control
             spawnCooldown--;
             if (spawnCooldown <= 0) {
                 spawnBalloon();
-                spawnCooldown = 50 + Math.random() * 40; // frames interval
+                spawnCooldown = 50 + Math.random() * 40;
             }
 
-            // Update & Draw Balloons
             balloons.forEach((b, index) => {
                 b.update();
                 b.draw();
-
-                // Check offscreen
                 if (b.y < -b.radius) {
                     balloons.splice(index, 1);
-                    if (b.isCorrect) {
-                        // missed correct balloon
-                        gameCombo = 0;
-                    }
+                    if (b.isCorrect) gameCombo = 0;
                 }
             });
 
-            // Update & Draw Particles
             particles.forEach((p, index) => {
                 p.update();
                 p.draw();
@@ -2039,11 +2359,8 @@
         function spawnBalloon() {
             const vocab = STORIES[selectedStoryKey].vocabulary;
             const vocabKeys = Object.keys(vocab);
-            
-            // 35% chance to spawn the correct target balloon if not already on screen
             const correctOnScreen = balloons.some(b => b.isCorrect);
             let spawnCorrect = !correctOnScreen && Math.random() < 0.45;
-            
             let enWord, chTranslation, isCorrect;
 
             if (spawnCorrect && currentTargetWord) {
@@ -2057,13 +2374,10 @@
                 isCorrect = (currentTargetWord && randomKey === currentTargetWord.en);
             }
 
-            // Avoid spawning duplicate correct balloon easily
             if (isCorrect && correctOnScreen) return;
-
             balloons.push(new Balloon(enWord, chTranslation, isCorrect));
         }
 
-        // Tap Canvas Event handler
         canvas.addEventListener('touchstart', handleCanvasClick);
         canvas.addEventListener('mousedown', handleCanvasClick);
 
@@ -2073,7 +2387,6 @@
 
             let clickX, clickY;
             const rect = canvas.getBoundingClientRect();
-            
             if (e.touches && e.touches.length > 0) {
                 clickX = e.touches[0].clientX - rect.left;
                 clickY = e.touches[0].clientY - rect.top;
@@ -2082,26 +2395,22 @@
                 clickY = e.clientY - rect.top;
             }
 
-            // Convert to canvas internal scale
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             const finalX = clickX * scaleX;
             const finalY = clickY * scaleY;
 
-            // Check intersections
             for (let i = balloons.length - 1; i >= 0; i--) {
                 const b = balloons[i];
                 if (b.checkClick(finalX, finalY)) {
-                    // Create explosion
                     createPopExplosion(finalX, finalY, b.color);
                     playSynthesizedSound('pop');
                     balloons.splice(i, 1);
 
-                    // Check result
                     if (b.isCorrect) {
                         gameCombo++;
                         gameScore += 10 + Math.min(gameCombo, 5) * 2;
-                        speakText(b.word); // Read word aloud as reinforcement
+                        speakText(b.word);
                         selectNewTargetWord();
                     } else {
                         gameCombo = 0;
@@ -2121,7 +2430,303 @@
         }
 
 
-        // TAB 4: Ending Creator
+        // ==================== Memory Match Game ====================
+        let memoryCards = [];
+        let flippedCards = [];
+        let preventFlipping = false;
+
+        function initMemoryGame() {
+            const vocab = STORIES[selectedStoryKey].vocabulary;
+            const vocabKeys = Object.keys(vocab);
+            
+            // Pick 6 words
+            const randomKeys = [...vocabKeys].sort(() => 0.5 - Math.random()).slice(0, 6);
+            
+            let cardPairs = [];
+            randomKeys.forEach((key, idx) => {
+                // English Card
+                cardPairs.push({
+                    text: key,
+                    type: 'en',
+                    matchVal: key,
+                    id: idx * 2
+                });
+                // Chinese Card
+                cardPairs.push({
+                    text: vocab[key].ch,
+                    type: 'ch',
+                    matchVal: key,
+                    id: idx * 2 + 1
+                });
+            });
+
+            // Shuffle Cards
+            memoryCards = cardPairs.sort(() => 0.5 - Math.random());
+            flippedCards = [];
+            preventFlipping = false;
+
+            // Render
+            const container = document.getElementById('memory-grid-container');
+            container.innerHTML = '';
+
+            memoryCards.forEach((card, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'memory-card';
+                cardDiv.id = `memory-card-${index}`;
+                cardDiv.onclick = () => flipMemoryCard(index);
+
+                cardDiv.innerHTML = `
+                    <div class="memory-card-inner">
+                        <div class="memory-card-front">❓</div>
+                        <div class="memory-card-back">${card.text}</div>
+                    </div>
+                `;
+                container.appendChild(cardDiv);
+            });
+        }
+
+        function flipMemoryCard(index) {
+            if (preventFlipping) return;
+            const card = memoryCards[index];
+            const cardElement = document.getElementById(`memory-card-${index}`);
+
+            // Already flipped or matched
+            if (cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return;
+
+            playSynthesizedSound('click');
+            cardElement.classList.add('flipped');
+            flippedCards.push({ index, card });
+
+            if (flippedCards.length === 2) {
+                checkMemoryMatch();
+            }
+        }
+
+        function checkMemoryMatch() {
+            preventFlipping = true;
+            const card1 = flippedCards[0];
+            const card2 = flippedCards[1];
+
+            if (card1.card.matchVal === card2.card.matchVal && card1.card.type !== card2.card.type) {
+                // Match!
+                setTimeout(() => {
+                    playSynthesizedSound('success');
+                    
+                    const el1 = document.getElementById(`memory-card-${card1.index}`);
+                    const el2 = document.getElementById(`memory-card-${card2.index}`);
+                    el1.classList.add('matched');
+                    el2.classList.add('matched');
+
+                    speakText(card1.card.matchVal); // speak word
+
+                    flippedCards = [];
+                    preventFlipping = false;
+
+                    // Check if all matched
+                    const allMatched = document.querySelectorAll('.memory-card.matched').length === 12;
+                    if (allMatched) {
+                        setTimeout(() => {
+                            alert('太厲害了！記憶翻牌大成功！🏆');
+                        }, 500);
+                    }
+                }, 400);
+            } else {
+                // Fail
+                setTimeout(() => {
+                    playSynthesizedSound('fail');
+                    const el1 = document.getElementById(`memory-card-${card1.index}`);
+                    const el2 = document.getElementById(`memory-card-${card2.index}`);
+                    el1.classList.remove('flipped');
+                    el2.classList.remove('flipped');
+                    
+                    flippedCards = [];
+                    preventFlipping = false;
+                }, 1000);
+            }
+        }
+
+        function resetMemoryGame() {
+            memoryCards = [];
+            flippedCards = [];
+            preventFlipping = false;
+            document.getElementById('memory-grid-container').innerHTML = '';
+        }
+
+
+        // ==================== Word Hunt Game ====================
+        let huntWords = [];
+        let huntGrid = [];
+        let huntGridSelection = null;
+        let huntWordsFound = [];
+
+        function initWordHunt() {
+            const vocab = STORIES[selectedStoryKey].vocabulary;
+            // Filter out words that are too long (> 8) or contain spaces/punctuation
+            const candidates = Object.keys(vocab).filter(w => w.length <= 8 && !w.includes(' ') && !w.includes('-'));
+            
+            // Choose 4 random words
+            huntWords = [...candidates].sort(() => 0.5 - Math.random()).slice(0, 4);
+            huntGrid = Array(8).fill(null).map(() => Array(8).fill(''));
+            huntWordsFound = [];
+            huntGridSelection = null;
+
+            // Place words
+            huntWords.forEach(word => {
+                let placed = false;
+                let attempts = 0;
+                const upperWord = word.toUpperCase();
+
+                while (!placed && attempts < 100) {
+                    attempts++;
+                    const isHorizontal = Math.random() < 0.5;
+                    const r = Math.floor(Math.random() * (isHorizontal ? 8 : (8 - upperWord.length + 1)));
+                    const c = Math.floor(Math.random() * (isHorizontal ? (8 - upperWord.length + 1) : 8));
+
+                    // Verify fits
+                    let fits = true;
+                    for (let i = 0; i < upperWord.length; i++) {
+                        const currR = isHorizontal ? r : r + i;
+                        const currC = isHorizontal ? c + i : c;
+                        if (huntGrid[currR][currC] !== '' && huntGrid[currR][currC] !== upperWord[i]) {
+                            fits = false;
+                            break;
+                        }
+                    }
+
+                    if (fits) {
+                        for (let i = 0; i < upperWord.length; i++) {
+                            const currR = isHorizontal ? r : r + i;
+                            const currC = isHorizontal ? c + i : c;
+                            huntGrid[currR][currC] = upperWord[i];
+                        }
+                        placed = true;
+                    }
+                }
+            });
+
+            // Fill empty cells
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (huntGrid[r][c] === '') {
+                        huntGrid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
+                    }
+                }
+            }
+
+            // Render Board
+            const gridContainer = document.getElementById('hunt-grid-container');
+            gridContainer.innerHTML = '';
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'hunt-cell';
+                    cellDiv.id = `hunt-cell-${r}-${c}`;
+                    cellDiv.innerText = huntGrid[r][c];
+                    cellDiv.onclick = () => selectHuntCell(r, c);
+                    gridContainer.appendChild(cellDiv);
+                }
+            }
+
+            // Render Bank
+            const bankContainer = document.getElementById('hunt-word-bank');
+            bankContainer.innerHTML = '';
+            huntWords.forEach(word => {
+                const item = document.createElement('div');
+                item.className = 'hunt-bank-item';
+                item.id = `hunt-bank-${word}`;
+                item.innerText = `${word} (${vocab[word].ch})`;
+                bankContainer.appendChild(item);
+            });
+        }
+
+        function selectHuntCell(r, c) {
+            playSynthesizedSound('click');
+            const cell = document.getElementById(`hunt-cell-${r}-${c}`);
+            
+            if (cell.classList.contains('found')) return; // already found cell
+
+            if (huntGridSelection === null) {
+                // First cell click
+                huntGridSelection = { r, c };
+                cell.classList.add('selected');
+            } else {
+                // Second cell click
+                const first = huntGridSelection;
+                const second = { r, c };
+
+                // Deselect first cell
+                document.getElementById(`hunt-cell-${first.r}-${first.c}`).classList.remove('selected');
+                huntGridSelection = null;
+
+                // Validate selection
+                if (first.r !== second.r && first.c !== second.c) {
+                    playSynthesizedSound('fail');
+                    alert('只能選擇水平或垂直方向的直線喔！');
+                    return;
+                }
+
+                // Extract cells & word
+                let pathCells = [];
+                let wordStr = '';
+
+                if (first.r === second.r) { // horizontal
+                    const startC = Math.min(first.c, second.c);
+                    const endC = Math.max(first.c, second.c);
+                    for (let col = startC; col <= endC; col++) {
+                        pathCells.push({ r: first.r, c: col });
+                        wordStr += huntGrid[first.r][col];
+                    }
+                } else { // vertical
+                    const startR = Math.min(first.r, second.r);
+                    const endR = Math.max(first.r, second.r);
+                    for (let row = startR; row <= endR; row++) {
+                        pathCells.push({ r: row, c: first.c });
+                        wordStr += huntGrid[row][first.c];
+                    }
+                }
+
+                // Verify match (can be forward or backward selection)
+                const matchedWord = huntWords.find(w => {
+                    const upperW = w.toUpperCase();
+                    return upperW === wordStr || upperW === wordStr.split('').reverse().join('');
+                });
+
+                if (matchedWord && !huntWordsFound.includes(matchedWord)) {
+                    playSynthesizedSound('success');
+                    huntWordsFound.push(matchedWord);
+                    
+                    // Mark grid cells
+                    pathCells.forEach(cell => {
+                        document.getElementById(`hunt-cell-${cell.r}-${cell.c}`).classList.add('found');
+                    });
+                    
+                    // Cross out bank
+                    document.getElementById(`hunt-bank-${matchedWord}`).classList.add('completed');
+                    speakText(matchedWord);
+
+                    if (huntWordsFound.length === huntWords.length) {
+                        setTimeout(() => {
+                            alert('恭喜你！尋字大賽通關！🔍✨');
+                        }, 500);
+                    }
+                } else {
+                    playSynthesizedSound('fail');
+                }
+            }
+        }
+
+        function resetWordHunt() {
+            huntWords = [];
+            huntGrid = [];
+            huntGridSelection = null;
+            huntWordsFound = [];
+            document.getElementById('hunt-grid-container').innerHTML = '';
+            document.getElementById('hunt-word-bank').innerHTML = '';
+        }
+
+
+        // ==================== TAB 6: Ending Creator ====================
         function renderEndingOptions(story) {
             const container = document.getElementById('ending-options-container');
             container.innerHTML = '';
@@ -2162,7 +2767,6 @@
             const customText = document.getElementById('ending-custom-en').value.trim();
             const story = STORIES[selectedStoryKey];
 
-            // Setup display text
             let endingEn = "";
             let endingCh = "";
 
@@ -2184,7 +2788,6 @@
             document.getElementById('poster-ending-translation').innerText = endingCh;
             document.getElementById('poster-deco').innerText = story.deco;
             
-            // TTS speak the selected ending!
             speakText(endingEn);
         }
 
@@ -2195,7 +2798,6 @@
             document.getElementById('student-no').value = "";
             document.getElementById('ending-custom-en').value = "";
             
-            // Re-render
             const story = STORIES[selectedStoryKey];
             document.getElementById('poster-story-title').innerText = story.titleEn.toUpperCase();
             document.getElementById('poster-author-name').innerText = "四甲 小名 #01";
@@ -2204,11 +2806,8 @@
             document.getElementById('poster-deco').innerText = story.deco;
         }
 
-        // Initialize voice load triggers
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                // Preload voices
-            };
+            window.speechSynthesis.onvoiceschanged = () => {};
         }
     </script>
 </body>
