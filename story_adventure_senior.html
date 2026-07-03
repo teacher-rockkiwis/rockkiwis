@@ -642,6 +642,7 @@
     let selectedSpeakingParagraphIndex = 0;
     let speakingRateKey = 'normal';
     const speakingRates = { slow: 0.65, normal: 0.9, fast: 1.15 };
+    let activeTtsAudio = null;
     window.isMuted = window.isMuted || false;
 
     // Firebase
@@ -709,6 +710,10 @@
 
     function speakText(text, rateOverride) {
         if (!('speechSynthesis' in window)) return;
+        if (activeTtsAudio) {
+            activeTtsAudio.pause();
+            activeTtsAudio = null;
+        }
         window.speechSynthesis.cancel();
         const utt = new SpeechSynthesisUtterance(text);
         utt.lang = 'en-US'; utt.rate = rateOverride || speakingRates[speakingRateKey] || 0.9; utt.pitch = 1.0;
@@ -716,6 +721,45 @@
         const v = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Samantha')));
         if (v) utt.voice = v;
         window.speechSynthesis.speak(utt);
+    }
+
+    function slugForAudio(text) {
+        return String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    function playAudioFile(audioPath, fallbackText, rateOverride) {
+        if (activeTtsAudio) {
+            activeTtsAudio.pause();
+            activeTtsAudio = null;
+        }
+        window.speechSynthesis.cancel();
+        const audio = new Audio(audioPath);
+        activeTtsAudio = audio;
+        audio.playbackRate = rateOverride || speakingRates[speakingRateKey] || 1;
+        audio.addEventListener('ended', () => { if (activeTtsAudio === audio) activeTtsAudio = null; });
+        audio.addEventListener('error', () => {
+            if (activeTtsAudio === audio) activeTtsAudio = null;
+            if (fallbackText) speakText(fallbackText, rateOverride);
+        }, { once: true });
+        audio.play().catch(() => {
+            if (activeTtsAudio === audio) activeTtsAudio = null;
+            if (fallbackText) speakText(fallbackText, rateOverride);
+        });
+    }
+
+    function speakStoryParagraph(paragraphIndex) {
+        if (!selectedStoryKey) return;
+        const p = STORIES[selectedStoryKey].paragraphs[paragraphIndex];
+        playAudioFile(`audio/senior/${selectedStoryKey}/paragraphs/p${paragraphIndex + 1}.mp3`, `${p.narration} ${p.dialogue}`, speakingRates[speakingRateKey]);
+    }
+
+    function speakStoryWord(wordKey) {
+        if (!selectedStoryKey) return;
+        playAudioFile(`audio/senior/${selectedStoryKey}/words/${slugForAudio(wordKey)}.mp3`, wordKey);
+    }
+
+    function speakCommonWord(word) {
+        playAudioFile(`audio/senior/common/words/${slugForAudio(word)}.mp3`, word);
     }
 
     // ══════════════════════════════════════════════════
@@ -820,10 +864,10 @@
         document.getElementById('forced-word-en').innerText = wordKey;
         document.getElementById('forced-word-ch').innerText = vocabData.ch;
         document.getElementById('forced-word-sentence').innerHTML = vocabData.context;
-        document.getElementById('forced-word-speak').onclick = () => speakText(wordKey);
+        document.getElementById('forced-word-speak').onclick = () => speakStoryWord(wordKey);
         document.getElementById('forced-vocab-close').style.display = userRole === 'teacher' ? 'block' : 'none';
         document.getElementById('forced-vocab-overlay').style.display = 'flex';
-        speakText(wordKey);
+        speakStoryWord(wordKey);
     }
 
     function pushTeacherState(updates) {
@@ -979,10 +1023,10 @@
         document.getElementById('vocab-detail-box').innerHTML = `
             <h4 class="active-word-en">${wordKey}</h4>
             <div class="active-word-ch">${vocabData.ch}</div>
-            <button class="tts-speaker-btn" onclick="speakText('${wordKey}')">🔊</button>
+            <button class="tts-speaker-btn" onclick="speakStoryWord('${wordKey}')">🔊</button>
             <div class="sentence-context"><strong>Story Sentence</strong>${vocabData.context}</div>
         `;
-        speakText(wordKey);
+        speakStoryWord(wordKey);
         if (triggerPush) pushTeacherState({ activeWord: wordKey });
     }
 
@@ -1031,9 +1075,8 @@
 
     function speakSelectedParagraph() {
         if (!selectedStoryKey) return;
-        const p = STORIES[selectedStoryKey].paragraphs[selectedSpeakingParagraphIndex];
         playSynthesizedSound('click');
-        speakText(`${p.narration} ${p.dialogue}`, speakingRates[speakingRateKey]);
+        speakStoryParagraph(selectedSpeakingParagraphIndex);
     }
 
     function renderSpeakingParagraphText() {
@@ -1051,7 +1094,7 @@
     function renderSpeakableWords(text) {
         return text.split(/(\b[\w'-]+\b)/g).map(part => {
             if (/^\b[\w'-]+\b$/.test(part)) {
-                return `<span class="speaking-word" data-speak="${escapeHtml(part)}" onclick="speakText(this.dataset.speak)">${escapeHtml(part)}</span>`;
+                return `<span class="speaking-word" data-speak="${escapeHtml(part)}" onclick="speakCommonWord(this.dataset.speak)">${escapeHtml(part)}</span>`;
             }
             return escapeHtml(part);
         }).join('');
