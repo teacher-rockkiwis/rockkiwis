@@ -231,6 +231,27 @@
         .btn-generate-ending:active { transform: scale(0.97); }
         .btn-print { background: rgba(255,255,255,0.06); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; max-width: 380px; padding: 12px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
         .btn-print:active { transform: scale(0.97); }
+
+        /* ── Speaking Practice ── */
+        .speaking-layout { display: grid; grid-template-columns: 280px 1fr; gap: 22px; align-items: start; }
+        @media (max-width: 820px) { .speaking-layout { grid-template-columns: 1fr; } }
+        .speaking-list-panel, .speaking-practice-panel { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 22px; }
+        .speaking-list-title, .speaking-practice-title { font-size: 18px; font-weight: 900; margin: 0 0 16px 0; color: white; }
+        .speaking-paragraph-list { display: flex; flex-direction: column; gap: 10px; }
+        .speaking-paragraph-btn { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); color: var(--text-secondary); padding: 13px 14px; border-radius: 14px; font-size: 14px; font-weight: 900; cursor: pointer; text-align: left; transition: all 0.2s; }
+        .speaking-paragraph-btn.active { background: var(--story-color,#8b5cf6); color: white; border-color: transparent; box-shadow: 0 6px 18px var(--story-color-glow, rgba(139,92,246,0.3)); }
+        .speaking-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .rate-control-group { display: flex; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 6px; }
+        .rate-btn { background: transparent; border: none; color: var(--text-secondary); padding: 9px 12px; border-radius: 11px; font-size: 14px; font-weight: 900; cursor: pointer; transition: all 0.2s; }
+        .rate-btn.active { background: rgba(255,255,255,0.12); color: white; }
+        .speak-paragraph-btn { background: var(--story-color,#8b5cf6); color: white; border: none; padding: 13px 22px; border-radius: 14px; font-size: 15px; font-weight: 900; cursor: pointer; transition: all 0.2s; }
+        .speak-paragraph-btn:active, .rate-btn:active, .speaking-word:active { transform: scale(0.96); }
+        .speaking-text-card { background: rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; }
+        .speaking-line-label { color: var(--story-color,#8b5cf6); display: block; font-size: 13px; font-weight: 900; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+        .speaking-sentence { font-size: 23px; line-height: 2; font-weight: 800; color: #f8fafc; margin: 0 0 24px 0; }
+        .speaking-sentence:last-child { margin-bottom: 0; }
+        .speaking-word { display: inline-block; color: white; background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 0 5px; margin: 0 1px; cursor: pointer; transition: all 0.16s; }
+        .speaking-word:hover { background: rgba(255,255,255,0.1); border-color: var(--story-color,#8b5cf6); }
     </style>
 </head>
 <body>
@@ -288,6 +309,7 @@
 
             <div class="tabs-nav" id="tabs-nav">
                 <button class="tab-btn active-tab" onclick="switchTab('reading')" id="tab-btn-reading">🗣️ 閱讀與單字</button>
+                <button class="tab-btn" onclick="switchTab('speaking')" id="tab-btn-speaking">🎙️ 口說跟讀</button>
                 <button class="tab-btn" onclick="switchTab('builder')" id="tab-btn-builder">🧩 句型積木組</button>
                 <button class="tab-btn" onclick="switchTab('game')" id="tab-btn-game">🎈 氣球爆爆樂</button>
                 <button class="tab-btn" onclick="switchTab('memory')" id="tab-btn-memory">🃏 記憶翻牌樂</button>
@@ -315,6 +337,27 @@
                         <div class="vocab-detail-box" id="vocab-detail-box">
                             <span class="placeholder-text">點選左側畫底線的紅色單字，聽發音並看中文翻譯！</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Speaking Practice -->
+            <div class="tab-content" id="tab-content-speaking">
+                <div class="speaking-layout">
+                    <div class="speaking-list-panel">
+                        <h4 class="speaking-list-title">選擇段落</h4>
+                        <div class="speaking-paragraph-list" id="speaking-paragraph-list"></div>
+                    </div>
+                    <div class="speaking-practice-panel">
+                        <div class="speaking-controls">
+                            <div class="rate-control-group" id="speaking-rate-controls">
+                                <button class="rate-btn" id="rate-btn-slow" onclick="setSpeakingRate('slow')">慢</button>
+                                <button class="rate-btn active" id="rate-btn-normal" onclick="setSpeakingRate('normal')">適中</button>
+                                <button class="rate-btn" id="rate-btn-fast" onclick="setSpeakingRate('fast')">快</button>
+                            </div>
+                            <button class="speak-paragraph-btn" onclick="speakSelectedParagraph()">🔊 朗讀這一段</button>
+                        </div>
+                        <div class="speaking-text-card" id="speaking-text-card"></div>
                     </div>
                 </div>
             </div>
@@ -596,6 +639,9 @@
     let selectedStoryKey = null;
     let selectedTab = 'reading';
     let activeWordKey = null;
+    let selectedSpeakingParagraphIndex = 0;
+    let speakingRateKey = 'normal';
+    const speakingRates = { slow: 0.65, normal: 0.9, fast: 1.15 };
     window.isMuted = window.isMuted || false;
 
     // Firebase
@@ -661,11 +707,11 @@
         if (!window.isMuted) playSynthesizedSound('click');
     }
 
-    function speakText(text) {
+    function speakText(text, rateOverride) {
         if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
         const utt = new SpeechSynthesisUtterance(text);
-        utt.lang = 'en-US'; utt.rate = 0.85; utt.pitch = 1.0;
+        utt.lang = 'en-US'; utt.rate = rateOverride || speakingRates[speakingRateKey] || 0.9; utt.pitch = 1.0;
         const voices = window.speechSynthesis.getVoices();
         const v = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Samantha')));
         if (v) utt.voice = v;
@@ -834,6 +880,7 @@
         root.style.setProperty('--story-color', story.themeColor);
         root.style.setProperty('--story-color-glow', story.glowColor);
         renderParagraphs(story);
+        renderSpeakingPractice(story);
         renderSentenceBuilders(story);
         renderEndingOptions(story);
         resetBalloonGame(); resetMemoryGame(); resetWordHunt(); resetEndingPoster();
@@ -861,6 +908,7 @@
         if (userRole === 'student' && tabKey !== 'reading' && !isTeachingMode) { syncActive = false; updateSyncStatusUI(); }
         if (tabKey !== 'game') isGamePlaying = false;
         if (tabKey === 'game') resizeCanvas();
+        else if (tabKey === 'speaking') renderSpeakingPractice(STORIES[selectedStoryKey]);
         else if (tabKey === 'memory') initMemoryGame();
         else if (tabKey === 'hunt') initWordHunt();
         if (triggerPush) pushTeacherState({ tab: tabKey, activeWord: '' });
@@ -942,6 +990,81 @@
         activeWordKey = null;
         document.querySelectorAll('.target-word').forEach(el => el.classList.remove('active-clicked'));
         document.getElementById('vocab-detail-box').innerHTML = `<span class="placeholder-text">點選左側故事中畫底線的紅色單字，聽發音並看中文翻譯！</span>`;
+    }
+
+    // ── SPEAKING PRACTICE ──
+    function renderSpeakingPractice(story) {
+        if (!story) return;
+        selectedSpeakingParagraphIndex = Math.min(selectedSpeakingParagraphIndex, story.paragraphs.length - 1);
+        const list = document.getElementById('speaking-paragraph-list');
+        if (!list) return;
+        list.innerHTML = '';
+        story.paragraphs.forEach((p, index) => {
+            const btn = document.createElement('button');
+            btn.className = `speaking-paragraph-btn${index === selectedSpeakingParagraphIndex ? ' active' : ''}`;
+            btn.innerText = p.title;
+            btn.onclick = () => selectSpeakingParagraph(index);
+            list.appendChild(btn);
+        });
+        updateSpeakingRateButtons();
+        renderSpeakingParagraphText();
+    }
+
+    function selectSpeakingParagraph(index) {
+        playSynthesizedSound('click');
+        selectedSpeakingParagraphIndex = index;
+        renderSpeakingPractice(STORIES[selectedStoryKey]);
+    }
+
+    function setSpeakingRate(rateKey) {
+        speakingRateKey = rateKey;
+        playSynthesizedSound('click');
+        updateSpeakingRateButtons();
+    }
+
+    function updateSpeakingRateButtons() {
+        ['slow', 'normal', 'fast'].forEach(key => {
+            const btn = document.getElementById(`rate-btn-${key}`);
+            if (btn) btn.classList.toggle('active', key === speakingRateKey);
+        });
+    }
+
+    function speakSelectedParagraph() {
+        if (!selectedStoryKey) return;
+        const p = STORIES[selectedStoryKey].paragraphs[selectedSpeakingParagraphIndex];
+        playSynthesizedSound('click');
+        speakText(`${p.narration} ${p.dialogue}`, speakingRates[speakingRateKey]);
+    }
+
+    function renderSpeakingParagraphText() {
+        if (!selectedStoryKey) return;
+        const card = document.getElementById('speaking-text-card');
+        if (!card) return;
+        const p = STORIES[selectedStoryKey].paragraphs[selectedSpeakingParagraphIndex];
+        card.innerHTML = `
+            <h4 class="speaking-practice-title">${p.title}</h4>
+            <p class="speaking-sentence"><span class="speaking-line-label">Narration</span>${renderSpeakableWords(p.narration)}</p>
+            <p class="speaking-sentence"><span class="speaking-line-label">Dialogue</span>${renderSpeakableWords(p.dialogue)}</p>
+        `;
+    }
+
+    function renderSpeakableWords(text) {
+        return text.split(/(\b[\w'-]+\b)/g).map(part => {
+            if (/^\b[\w'-]+\b$/.test(part)) {
+                return `<span class="speaking-word" data-speak="${escapeHtml(part)}" onclick="speakText(this.dataset.speak)">${escapeHtml(part)}</span>`;
+            }
+            return escapeHtml(part);
+        }).join('');
+    }
+
+    function escapeHtml(text) {
+        return String(text).replace(/[&<>"']/g, ch => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[ch]));
     }
 
     // ── SENTENCE BUILDER ──
