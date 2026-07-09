@@ -150,11 +150,11 @@
         }
         .control-btn:active { transform: translateY(0) scale(0.97); }
 
-        .discord-btn {
+        .community-btn {
             background: rgba(88, 101, 242, 0.2);
             border-color: rgba(88, 101, 242, 0.3);
         }
-        .discord-btn:hover {
+        .community-btn:hover {
             background: rgba(88, 101, 242, 0.35);
             border-color: rgba(88, 101, 242, 0.5);
         }
@@ -515,14 +515,15 @@
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .warning-content { border-color: #e74c3c; }
+        .warning-content { border-color: #ff7675; background: linear-gradient(to bottom, #ffffff, #fff5f5); }
         .warning-btn {
-            background: #e74c3c; color: white; border: none;
-            padding: 12px 30px; border-radius: 50px;
+            background: linear-gradient(135deg, #ff7675, #e84393); color: white; border: none;
+            padding: 12px 35px; border-radius: 50px;
             font-size: 18px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 5px 0 #c0392b; transition: 0.1s; margin-top: 10px;
+            box-shadow: 0 5px 0 #b33939; transition: all 0.1s; margin-top: 10px;
         }
-        .warning-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #c0392b; }
+        .warning-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 #b33939; }
+        .warning-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #b33939; }
 
         .pwd-box {
             background: white; padding: 30px; border-radius: 20px;
@@ -605,7 +606,7 @@
     <!-- ✨ 右上角控制列 ✨ -->
     <div class="top-right-controls">
         <button id="sound-btn" class="control-btn sound-toggle" onclick="toggleBGM()">🔊 音樂：開</button>
-        <a href="https://discord.gg/7CNvm8FCK" target="_blank" class="control-btn discord-btn">
+        <a href="https://discord.gg/7CNvm8FCK" target="_blank" class="control-btn community-btn">
             <img src="discord.png" alt="Discord" style="width:1.2em;height:1.2em;object-fit:contain;">
             回報問題
         </a>
@@ -904,18 +905,19 @@
         </div>
     </div>
 
-    <!-- 嚴肅警告公告彈窗 -->
+    <!-- 溫馨公告彈窗 -->
     <div id="warning-modal" class="overlay-modal" style="z-index: 999999;">
         <div class="modal-content warning-content">
-            <h2 style="color:#e74c3c; font-size:32px; margin-top:0; margin-bottom:20px;">⚠️ ROCK 老師公告 ⚠️</h2>
-            <div style="text-align: left; font-size:18px; font-weight:700; color:#2c3e50; line-height:1.6; letter-spacing: 0.5px;">
-                <p style="margin: 0 0 15px 0;">近期發現有同學使用 <strong style="color:#e74c3c;">不雅字眼</strong> 或 <strong style="color:#e74c3c;">謾罵他人</strong> 的詞彙作為玩家姓名。</p>
-                <div style="background: #fadbd8; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center; border: 2px solid #e74c3c;">
-                    若再次發現此情形，本網站將<br><strong style="color:#c0392b; font-size:24px;">無條件關閉一天</strong>
+            <h2 style="color:#ff7675; font-size:28px; margin-top:0; margin-bottom:20px;">🌸 ROCK 老師公告 🌸</h2>
+            <div style="text-align: left; font-size:17px; font-weight:700; color:#2c3e50; line-height:1.8; letter-spacing: 0.5px;">
+                <p style="margin: 0 0 15px 0;">老師在九曲國小的職務只到 <strong style="color:#e84393;">7月中</strong>，期盼大家未來在九曲國小也可以好好的讀書，然後認真的配合未來的英語老師。</p>
+                <div style="background: #fff5f5; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center; border: 2px dashed #ff7675; color: #d63031;">
+                    <strong>老師會想你們的！❤️</strong><br>
+                    如果還有問題想問的話，可以透過右上角的 discord 聯繫老師。
                 </div>
-                <p style="margin: 0 0 25px 0;">請不要因為個人的無禮行為，剝奪了其他同學學習與遊戲的權利。請大家好好愛護並尊重這個專屬的學習空間！</p>
+                <p style="margin: 0 0 25px 0; text-align: center;">謝謝大家這一年的指教，<br>願大家繼續努力學習英文。 :)</p>
             </div>
-            <button class="warning-btn" onclick="closeWarning()">我了解了，會遵守規定</button>
+            <button class="warning-btn" onclick="closeWarning()">老師再見：）</button>
         </div>
     </div>
 
@@ -950,7 +952,7 @@
         window.onload = function() {
             checkSeasonMarquee();
             
-            if (!sessionStorage.getItem('rockWarningShown')) {
+            if (!sessionStorage.getItem('rockFarewellShown')) {
                 document.getElementById('warning-modal').style.display = 'flex';
             }
 
@@ -1108,7 +1110,7 @@
 
         function closeWarning() {
             document.getElementById('warning-modal').style.display = 'none';
-            sessionStorage.setItem('rockWarningShown', 'true');
+            sessionStorage.setItem('rockFarewellShown', 'true');
         }
 
         // ✨ BGM 播放/暫停切換 (已重命名避免與 common.js toggleSound 衝突) ✨
@@ -1223,7 +1225,7 @@
 
         // 點擊空白處自動嘗試播放 BGM (解決瀏覽器 autoplay 限制)
         document.body.addEventListener('click', function(e) {
-            if (e.target.closest('.game-card') || e.target.closest('#sound-btn') || e.target.closest('.modal-content') || e.target.closest('.teacher-zone-btn') || e.target.closest('.discord-btn')) return;
+            if (e.target.closest('.game-card') || e.target.closest('#sound-btn') || e.target.closest('.modal-content') || e.target.closest('.teacher-zone-btn') || e.target.closest('.community-btn')) return;
             if (!isPlaying) { toggleBGM(); }
         });
     </script>
