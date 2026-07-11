@@ -4246,5 +4246,1086 @@
       "艾薇兒"
     ],
     "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 1,
+    "question": "David likes to make snowmen（雪人）, so he likes ＿＿＿.",
+    "choices": [
+      "rain",
+      "postcard",
+      "winter",
+      "sun"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 2,
+    "question": "Look at the picture. What season is it?",
+    "choices": [
+      "Spring.",
+      "Summer.",
+      "Autumn.",
+      "Winter."
+    ],
+    "correct": 3,
+    "image": "assets/h-b3-u1-q2.png"
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 3,
+    "question": "I was hungry, so Dad ＿＿＿ me some cookies.",
+    "choices": [
+      "visited",
+      "snowed",
+      "gave",
+      "hate"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 4,
+    "question": "It’s just a little cool, so a light（薄的） ＿＿＿ is enough.",
+    "choices": [
+      "jacket",
+      "gift",
+      "weather",
+      "season"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 5,
+    "question": "My favorite ＿＿＿ is fall. It’s not too hot and not too cold.",
+    "choices": [
+      "wind",
+      "season",
+      "gift",
+      "trip"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 6,
+    "question": "It’s hot and sunny today here. How’s the ＿＿＿ there?",
+    "choices": [
+      "weather",
+      "jacket",
+      "trip",
+      "order"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 7,
+    "question": "It’s snowing. Here is a ＿＿＿ jacket for you.",
+    "choices": [
+      "heavy",
+      "strange",
+      "fun",
+      "mad"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 8,
+    "question": "In Taiwan, students usually have their ＿＿＿ vacation in July and August.",
+    "choices": [
+      "winter",
+      "spring",
+      "autumn",
+      "summer"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 9,
+    "question": "There is not any ＿＿＿ in Tainan. It’s usually warm there.",
+    "choices": [
+      "snow",
+      "water",
+      "cloud",
+      "mountain"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 10,
+    "question": "My friend sent me a ＿＿＿ when she was in India.",
+    "choices": [
+      "cloud",
+      "season",
+      "uncle",
+      "postcard"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 11,
+    "question": "My grandma is ＿＿＿. She helps many people.",
+    "choices": [
+      "heavy",
+      "cold",
+      "kind",
+      "snowy"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 12,
+    "question": "In Taiwan, the ＿＿＿ months are December, January, and February.",
+    "choices": [
+      "winter",
+      "fall",
+      "summer",
+      "spring"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 13,
+    "question": "It’s very cold there. You need to take a ＿＿＿ coat with you.",
+    "choices": [
+      "kind",
+      "windy",
+      "heavy",
+      "strange"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 14,
+    "question": "It’s hot, so I sit in front of the fan. The ＿＿＿ is blowing（吹）on my face.",
+    "choices": [
+      "cloud",
+      "season",
+      "weather",
+      "wind"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 15,
+    "question": "After winter comes ＿＿＿.",
+    "choices": [
+      "spring",
+      "autumn",
+      "fall",
+      "summer"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 16,
+    "question": "It is ＿＿＿ and dark. It may rain soon!",
+    "choices": [
+      "heavy",
+      "mad",
+      "snowy",
+      "cloudy"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 17,
+    "question": "It was cold today. My mother ＿＿＿ hot chocolate for me.",
+    "choices": [
+      "hated",
+      "snowed",
+      "spoke",
+      "ordered"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 18,
+    "question": "The Moon Festival（中秋節）is in ＿＿＿.",
+    "choices": [
+      "fall",
+      "summer",
+      "winter",
+      "spring"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 19,
+    "question": "It’s ＿＿＿. My umbrella broke.",
+    "choices": [
+      "fun",
+      "windy",
+      "cool",
+      "kind"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 20,
+    "question": "Jane doesn’t know what “give away” means in the reading. Dennis has a lot of books and toys in his house. One day, he reads a report about a story in children’s home. Children at children’s home usually don’t have many toys, so Dennis gives away all his old toys to those kids! What does “give away” mean here?",
+    "choices": [
+      "To tell people something.",
+      "To give something to someone.",
+      "To make money.",
+      "To sell all of something."
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 21,
+    "question": "The third season of the year is ＿＿＿.",
+    "choices": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 22,
+    "question": "Ben and his friends played baseball in the park. Suddenly（突然地）, the wind was strong, and it rained a lot. They could not play baseball, so they went home. Why did Ben and his friends go home?",
+    "choices": [
+      "They had some homework.",
+      "They were hungry.",
+      "The weather was very bad.",
+      "They wanted to watch TV."
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 23,
+    "question": "Because the rain was too ＿＿＿, we didn’t go out.",
+    "choices": [
+      "big",
+      "heavy",
+      "a lot",
+      "a lot of"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 24,
+    "question": "Tom: Which is your favorite ＿＿＿? Jane: Winter. I love snow.",
+    "choices": [
+      "sun",
+      "autumn",
+      "season",
+      "weather"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 25,
+    "question": "I was so ＿＿＿ because he said “go die” to me.",
+    "choices": [
+      "strange",
+      "fun",
+      "mad",
+      "sunny"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 26,
+    "question": "We ＿＿＿ the chocolate milkshake. It’s too sweet and it’s warm.",
+    "choices": [
+      "give",
+      "snow",
+      "hate",
+      "speak"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 27,
+    "question": "Mark: I ＿＿＿ you a postcard from Taiwan. Did you get it? Nancy: I got it yesterday. It’s beautiful. Thank you.",
+    "choices": [
+      "gave",
+      "lent",
+      "sent",
+      "borrowed"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 28,
+    "question": "The rain today is really ＿＿＿. Let’s not go out for dinner.",
+    "choices": [
+      "big",
+      "kind",
+      "cold",
+      "heavy"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 29,
+    "question": "Jamie ordered a new jacket because his old one was too small. Which sentence（句子）has the same meaning of ordered as in the sentence above?",
+    "choices": [
+      "Lisa ordered a pizza for dinner.",
+      "The teacher ordered the students to be quiet.",
+      "My mom likes to keep everything in order at home.",
+      "The police worked hard to keep order in the city（城市）."
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 30,
+    "question": "The weather is going to（將）be really ＿＿＿, so I don’t think（認為）you should（應該）take a heavy coat（外套）on your trip.〔97.基測Ⅰ〕",
+    "choices": [
+      "clear but windy",
+      "cold but dry",
+      "cool and wet",
+      "hot and sunny"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 31,
+    "question": "It’s ＿＿＿ in Taiwan in summer.",
+    "choices": [
+      "warm and heavy",
+      "hot and rainy",
+      "cool and big",
+      "cold and snowy"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 32,
+    "question": "Jill: Did your mom ＿＿＿ the cake for you? Beth: No, she bought me the cake.",
+    "choices": [
+      "send",
+      "show",
+      "give",
+      "make"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 33,
+    "question": "Spring is a wonderful（美好的）season because ＿＿＿ is usually warm and sunny.〔95.基測Ⅰ〕",
+    "choices": [
+      "which",
+      "this",
+      "one",
+      "it"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 34,
+    "question": "the weather in Tainan and Kaohsiung today?",
+    "choices": [
+      "How’s",
+      "What’s",
+      "How are",
+      "What are"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 35,
+    "question": "the weather today?",
+    "choices": [
+      "What’s",
+      "Which is",
+      "How’s",
+      "When’s"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 36,
+    "question": "Jill: ＿＿＿ it rainy in Australia in autumn? Lucy: No, it is usually ＿＿＿ here in autumn.",
+    "choices": [
+      "Do; sunny",
+      "Is; sun",
+      "Do; sun",
+      "Is; sunny"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 37,
+    "question": "the weather ＿＿＿ there ＿＿＿ autumn?",
+    "choices": [
+      "What’s; ×; in",
+      "How’s; like; on",
+      "What’s; like; in",
+      "How’s; ×; on"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 38,
+    "question": "What is the weather ＿＿＿ in spring?",
+    "choices": [
+      "for",
+      "×",
+      "about",
+      "like"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 39,
+    "question": "the weather like in Japan in fall?",
+    "choices": [
+      "How’s",
+      "What’s",
+      "How does",
+      "What does"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 40,
+    "question": "Jasmine: ＿＿＿ the weather like in winter in Australia? Edward: It’s snowy and cold.",
+    "choices": [
+      "How’s",
+      "Where’s",
+      "When’s",
+      "What’s"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 41,
+    "question": "My aunt gave her coat to me because my coat wasn’t heavy enough. It was kind ＿＿＿ her!",
+    "choices": [
+      "on",
+      "with",
+      "at",
+      "of"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 42,
+    "question": "Andy: ＿＿＿ the weather like here in spring? Lily: ＿＿＿ warm and rainy.",
+    "choices": [
+      "How’s; It’s",
+      "How does; The weather is",
+      "What’s; It’s",
+      "What does; The weather is"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 43,
+    "question": "It sometimes snows ＿＿＿ Taiwan ＿＿＿ winter.",
+    "choices": [
+      "at; on",
+      "in; at",
+      "on; in",
+      "in; in"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 44,
+    "question": "Ann: ＿＿＿ is the weather like in winter? Leo: ＿＿＿ a lot of snow.",
+    "choices": [
+      "What; There are",
+      "How; There is",
+      "What; There is",
+      "How; There are"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 45,
+    "question": "That’s so kind ＿＿＿ you. Let me make a big cake ＿＿＿ you.",
+    "choices": [
+      "for; to",
+      "of; for",
+      "for; for",
+      "of; to"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 46,
+    "question": "My uncle sent it ＿＿＿ me ＿＿＿ the USA.",
+    "choices": [
+      "to; from",
+      "for; in",
+      "to; in",
+      "for; from"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 47,
+    "question": "Ann: Who gave the gift ＿＿＿ you? Bob: My parents.",
+    "choices": [
+      "in",
+      "to",
+      "for",
+      "at"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 48,
+    "question": "Kids at the children’s home（育幼院）may need some help from us. We can send some clothes ＿＿＿ them.",
+    "choices": [
+      "for",
+      "at",
+      "of",
+      "to"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 49,
+    "question": "Tina sent me a postcard ＿＿＿ India, and John sent me a picture ＿＿＿ his dogs.",
+    "choices": [
+      "in; on",
+      "in; of",
+      "from; on",
+      "from; of"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 50,
+    "question": "Here’s a red jacket ＿＿＿ you.",
+    "choices": [
+      "of",
+      "to",
+      "for",
+      "on"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 51,
+    "question": "It’s ＿＿＿ today. Let’s take our daughter to the park and let her fly her favorite kite.",
+    "choices": [
+      "hot and sunny",
+      "cold and snowy",
+      "windy and cloudy",
+      "warm and rainy"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 52,
+    "question": "Sam: How’s the weather ＿＿＿ in London ＿＿＿ summer? Emi: It’s warm and rainy.",
+    "choices": [
+      "like; on",
+      "×; in",
+      "like; in",
+      "×; at"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 53,
+    "question": "The teacher is showing a picture ＿＿＿ the students.",
+    "choices": [
+      "for",
+      "of",
+      "to",
+      "with"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 54,
+    "question": "Sara is ＿＿＿ a heavy coat because it’s very cold today.",
+    "choices": [
+      "in",
+      "on",
+      "at",
+      "of"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 55,
+    "question": "Jenny: Yesterday was my birthday. Andy treated me to dinner and ＿＿＿. Peter: Wow! He loves you very much. Jenny: Sure. And I was happy last night.",
+    "choices": [
+      "makes a card for me",
+      "made a card to me",
+      "is making a card to me",
+      "made a card for me"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 56,
+    "question": "Here ＿＿＿ a cap（帽子）for you. You may need it under the sun.",
+    "choices": [
+      "has",
+      "is",
+      "have",
+      "are"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 57,
+    "question": "It sometimes ＿＿＿ here in winter.",
+    "choices": [
+      "is snowy",
+      "snows",
+      "has snow",
+      "is lots of snow"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 58,
+    "question": "a lot of rain in summer.",
+    "choices": [
+      "It is",
+      "They are",
+      "There are",
+      "There is"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 59,
+    "question": "Ariel ＿＿＿ a gift to her cousin last week.",
+    "choices": [
+      "got",
+      "sent",
+      "made",
+      "bought"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 60,
+    "question": "Jane: Do you have lots of ＿＿＿ in winter? Beth: No, but it’s ＿＿＿ and cold.",
+    "choices": [
+      "snowy; wind",
+      "snowy; windy",
+      "snow; windy",
+      "snow; wind"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 61,
+    "question": "Jill: What did you ＿＿＿ for your son on his birthday? Mia: He ＿＿＿ a cap（鴨舌帽）for his birthday this year.",
+    "choices": [
+      "give; bought",
+      "made; sent",
+      "buy; got",
+      "show; gave"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 62,
+    "question": "Jeff: ＿＿＿ lots of snow there in winter? Lisa: Yes, ＿＿＿ a lot.",
+    "choices": [
+      "Are there; we have snow",
+      "Is there; it snows",
+      "Do we have; there’s snow",
+      "Does it; it’s snowy"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 63,
+    "question": "Our coffee shop is big, but theirs ＿＿＿ small.",
+    "choices": [
+      "is",
+      "are",
+      "isn’t",
+      "aren’t"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 64,
+    "question": "Yesterday was my son’s birthday. His aunt from Japan ＿＿＿ a big robot（機器人）to him.",
+    "choices": [
+      "bought",
+      "got",
+      "ordered",
+      "sent"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 65,
+    "question": "I ＿＿＿ some postcards for the kids yesterday.",
+    "choices": [
+      "gave",
+      "sent",
+      "bought",
+      "showed"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 66,
+    "question": "Can you give ＿＿＿?",
+    "choices": [
+      "the card for me",
+      "it of me",
+      "me it",
+      "me the card"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 67,
+    "question": "a lot there in winter.",
+    "choices": [
+      "They have snow",
+      "There is snow",
+      "It snows",
+      "It’s snowy"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 68,
+    "question": "raining cats and dogs（正下著傾盆大雨）. We can’t play basketball at the park. What else can we do?",
+    "choices": [
+      "It’s",
+      "The weather is",
+      "There’s",
+      "We have"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 69,
+    "question": "In the past, my family ate moon cakes and pomelos（柚子）on the Moon Festival（節慶）. And my father often ＿＿＿ some pomelo hats（帽子）for me. It was very fun!",
+    "choices": [
+      "make",
+      "is making",
+      "made",
+      "makes"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 70,
+    "question": "windy and cool in Taipei today. Is there a lot of wind in Taichung?",
+    "choices": [
+      "Weather is",
+      "There is",
+      "It’s",
+      "We have"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 71,
+    "question": "Uncle Sam ＿＿＿ a robot（機器人）for me on my birthday.",
+    "choices": [
+      "sent",
+      "showed",
+      "made",
+      "gave"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 72,
+    "question": "Jim: Do you ＿＿＿ in Tainan in winter? Sam: No, it never ＿＿＿ here in winter.",
+    "choices": [
+      "snow; snow",
+      "have snow; snows",
+      "be snowy; snowy",
+      "have snow; snow"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 73,
+    "question": "Nick: How was the weather yesterday? Uma: It ＿＿＿ a lot in the morning, so my family and I drank hot tea at home.",
+    "choices": [
+      "rains",
+      "is raining",
+      "rained",
+      "rain"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 74,
+    "question": "Sorry, I can’t ＿＿＿ it to you.",
+    "choices": [
+      "make",
+      "give",
+      "buy",
+      "sent"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 75,
+    "question": "in July and August ＿＿＿ very hot.",
+    "choices": [
+      "It; is",
+      "The weather; is",
+      "They; are",
+      "The weather; are"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 76,
+    "question": "Ken: ＿＿＿ a lot. Liz: Yeah. The rain is really too ＿＿＿.",
+    "choices": [
+      "There’s a lot of rain; big",
+      "We have lots of rain; heavy",
+      "It’s rainy; big",
+      "It’s raining; heavy"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 77,
+    "question": "He made ＿＿＿ last night.",
+    "choices": [
+      "me it",
+      "it to me",
+      "a card to her",
+      "them for her"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 78,
+    "question": "rained and snowed a lot last year.",
+    "choices": [
+      "There were",
+      "There was",
+      "It",
+      "They had"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 79,
+    "question": "Iris: ＿＿＿ it snow a lot in Japan at this time of year? Beth: Yes, ＿＿＿ snowy there at this time of year. The white snow is so beautiful.",
+    "choices": [
+      "Does; it’s",
+      "Does; there’s",
+      "Is; they have",
+      "Is; it’s"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 80,
+    "question": "lots of snow in New York, the USA. It’s very cold there.",
+    "choices": [
+      "We have",
+      "It’s",
+      "There’s",
+      "The weather is"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 81,
+    "question": "Ann: ＿＿＿ often rains in Taipei in winter. Ken: Yeah. It’s often ＿＿＿ in Taipei in winter.",
+    "choices": [
+      "There is; cold and rain",
+      "It; rainy",
+      "There is; rainy",
+      "It; rain"
+    ],
+    "correct": 1
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 82,
+    "question": "Jill: ＿＿＿ snow a lot here in winter? Ben: No, ＿＿＿ much snow here in winter.",
+    "choices": [
+      "Is it; we don’t have",
+      "Do they have; it doesn’t",
+      "Do you have; it isn’t",
+      "Does it; there isn’t"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 83,
+    "question": "lots of rain here in summer?",
+    "choices": [
+      "Are there",
+      "Does it",
+      "Do they have",
+      "Is there"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 84,
+    "question": "lots of snow there in December?",
+    "choices": [
+      "Do you have",
+      "Are there",
+      "Is it",
+      "Does it"
+    ],
+    "correct": 0
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 85,
+    "question": "It’s ＿＿＿ here in summer.",
+    "choices": [
+      "a lot of rain",
+      "rains a lot",
+      "has lots of rain",
+      "rainy"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 86,
+    "question": "snow very much in the USA in winter?",
+    "choices": [
+      "Do they have",
+      "Is it",
+      "Is there",
+      "Does it"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 87,
+    "question": "That’s really kind ＿＿＿ you. Here’s a gift ＿＿＿ me.",
+    "choices": [
+      "for; from",
+      "for; for",
+      "of; from",
+      "of; for"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 88,
+    "question": "Max: ＿＿＿ rainy here during the summer months? Sam: Yes. ＿＿＿ lots of rain here in June, July, and August.",
+    "choices": [
+      "Is there; We have",
+      "Is it; There are",
+      "Is the weather; There’s",
+      "Is there; It’s"
+    ],
+    "correct": 2
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 89,
+    "question": "Bill: ＿＿＿ lots of rain here in summer? Ken: Yes, ＿＿＿ lots of rain here in summer.",
+    "choices": [
+      "Is it; they have",
+      "Are there; there are",
+      "Does it; it’s",
+      "Do you have; there’s"
+    ],
+    "correct": 3
+  },
+  {
+    "unit": "H-B3-Unit 1",
+    "number": 90,
+    "question": "is warm, but ＿＿＿ is raining.",
+    "choices": [
+      "The weather; the weather",
+      "It; the weather",
+      "It; it",
+      "The weather; there"
+    ],
+    "correct": 2
   }
 ]
