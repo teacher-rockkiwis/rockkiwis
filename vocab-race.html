@@ -106,7 +106,7 @@ select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:point
 <div id="role-screen" class="screen on">
   <div style="font-size:64px;margin-bottom:4px;">⚡</div>
   <h1 class="big-title">Vocab Race</h1>
-  <p class="sub">國中二年級單字競速！</p>
+  <p class="sub">☀️ 暑期雙語社團單字競速！</p>
   <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
     <button class="role-btn" style="background:#16a085;color:white;" onclick="selectRole('teacher')">📺 老師<br><small style="font-size:13px;font-weight:700;">建立房間</small></button>
     <button class="role-btn" style="background:var(--purple);color:white;" onclick="selectRole('student')">📱 學生<br><small style="font-size:13px;font-weight:700;">加入競賽</small></button>
@@ -124,7 +124,6 @@ select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:point
     <div>
       <div class="lbl">出題數</div>
       <select id="t-rounds" class="inp">
-        <option value="5">5 題</option>
         <option value="10">10 題</option>
         <option value="12">全部 12 題</option>
       </select>
@@ -239,18 +238,10 @@ const db=firebase.database();
 
 // ── Vocab ─────────────────────────────────────────────────
 const VOCAB=[
-  {en: "ride a bike", ch: "騎腳踏車"},
-  {en: "ride a scooter", "ch": "騎滑板車"},
-  {en: "boba milk tea", "ch": "珍珠奶茶"},
-  {en: "mango", "ch": "芒果"},
-  {en: "papaya milk", "ch": "木瓜牛奶"},
-  {en: "take the MRT", "ch": "搭捷運"},
-  {en: "take a train", "ch": "搭火車"},
-  {en: "stinky tofu", "ch": "臭豆腐"},
-  {en: "fried chicken", "ch": "炸雞"},
-  {en: "juice", "ch": "果汁"},
-  {en: "eat", "ch": "吃"},
-  {en: "drink", "ch": "喝"}
+  {en:'ride a bike',ch:'騎腳踏車'},{en:'ride a scooter',ch:'騎滑板車'},{en:'boba milk tea',ch:'珍珠奶茶'},
+  {en:'mango',ch:'芒果'},{en:'papaya milk',ch:'木瓜牛奶'},{en:'take the MRT',ch:'搭捷運'},
+  {en:'take a train',ch:'搭火車'},{en:'stinky tofu',ch:'臭豆腐'},{en:'fried chicken',ch:'炸雞'},
+  {en:'juice',ch:'果汁'},{en:'eat',ch:'吃'},{en:'drink',ch:'喝'}
 ];
 const ICONS=['▲','◆','●','■'];
 const CLS=['ca','cb','cc','cd'];
