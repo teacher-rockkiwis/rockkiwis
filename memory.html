@@ -349,7 +349,11 @@
         function exitGame() {
             clearInterval(timerInterval);
             document.getElementById('bgm').pause();
-            window.location.href = 'index.html';
+            if (new URLSearchParams(window.location.search).get('camp') === '1') {
+                window.location.href = "summercamp.html";
+            } else {
+                window.location.href = "index.html";
+            }
         }
     </script>
 </body>

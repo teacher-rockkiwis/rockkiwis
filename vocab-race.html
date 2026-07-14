@@ -100,7 +100,7 @@ select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:point
 <body>
 <audio id="sfx-ok" src="bgm/bingo.mp3"></audio>
 <audio id="sfx-ng" src="bgm/fail.mp3"></audio>
-<button id="back-btn" onclick="location.href='teacher.html'">🔙 回去</button>
+<button id="back-btn" onclick="goBack()">🔙 回大廳</button>
 
 <!-- ROLE SELECTION -->
 <div id="role-screen" class="screen on">
@@ -276,6 +276,15 @@ function genQuestions(n){
     }
     return {type,prompt:type==='en2ch'?word.en:word.ch,choices,correct:cp};
   });
+}
+
+// ── 流程邏輯 ───────────────────────────────────────────────
+function goBack() {
+  if(new URLSearchParams(window.location.search).get('camp') === '1') {
+    location.href = 'summercamp.html';
+  } else {
+    location.href = 'teacher.html';
+  }
 }
 
 // ── Role ──────────────────────────────────────────────────

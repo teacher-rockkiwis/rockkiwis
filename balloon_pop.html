@@ -974,8 +974,13 @@
 
         // Exit Game
         function exitGame() {
-            bgm.pause();
-            location.href = 'teacher.html';
+            if (confirm("確定要離開遊戲嗎？")) {
+                if (new URLSearchParams(window.location.search).get('camp') === '1') {
+                    window.location.href = "summercamp.html";
+                } else {
+                    window.location.href = "teacher.html";
+                }
+            }
         }
 
         // Initialize and Start Game

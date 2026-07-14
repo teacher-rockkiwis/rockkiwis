@@ -20,23 +20,41 @@ function toggleSound(e) {
     }
 }
 
-// Summer Camp 過濾機制 (如果網址帶有 ?camp=1，則只保留包含 summer 的關卡選項)
+// Summer Camp 過濾機制與動態路由
 document.addEventListener('DOMContentLoaded', () => {
     if (new URLSearchParams(window.location.search).get('camp') === '1') {
+        // 1. 過濾選單選項
         document.querySelectorAll('select').forEach(select => {
-            // 排除不要過濾的特定選單 (例如 vocab-race 的題數選單)
             if (select.id === 't-rounds' || select.id === 't-time') return;
             
             Array.from(select.options).forEach(opt => {
-                // 如果選項有 value 且不包含 'summer'，且不是預設的 placeholder(disabled)，就移除它
                 if (opt.value && !opt.value.includes('summer') && !opt.disabled) {
                     opt.remove();
                 }
             });
-            // 移除空的 optgroup
             Array.from(select.querySelectorAll('optgroup')).forEach(grp => {
                 if (grp.children.length === 0) grp.remove();
             });
         });
+
+        // 2. 動態修改 a 標籤
+        document.querySelectorAll('a').forEach(a => {
+            const href = a.getAttribute('href');
+            if (href === 'teacher.html' || href === 'index.html') {
+                a.href = 'summercamp.html';
+                if (a.innerHTML.includes('回')) {
+                    a.innerHTML = '🔙 回大廳';
+                }
+            }
+        });
+
+        // 3. 動態修改包含 onclick 寫死跳轉的元素
+        document.querySelectorAll('[onclick]').forEach(el => {
+            const attr = el.getAttribute('onclick');
+            if (attr && (attr.includes('teacher.html') || attr.includes('index.html'))) {
+                el.setAttribute('onclick', attr.replace(/teacher\.html|index\.html/g, 'summercamp.html'));
+            }
+        });
+
     }
 });
