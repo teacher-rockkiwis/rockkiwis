@@ -124,10 +124,9 @@ select.inp{appearance:none;-webkit-appearance:none;letter-spacing:0;cursor:point
     <div>
       <div class="lbl">出題數</div>
       <select id="t-rounds" class="inp">
+        <option value="5">5 題</option>
         <option value="10">10 題</option>
-        <option value="15">15 題</option>
-        <option value="20">20 題</option>
-        <option value="37">全部 37 題</option>
+        <option value="12">全部 12 題</option>
       </select>
     </div>
     <div>
@@ -240,19 +239,18 @@ const db=firebase.database();
 
 // ── Vocab ─────────────────────────────────────────────────
 const VOCAB=[
-  {en:'science',ch:'科學'},{en:'camp',ch:'營隊；露營'},{en:'visit',ch:'造訪；拜訪'},
-  {en:'art',ch:'藝術；美術'},{en:'museum',ch:'博物館'},{en:'ago',ch:'……之前'},
-  {en:'computer',ch:'電腦'},{en:'before',ch:'在⋯之前；以前'},{en:'yesterday',ch:'昨天'},
-  {en:'surf the Internet',ch:'上網'},{en:'minute',ch:'分鐘'},{en:'hour',ch:'小時'},
-  {en:'story',ch:'故事'},{en:'lazy',ch:'懶惰的'},{en:'even',ch:'甚至'},
-  {en:'should',ch:'應該'},{en:'wrong',ch:'錯誤的'},{en:'so',ch:'很；那麼'},
-  {en:'just',ch:'就；恰好；剛剛'},{en:'later',ch:'稍後'},{en:'save',ch:'拯救；省下；儲存'},
-  {en:'share',ch:'分享'},{en:'snack',ch:'點心'},{en:'climb',ch:'攀爬'},
-  {en:'kid',ch:'開玩笑；小孩'},{en:'explain',ch:'解釋'},{en:'leftovers',ch:'剩菜'},
-  {en:'hide-and-seek',ch:'捉迷藏'},{en:'wise',ch:'有智慧的'},{en:'hunt',ch:'打獵'},
-  {en:'learn',ch:'學習；得知'},{en:'in the end',ch:'最後'},{en:'the day before yesterday',ch:'前天'},
-  {en:'in fact',ch:'其實；事實上'},{en:'look up from...',ch:'從⋯中抬起頭來'},
-  {en:'No problem!',ch:'沒問題！'},{en:"with one's help",ch:'有了⋯的幫助'},
+  {en: "ride a bike", ch: "騎腳踏車"},
+  {en: "ride a scooter", "ch": "騎滑板車"},
+  {en: "boba milk tea", "ch": "珍珠奶茶"},
+  {en: "mango", "ch": "芒果"},
+  {en: "papaya milk", "ch": "木瓜牛奶"},
+  {en: "take the MRT", "ch": "搭捷運"},
+  {en: "take a train", "ch": "搭火車"},
+  {en: "stinky tofu", "ch": "臭豆腐"},
+  {en: "fried chicken", "ch": "炸雞"},
+  {en: "juice", "ch": "果汁"},
+  {en: "eat", "ch": "吃"},
+  {en: "drink", "ch": "喝"}
 ];
 const ICONS=['▲','◆','●','■'];
 const CLS=['ca','cb','cc','cd'];
