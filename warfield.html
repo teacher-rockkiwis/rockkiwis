@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Warfield 戰地生存</title>
+    <link rel="stylesheet" href="common.css?v=3.1">
+    <style>
+        body {
+            background: #111; color: white; user-select: none; -webkit-user-select: none;
+            overflow: hidden; touch-action: none;
+        }
+
+        .screen { display: none; position: absolute; inset: 0; flex-direction: column; align-items: center; justify-content: center; }
+        .screen.active { display: flex; }
+
+        /* Setup Screen */
+        .setup-box {
+            background: #222; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center; border: 2px solid #555; max-width: 500px; width: 90%;
+        }
+        .setup-box h1 { margin: 0 0 10px 0; font-size: 40px; color: #f1c40f; text-shadow: 0 0 10px rgba(241,196,15,0.5); }
+        .setup-box p { color: #aaa; margin-bottom: 30px; font-size: 16px; }
+        .setup-row { margin-bottom: 25px; text-align: left; }
+        .setup-row label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 18px; color: #ddd; }
+        .setup-row input, .setup-row select {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #555; background: #333; color: white;
+            font-size: 18px; outline: none; box-sizing: border-box;
+        }
+        .start-btn {
+            background: #e74c3c; color: white; border: none; padding: 15px 30px; font-size: 24px; font-weight: 900;
+            border-radius: 50px; cursor: pointer; width: 100%; box-shadow: 0 5px 0 #c0392b; transition: 0.1s;
+        }
+        .start-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #c0392b; }
+
+        /* Game Screen */
+        .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: rgba(0,0,0,0.8); z-index: 10; border-bottom: 2px solid #333; }
+        .turn-indicator { font-size: 28px; font-weight: bold; display: flex; align-items: center; gap: 10px; padding: 5px 20px; border-radius: 30px; transition: 0.3s; }
+        .turn-blue { background: rgba(52, 152, 219, 0.2); color: #3498db; border: 2px solid #3498db; }
+        .turn-red { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 2px solid #e74c3c; }
+
+        .game-layout {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; height: 100vh; padding-top: 80px; padding-bottom: 120px; box-sizing: border-box;
+        }
+
+        .grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+            width: 90vmin; max-width: 600px; max-height: 600px; aspect-ratio: 1;
+        }
+        .card {
+            background: #444; border-radius: 12px; cursor: pointer; position: relative;
+            transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #666;
+        }
+        .card.flipped { transform: rotateY(180deg); cursor: default; }
+        
+        .card-face {
+            position: absolute; inset: 0; backface-visibility: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 10px;
+        }
+        .card-front { background: repeating-linear-gradient(45deg, #333, #333 10px, #444 10px, #444 20px); }
+        .card-back { background: #eee; transform: rotateY(180deg); color: #222; }
+        
+        .card-emoji { font-size: min(10vmin, 50px); }
+        .card-desc { font-size: min(3vmin, 16px); font-weight: bold; margin-top: 5px; color: #555; }
+
+        /* Floating Text Animation */
+        .float-text {
+            position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+            font-size: min(12vmin, 60px); font-weight: 900; z-index: 100;
+            pointer-events: none; opacity: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            animation: floatUp 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -20%) scale(1.2); }
+            80% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -80%) scale(0.8); }
+        }
+
+        /* Health Bars */
+        .health-panel {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 100px;
+            display: flex; background: rgba(0,0,0,0.8); border-top: 2px solid #333; z-index: 10;
+        }
+        .team-health {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 20px;
+        }
+        .team-blue { border-right: 2px solid #333; }
+        .team-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        .team-blue .team-title { color: #3498db; }
+        .team-red .team-title { color: #e74c3c; text-align: right; }
+        
+        .hearts-container { display: flex; gap: 5px; flex-wrap: wrap; }
+        .team-red .hearts-container { justify-content: flex-end; }
+        .heart { font-size: 24px; transition: 0.3s; }
+        .heart.dead { filter: grayscale(100%) opacity(0.2); }
+
+        /* Reshuffle Overlay */
+        #reshuffle-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 50;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 40px; font-weight: bold; color: #f1c40f; text-shadow: 0 0 20px #f1c40f;
+        }
+
+        /* Result Overlay */
+        #result-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 60;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #result-msg { font-size: 60px; font-weight: 900; margin-bottom: 30px; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+        .restart-btn { background: #3498db; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 50px; border: none; color: white; cursor: pointer; box-shadow: 0 5px 0 #2980b9; transition: 0.1s;}
+        .restart-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #2980b9; }
+
+    </style>
+</head>
+<body>
+    <audio id="sfx-flip" src="bgm/blip.mp3"></audio>
+    <audio id="sfx-hurt" src="bgm/fail.mp3"></audio>
+    <audio id="sfx-heal" src="bgm/success.mp3"></audio>
+    <audio id="sfx-win" src="bgm/applause.mp3"></audio>
+    
+    <a href="teacher.html" class="back-btn" style="position:fixed; top:15px; left:15px; z-index:100; text-decoration:none; color:white; background:rgba(255,255,255,0.2); padding:8px 15px; border-radius:20px; font-weight:bold;">🔙 回大廳</a>
+
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="screen active">
+        <div class="setup-box">
+            <h1>💥 Warfield 💥</h1>
+            <p>戰地生存：翻牌扣命/加血大對決</p>
+            
+            <div class="setup-row">
+                <label>各隊起始生命數 (5~20)</label>
+                <input type="number" id="input-lives" value="10" min="5" max="20">
+            </div>
+            
+            <div class="setup-row">
+                <label>哪一隊先開始？</label>
+                <select id="input-first">
+                    <option value="blue">🔵 藍隊 (Blue)</option>
+                    <option value="red">🔴 紅隊 (Red)</option>
+                </select>
+            </div>
+
+            <button class="start-btn" onclick="startGame()">開始戰鬥 ⚔️</button>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+        <div class="top-bar">
+            <div></div> <!-- Spacer for back button -->
+            <div id="turn-indicator" class="turn-indicator turn-blue">🔵 藍隊回合</div>
+            <div></div>
+        </div>
+
+        <div class="game-layout">
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <div class="health-panel">
+            <div class="team-health team-blue">
+                <div class="team-title">BLUE TEAM 🔵 <span id="blue-count">10</span></div>
+                <div class="hearts-container" id="blue-hearts"></div>
+            </div>
+            <div class="team-health team-red">
+                <div class="team-title"><span id="red-count">10</span> 🔴 RED TEAM</div>
+                <div class="hearts-container" id="red-hearts"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reshuffle Overlay -->
+    <div id="reshuffle-overlay">
+        🔄 戰線拉長！重新洗牌...
+    </div>
+
+    <!-- Result Overlay -->
+    <div id="result-overlay">
+        <div id="result-msg">🔵 藍隊獲勝！</div>
+        <button class="restart-btn" onclick="location.reload()">重新設定</button>
+    </div>
+
+    <script src="common.js?v=3.2"></script>
+    <script>
+        let maxLives = 10;
+        let blueLives = 10;
+        let redLives = 10;
+        let currentTurn = 'blue';
+        let cardsFlipped = 0;
+        
+        let powerValue = 3; // 炸彈與醫院的威力
+        let deck = [];
+
+        // Definition of Card Types
+        // Action: 'hurt' (deducts enemy life), 'heal' (heals own life)
+        const CARD_TYPES = {
+            pistol: { emoji: '🔫', name: '手槍', action: 'hurt', val: 1 },
+            tank:   { emoji: '🚜', name: '坦克', action: 'hurt', val: 2 },
+            bomb:   { emoji: '💣', name: '炸彈', action: 'hurt', val: 3 }, // val changes dynamically
+            nurse:  { emoji: '👩‍⚕️', name: '護理師', action: 'heal', val: 1 },
+            doctor: { emoji: '👨‍⚕️', name: '醫生', action: 'heal', val: 2 },
+            hospital:{emoji: '🏥', name: '醫院', action: 'heal', val: 3 }  // val changes dynamically
+        };
+
+        function playSound(id) {
+            if (!window.isMuted) {
+                const s = document.getElementById(id);
+                if(s) { s.currentTime = 0; s.play().catch(e=>{}); }
+            }
+        }
+
+        function startGame() {
+            maxLives = parseInt(document.getElementById('input-lives').value) || 10;
+            if(maxLives < 5) maxLives = 5;
+            if(maxLives > 20) maxLives = 20;
+
+            blueLives = maxLives;
+            redLives = maxLives;
+            currentTurn = document.getElementById('input-first').value;
+
+            // Calculate power scale
+            if (maxLives < 10) powerValue = 3;
+            else if (maxLives <= 15) powerValue = 4;
+            else powerValue = 5;
+
+            CARD_TYPES.bomb.val = powerValue;
+            CARD_TYPES.hospital.val = powerValue;
+
+            document.getElementById('setup-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+
+            updateTurnUI();
+            renderHearts();
+            initBoard();
+        }
+
+        function initBoard() {
+            cardsFlipped = 0;
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+
+            // Generate Deck: 10 pistol, 8 nurse, 3 tank, 2 doctor, 1 bomb, 1 hospital (Total 25)
+            deck = [];
+            for(let i=0; i<10; i++) deck.push('pistol');
+            for(let i=0; i<8; i++) deck.push('nurse');
+            for(let i=0; i<3; i++) deck.push('tank');
+            for(let i=0; i<2; i++) deck.push('doctor');
+            deck.push('bomb');
+            deck.push('hospital');
+
+            // Shuffle
+            deck.sort(() => Math.random() - 0.5);
+
+            deck.forEach((type, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.type = type;
+                
+                const cardInner = document.createElement('div');
+                
+                const front = document.createElement('div');
+                front.className = 'card-face card-front';
+                
+                const back = document.createElement('div');
+                back.className = 'card-face card-back';
+                back.innerHTML = `<div class="card-emoji">${CARD_TYPES[type].emoji}</div>
+                                  <div class="card-desc">${CARD_TYPES[type].name}</div>`;
+                
+                card.appendChild(front);
+                card.appendChild(back);
+                card.onclick = () => flipCard(card, type);
+                grid.appendChild(card);
+            });
+        }
+
+        function renderHearts() {
+            const blueContainer = document.getElementById('blue-hearts');
+            const redContainer = document.getElementById('red-hearts');
+            blueContainer.innerHTML = '';
+            redContainer.innerHTML = '';
+
+            for(let i=0; i<maxLives; i++) {
+                const h1 = document.createElement('div');
+                h1.className = 'heart ' + (i >= blueLives ? 'dead' : '');
+                h1.innerText = '💙';
+                blueContainer.appendChild(h1);
+
+                const h2 = document.createElement('div');
+                h2.className = 'heart ' + (i >= redLives ? 'dead' : '');
+                h2.innerText = '❤️';
+                redContainer.appendChild(h2);
+            }
+            document.getElementById('blue-count').innerText = blueLives;
+            document.getElementById('red-count').innerText = redLives;
+        }
+
+        function updateTurnUI() {
+            const indicator = document.getElementById('turn-indicator');
+            if (currentTurn === 'blue') {
+                indicator.className = 'turn-indicator turn-blue';
+                indicator.innerText = '🔵 藍隊回合';
+            } else {
+                indicator.className = 'turn-indicator turn-red';
+                indicator.innerText = '🔴 紅隊回合';
+            }
+        }
+
+        function flipCard(card, typeKey) {
+            if (card.classList.contains('flipped')) return;
+            
+            card.classList.add('flipped');
+            cardsFlipped++;
+            
+            const cardData = CARD_TYPES[typeKey];
+            let textValue = '';
+            let color = '';
+
+            if (cardData.action === 'hurt') {
+                playSound('sfx-hurt');
+                textValue = `-${cardData.val}`;
+                color = '#e74c3c';
+                
+                // Hurt Enemy
+                if (currentTurn === 'blue') {
+                    redLives = Math.max(0, redLives - cardData.val);
+                } else {
+                    blueLives = Math.max(0, blueLives - cardData.val);
+                }
+            } else {
+                playSound('sfx-heal');
+                textValue = `+${cardData.val}`;
+                color = '#2ecc71';
+
+                // Heal Self
+                if (currentTurn === 'blue') {
+                    blueLives = Math.min(maxLives, blueLives + cardData.val);
+                } else {
+                    redLives = Math.min(maxLives, redLives + cardData.val);
+                }
+            }
+
+            // Floating Text
+            const floatText = document.createElement('div');
+            floatText.className = 'float-text';
+            floatText.style.color = color;
+            floatText.innerText = textValue;
+            card.appendChild(floatText);
+
+            renderHearts();
+
+            // Check Win
+            if (blueLives <= 0 || redLives <= 0) {
+                setTimeout(showWinScreen, 1000);
+                return;
+            }
+
+            // Check Reshuffle
+            if (cardsFlipped >= 25) {
+                setTimeout(reshuffleBoard, 1500);
+                return;
+            }
+
+            // Next Turn
+            setTimeout(() => {
+                currentTurn = currentTurn === 'blue' ? 'red' : 'blue';
+                updateTurnUI();
+            }, 800);
+        }
+
+        function reshuffleBoard() {
+            document.getElementById('reshuffle-overlay').style.display = 'flex';
+            setTimeout(() => {
+                initBoard();
+                document.getElementById('reshuffle-overlay').style.display = 'none';
+                currentTurn = currentTurn === 'blue' ? 'red' : 'blue';
+                updateTurnUI();
+            }, 2000);
+        }
+
+        function showWinScreen() {
+            playSound('sfx-win');
+            const overlay = document.getElementById('result-overlay');
+            const msg = document.getElementById('result-msg');
+            
+            if (blueLives <= 0 && redLives <= 0) {
+                msg.innerText = "⚔️ 同歸於盡！平手！";
+                msg.style.color = "#ecf0f1";
+            } else if (redLives <= 0) {
+                msg.innerText = "🏆 藍隊獲勝！";
+                msg.style.color = "#3498db";
+            } else {
+                msg.innerText = "🏆 紅隊獲勝！";
+                msg.style.color = "#e74c3c";
+            }
+
+            overlay.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
